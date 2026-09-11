@@ -94,7 +94,18 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
         get => _value.IsEmpty ? string.Empty : _value.Minutes.ToString("D2");
         set
         {
-            if (int.TryParse(value, out int parsedMinutes) && parsedMinutes is >= 0 and <= 59)
+            if (string.IsNullOrEmpty(value))
+            {
+                TimeInstant prevValue = _value;
+
+                _value.IsEmpty = true;
+
+                NotifyMinutesPropertyChanged(prevValue, _value);
+                NotifyHoursPropertyChanged(prevValue, _value);
+
+                UpdateIsContentValid(true);
+            }
+            else if (int.TryParse(value, out int parsedMinutes) && parsedMinutes is >= 0 and <= 59)
             {
                 TimeInstant prevValue = _value;
 
@@ -128,7 +139,18 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
         get => _value.IsEmpty ? string.Empty : _value.Hours.ToString("D2");
         set
         {
-            if (int.TryParse(value, out int parsedHours) && parsedHours is >= 0 and <= 23)
+            if (string.IsNullOrEmpty(value))
+            {
+                TimeInstant prevValue = _value;
+
+                _value.IsEmpty = true;
+
+                NotifyMinutesPropertyChanged(prevValue, _value);
+                NotifyHoursPropertyChanged(prevValue, _value);
+
+                UpdateIsContentValid(true);
+            }
+            else if (int.TryParse(value, out int parsedHours) && parsedHours is >= 0 and <= 23)
             {
                 TimeInstant prevValue = _value;
 
@@ -162,15 +184,19 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
 
     private void OnTimeChanged(DateTime? oldValue, DateTime? newValue)
     {
+        // FP Enhancement (Gitar PR #4 fix-round-1 regression): the parameterless TimeInstant()
+        // struct ctor leaves IsEmpty at its bool default (false), which silently un-clears the
+        // control the moment Time round-trips through this DependencyProperty callback with a
+        // null value. Must use the explicit "empty" state here.
         TimeInstant oldTime =
             oldValue != null
                 ? new TimeInstant(((DateTime)oldValue).Hour, ((DateTime)oldValue).Minute)
-                : new TimeInstant();
+                : new TimeInstant { IsEmpty = true };
 
         _value =
             newValue != null
                 ? new TimeInstant(((DateTime)newValue).Hour, ((DateTime)newValue).Minute)
-                : new TimeInstant();
+                : new TimeInstant { IsEmpty = true };
 
         NotifyMinutesPropertyChanged(oldTime, _value);
         NotifyHoursPropertyChanged(oldTime, _value);
