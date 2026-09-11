@@ -1,0 +1,36 @@
+using System;
+using FixPortal.FixAtdl.Model.Controls;
+
+namespace FixPortal.FixAtdl.Wpf.Rendering.DefaultRendering;
+
+internal class LabelRenderer : IControlRenderer<Label_t>
+{
+    public Type ControlType => typeof(Label_t);
+
+    public void Render(WpfXmlWriter writer, Label_t control)
+    {
+        string id = WpfControlRenderer.CleanName(control.Id);
+        using (writer.New(WpfXmlWriterTag.Label))
+        {
+            writer.WriteAttribute(WpfXmlWriterAttribute.Margin, "1,3,1,3");
+            WpfControlRenderer.WriteGridAttribute(writer, control);
+            writer.WriteAttribute(
+                WpfXmlWriterAttribute.ToolTip,
+                string.Format("{{Binding Path=Controls[{0}].ToolTip}}", id)
+            );
+            writer.WriteAttribute(
+                WpfXmlWriterAttribute.Content,
+                string.Format("{{Binding Path=Controls[{0}].UiValue}}", id)
+            );
+            writer.WriteAttribute(
+                WpfXmlWriterAttribute.IsEnabled,
+                string.Format("{{Binding Path=Controls[{0}].Enabled}}", id)
+            );
+            writer.WriteAttribute(
+                WpfXmlWriterAttribute.Visibility,
+                string.Format("{{Binding Path=Controls[{0}].Visibility}}", id)
+            );
+            writer.WriteAttribute(WpfXmlWriterAttribute.AutomationProperties_AutomationId, id);
+        }
+    }
+}

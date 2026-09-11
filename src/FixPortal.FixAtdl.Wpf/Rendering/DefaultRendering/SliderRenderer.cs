@@ -1,0 +1,44 @@
+using System;
+using FixPortal.FixAtdl.Model.Controls;
+using FixPortal.FixAtdl.Wpf.Controls;
+
+namespace FixPortal.FixAtdl.Wpf.Rendering.DefaultRendering;
+
+internal class SliderRenderer : IControlRenderer<Slider_t>
+{
+    public Type ControlType => typeof(Slider_t);
+
+    public void Render(WpfXmlWriter writer, Slider_t control)
+    {
+        string id = WpfControlRenderer.CleanName(control.Id);
+        WpfControlRenderer.RenderLabelledControl<Slider_t>(
+            writer,
+            control,
+            (c, gridCoordinate) =>
+            {
+                using (writer.New(DefaultNamespaceProvider.Atdl4netNamespaceUri, typeof(Slider).Name))
+                {
+                    writer.WriteAttribute(WpfXmlWriterAttribute.GridColumn, gridCoordinate.Column.ToString());
+                    writer.WriteAttribute(WpfXmlWriterAttribute.GridRow, gridCoordinate.Row.ToString());
+                    if (!string.IsNullOrEmpty(c.Id))
+                    {
+                        writer.WriteAttribute(WpfXmlWriterAttribute.Name, id);
+                    }
+                    writer.WriteAttribute(WpfXmlWriterAttribute.Margin, "1,3,1,3");
+                    writer.WriteAttribute(
+                        WpfXmlWriterAttribute.DataContext,
+                        string.Format("{{Binding Path=Controls[{0}]}}", id)
+                    );
+                    writer.WriteAttribute(WpfXmlWriterAttribute.ToolTip, "{Binding Path=ToolTip, Mode=OneWay}");
+                    writer.WriteAttribute(WpfXmlWriterAttribute.ItemsSource, "{Binding Path=ListItems}");
+                    writer.WriteAttribute(
+                        WpfXmlWriterAttribute.SelectedValue,
+                        "{Binding Path=SelectedValue, Mode=TwoWay}"
+                    );
+                    writer.WriteAttribute(WpfXmlWriterAttribute.IsEnabled, "{Binding Path=Enabled, Mode=OneWay}");
+                    writer.WriteAttribute(WpfXmlWriterAttribute.Visibility, "{Binding Path=Visibility, Mode=OneWay}");
+                }
+            }
+        );
+    }
+}
