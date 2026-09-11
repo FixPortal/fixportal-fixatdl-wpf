@@ -1,3 +1,4 @@
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using FixPortal.FixAtdl.Model.Elements;
 using FixPortal.FixAtdl.Model.Elements.Support;
@@ -38,10 +39,22 @@ public partial class EditViewModel : ObservableObject
     /// Reads back edited control values keyed by FIX tag number, for the outbound message (spec data-flow
     /// step 5). Controls with no referenced parameter (no FIX tag) or no value are omitted.
     /// </summary>
+    /// <remarks>
+    /// Numeric values are formatted with <see cref="CultureInfo.InvariantCulture"/> (matching
+    /// <see cref="ControlViewModel"/>'s own invariant-culture convention for numeric conversion) so a
+    /// decimal like 12.5 always reads back as "12.5", never a comma-decimal "12,5" that would corrupt the
+    /// outbound FIX message on a non-en-US machine.
+    /// </remarks>
     public IReadOnlyDictionary<int, string> ReadBackFixValues() =>
         Controls
             .Where(c => c.FixTag is not null && c.Value is not null)
-            .ToDictionary(c => c.FixTag!.Value, c => c.Value!.ToString()!);
+            .ToDictionary(
+                c => c.FixTag!.Value,
+                c =>
+                    c.Value is IFormattable formattable
+                        ? formattable.ToString(null, CultureInfo.InvariantCulture)
+                        : c.Value!.ToString()!
+            );
 
     private static IParameter? ResolveParameter(Strategy_t strategy, Control_t control)
     {

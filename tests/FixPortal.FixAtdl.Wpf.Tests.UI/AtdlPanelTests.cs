@@ -1,3 +1,4 @@
+using System.Globalization;
 using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -29,6 +30,28 @@ public class AtdlPanelTests
     {
         RunOnSta(() =>
         {
+            var strategy = TestStrategies.MinimalOneControlStrategy();
+            var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
+            var (_, viewModel) = AtdlPanel.Create(strategy, services);
+
+            viewModel.Controls[0].Value = 12.5m;
+            var values = viewModel.ReadBackFixValues();
+
+            values.Should().ContainKey(TestStrategies.QtyFixTag).WhoseValue.Should().Be("12.5");
+        });
+    }
+
+    [Fact]
+    public void ReadBackFixValues_UsesInvariantCulture_RegardlessOfCurrentCulture()
+    {
+        // Regression test for Gitar PR #7 finding: reading back via Value.ToString() with no explicit
+        // culture would render 12.5m as "12,5" under a comma-decimal culture (de-DE), which is not a
+        // valid FIX value and would corrupt the outbound message. Runs on a dedicated STA thread, so
+        // setting its CurrentCulture does not leak to other tests.
+        RunOnSta(() =>
+        {
+            CultureInfo.CurrentCulture = new CultureInfo("de-DE");
+
             var strategy = TestStrategies.MinimalOneControlStrategy();
             var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
             var (_, viewModel) = AtdlPanel.Create(strategy, services);
