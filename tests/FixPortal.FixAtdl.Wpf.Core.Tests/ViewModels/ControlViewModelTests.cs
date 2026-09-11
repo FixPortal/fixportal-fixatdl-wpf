@@ -44,4 +44,16 @@ public class ControlViewModelTests
 
         viewModel.HasErrors.Should().BeFalse();
     }
+
+    [Fact]
+    public void SettingBoolValue_OnCheckBoxControl_DoesNotThrow()
+    {
+        // Regression test: ConvertForControl previously force-converted every non-null/decimal/string
+        // value (including bool) via Convert.ToDecimal before handing it to Control_t.SetValue, which
+        // BinaryControlBase (CheckBox_t's base) rejects — throwing instead of failing validation cleanly.
+        var control = new FixPortal.FixAtdl.Model.Controls.CheckBox_t("Confirm");
+        var act = () => _ = new ControlViewModel(control) { Value = true };
+
+        act.Should().NotThrow();
+    }
 }

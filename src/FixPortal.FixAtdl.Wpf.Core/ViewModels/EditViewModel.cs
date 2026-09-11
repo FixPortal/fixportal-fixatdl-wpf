@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using FixPortal.FixAtdl.Model.Elements;
 using FixPortal.FixAtdl.Model.Elements.Support;
@@ -10,22 +9,28 @@ namespace FixPortal.FixAtdl.Wpf.Core.ViewModels;
 /// </summary>
 /// <remarks>
 /// <see cref="HasErrors"/> is what Task 6's submit-gating and Task 7's error handling both read.
+/// <see cref="Controls"/> is fixed at construction — a strategy's set of controls does not change at
+/// runtime, and a mutable collection here would need <c>ErrorsChanged</c> subscriptions wired/unwired on
+/// add/remove, which nothing in this layer needs.
 /// </remarks>
 public partial class EditViewModel : ObservableObject
 {
     public EditViewModel(Strategy_t strategy)
     {
-        Controls = new ObservableCollection<ControlViewModel>(
-            strategy.Controls.Select(control => new ControlViewModel(control, ResolveParameter(strategy, control)))
-        );
+        List<ControlViewModel> controls =
+        [
+            .. strategy.Controls.Select(control => new ControlViewModel(control, ResolveParameter(strategy, control))),
+        ];
 
-        foreach (ControlViewModel control in Controls)
+        foreach (ControlViewModel control in controls)
         {
             control.ErrorsChanged += (_, _) => OnPropertyChanged(nameof(HasErrors));
         }
+
+        Controls = controls;
     }
 
-    public ObservableCollection<ControlViewModel> Controls { get; }
+    public IReadOnlyList<ControlViewModel> Controls { get; }
 
     public bool HasErrors => Controls.Any(c => c.HasErrors);
 

@@ -15,9 +15,9 @@ namespace FixPortal.FixAtdl.Wpf.Core.ViewModels;
 /// <see cref="ControlViewModel"/>.
 /// </summary>
 /// <remarks>
-/// ponytail: single-selection only (matches DropDownList_t/SingleSelectList_t/RadioButtonList_t — the
-/// common case). CheckBoxList_t/MultiSelectList_t multi-selection, and EditableDropDownList_t's free-text
-/// entry, are not modelled here; add a multi-select variant if/when a control that needs it is wired up.
+/// Note: single-selection only (matches DropDownList_t/SingleSelectList_t/RadioButtonList_t — the common
+/// case). CheckBoxList_t/MultiSelectList_t multi-selection, and EditableDropDownList_t's free-text entry,
+/// are not modelled here; add a multi-select variant if/when a control that needs it is wired up.
 /// </remarks>
 public partial class ListControlViewModel : ObservableValidator
 {
