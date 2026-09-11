@@ -28,6 +28,10 @@ public partial class ControlViewModel : ObservableValidator
         _control = control;
         _parameter = parameter;
         _value = control.GetCurrentValue();
+
+        // Validate the initial state immediately (rather than waiting for a user edit) so a control that
+        // starts out empty and required is already reflected in HasErrors for submit-gating.
+        ValidateAllProperties();
     }
 
     [ObservableProperty]
