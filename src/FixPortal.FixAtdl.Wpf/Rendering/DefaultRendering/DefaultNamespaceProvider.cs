@@ -10,13 +10,9 @@ public class DefaultNamespaceProvider : INamespaceProvider
     public const string XamlNamespaceUri = "http://schemas.microsoft.com/winfx/2006/xaml/presentation";
     public const string XamlXNamespace = "x";
     public const string XamlXNamespaceUri = "http://schemas.microsoft.com/winfx/2006/xaml";
-    public const string Atdl4netNamespace = "atdl4net";
+    public const string ControlsNamespace = "atdl";
 
-    // FP Enhancement: retargeted to the new assembly/namespace so XamlReader.Parse can resolve the
-    // custom controls (ClickSelectTextBox, DoubleSpinner, SingleSpinner, Slider, TimePicker,
-    // CheckBoxList, RadioButtonList) at runtime. Was
-    // "clr-namespace:Atdl4net.Wpf.View.Controls;assembly=Atdl4net".
-    public const string Atdl4netNamespaceUri =
+    public const string ControlsNamespaceUri =
         "clr-namespace:FixPortal.FixAtdl.Wpf.Controls;assembly=FixPortal.FixAtdl.Wpf";
 
     public const string SystemNamespace = "sys";
@@ -26,14 +22,10 @@ public class DefaultNamespaceProvider : INamespaceProvider
     {
         [string.Empty] = XamlNamespaceUri,
         [XamlXNamespace] = XamlXNamespaceUri,
-        [Atdl4netNamespace] = Atdl4netNamespaceUri,
+        [ControlsNamespace] = ControlsNamespaceUri,
         [SystemNamespace] = SystemNamespaceUri,
     };
 
-    #region INamespaceProvider Members
-
     public Dictionary<string, string> CustomNamespaces => _namespaces;
-
-    #endregion
 }
 #pragma warning restore S1075

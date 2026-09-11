@@ -15,21 +15,10 @@ using ThrowHelper = FixPortal.FixAtdl.Diagnostics.ThrowHelper;
 
 namespace FixPortal.FixAtdl.Wpf.Rendering;
 
-// FP Enhancement: MEF's static CompositionContainer/TypeCatalog/AssemblyCatalog dance (including
-// the CustomControlRenderer assembly-override path) is replaced by plain constructor injection of
-// IEnumerable<IControlRenderer>, per the port decision. The rendering pipeline itself — writing XAML
-// markup text via WpfXmlWriter, one control/panel at a time — is unchanged from the original; only
-// this outermost Render() now returns the FrameworkElement built by parsing that composed XAML via
-// XamlReader.Parse, which is the one contract point the plan's public interface requires.
 public sealed class StrategyPanelRenderer
 {
     public const string ExceptionContext = "StrategyPanelRenderer";
 
-    // FP Enhancement: the original used StrategyViewModel.DataContextKey (Atdl4net.Wpf.ViewModel), a type
-    // that is not part of this port. Task 6 (AtdlPanel.Create) is the task that wires up the ViewModel
-    // layer, and it sets the root FrameworkElement's DataContext directly rather than via a
-    // StaticResource — WPF's DataContext inherits to children, so no application resource dictionary is
-    // needed. The placeholder StaticResource key/binding that used to live here has been removed.
     public static readonly string CollapsedVisibility = nameof(Visibility.Collapsed);
     public static readonly string VisibleVisibility = nameof(Visibility.Visible);
 
@@ -43,14 +32,10 @@ public sealed class StrategyPanelRenderer
 
     public FrameworkElement? Render(Strategy_t strategy, IServiceProvider services)
     {
-        // FP Enhancement: services is part of the plan's fixed public signature (later tasks may use it
-        // for DI-resolved dependencies); this port has nothing to resolve from it yet.
         _ = services;
 
         if (strategy.StrategyLayout == null)
         {
-            // FP Enhancement: the original message came from FixPortal.FixAtdl.Resources.ErrorMessages,
-            // which is internal to that assembly and not accessible from here (a separate assembly).
             throw ThrowHelper.New<RenderingException>(ExceptionContext, "No strategy layout was supplied.");
         }
 
@@ -74,11 +59,10 @@ public sealed class StrategyPanelRenderer
 
         using (XmlWriter xmlWriter = XmlWriter.Create(xamlText, settings))
         {
-            WpfXmlWriter wpfWriter = new WpfXmlWriter(xmlWriter);
+            WpfXmlWriter wpfWriter = new WpfXmlWriter(xmlWriter, strategy.Controls);
 
             WpfControlRenderer controlRenderer = new WpfControlRenderer(
                 wpfWriter,
-                new WpfComboBoxSizer(),
                 _renderersByControlType.Values,
                 _namespaceProvider
             );
@@ -88,7 +72,14 @@ public sealed class StrategyPanelRenderer
             ProcessPanel(rootPanel, wpfWriter, controlRenderer, -1, ref depth);
         }
 
-        return XamlReader.Parse(xamlText.ToString()) as FrameworkElement;
+        var view = (FrameworkElement)XamlReader.Parse(xamlText.ToString());
+        view.Resources.MergedDictionaries.Add(
+            new ResourceDictionary
+            {
+                Source = new Uri("/FixPortal.FixAtdl.Wpf;component/FixAtdlWpfResources.xaml", UriKind.Relative),
+            }
+        );
+        return view;
     }
 
     private static void ProcessPanel(
@@ -105,9 +96,9 @@ public sealed class StrategyPanelRenderer
 
         using (
             writer.New(
-                DefaultNamespaceProvider.Atdl4netNamespace,
+                DefaultNamespaceProvider.ControlsNamespace,
                 "StrategyPanelFrame",
-                DefaultNamespaceProvider.Atdl4netNamespaceUri
+                DefaultNamespaceProvider.ControlsNamespaceUri
             )
         )
         {
@@ -125,11 +116,6 @@ public sealed class StrategyPanelRenderer
 
             using (writer.New(WpfXmlWriterTag.Grid))
             {
-                // FP Enhancement: the placeholder StaticResource DataContext binding that used to be written
-                // here at depth 1 is gone. Task 6 (AtdlPanel.Create) is "whichever task wires up the ViewModel
-                // layer" referenced in the class remarks above — it sets the root FrameworkElement's
-                // DataContext directly (WPF's DataContext inherits to children), which needs no application
-                // resource dictionary and works with plain XamlReader.Parse.
                 WriteGridDefinitions(writer, isVertical, containsControls, childCount);
                 ProcessPanelChildrenOrControls(panel, writer, controlRenderer, isVertical, ref depth);
             }
@@ -153,7 +139,7 @@ public sealed class StrategyPanelRenderer
             return;
         }
 
-        bool parentIsVertical = (panel as IParentable<StrategyPanel_t>).Parent.Orientation == Orientation_t.Vertical;
+        bool parentIsVertical = ((IParentable<StrategyPanel_t>)panel).Parent.Orientation == Orientation_t.Vertical;
         WpfXmlWriterAttribute positionAttribute = parentIsVertical
             ? WpfXmlWriterAttribute.GridRow
             : WpfXmlWriterAttribute.GridColumn;
@@ -275,7 +261,7 @@ public sealed class StrategyPanelRenderer
 
         if (!string.IsNullOrEmpty(panel.Title))
         {
-            writer.WriteAttribute(WpfXmlWriterAttribute.Header, panel.Title);
+            writer.WriteLiteralAttribute(WpfXmlWriterAttribute.Header, panel.Title);
         }
     }
 }

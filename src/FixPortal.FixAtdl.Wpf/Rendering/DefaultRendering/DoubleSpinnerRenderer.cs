@@ -16,7 +16,7 @@ internal class DoubleSpinnerRenderer : IControlRenderer<DoubleSpinner_t>
             control,
             (c, gridCoordinate) =>
             {
-                using (writer.New(DefaultNamespaceProvider.Atdl4netNamespaceUri, typeof(DoubleSpinner).Name))
+                using (writer.New(DefaultNamespaceProvider.ControlsNamespaceUri, typeof(DoubleSpinner).Name))
                 {
                     writer.WriteAttribute(WpfXmlWriterAttribute.GridColumn, gridCoordinate.Column.ToString());
                     writer.WriteAttribute(WpfXmlWriterAttribute.GridRow, gridCoordinate.Row.ToString());
@@ -29,13 +29,10 @@ internal class DoubleSpinnerRenderer : IControlRenderer<DoubleSpinner_t>
                     }
                     writer.WriteAttribute(
                         WpfXmlWriterAttribute.DataContext,
-                        string.Format("{{Binding Path=Controls[{0}]}}", id)
+                        string.Format("{{Binding Path=Controls[{0}]}}", writer.ControlIndex(control))
                     );
                     writer.WriteAttribute(WpfXmlWriterAttribute.ToolTip, "{Binding Path=ToolTip, Mode=OneWay}");
-                    writer.WriteAttribute(
-                        WpfXmlWriterAttribute.Value,
-                        "{Binding Path=UiValue, Mode=TwoWay, TargetNullValue={x:Static sys:String.Empty}}"
-                    );
+                    writer.WriteAttribute(WpfXmlWriterAttribute.Value, "{Binding Path=Value, Mode=TwoWay}");
                     writer.WriteAttribute(
                         WpfXmlWriterAttribute.InnerIncrement,
                         "{Binding Path=UnderlyingControl.InnerIncrement, Mode=OneWay, TargetNullValue=1}"

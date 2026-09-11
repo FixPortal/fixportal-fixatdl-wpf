@@ -57,8 +57,6 @@ public partial class DoubleSpinner : NumericSpinnerControlBase
         set => SetValue(OuterIncrementProperty, value);
     }
 
-    #region Private Methods
-
     private void InnerDecrementValue()
     {
         if (!IsContentValid)
@@ -210,6 +208,4 @@ public partial class DoubleSpinner : NumericSpinnerControlBase
             e.Handled = true;
         }
     }
-
-    #endregion
 }

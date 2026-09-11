@@ -4,9 +4,7 @@ using FixPortal.FixAtdl.Wpf.Controls;
 namespace FixPortal.FixAtdl.Wpf.Tests.UI;
 
 /// <summary>
-/// Regression test for the Gitar PR #4 finding: clearing the Hours/Minutes textbox must be
-/// treated as a valid "no value" state, not an invalid parse. See ResourceDictionaryLoadTests
-/// for why WPF tests run on an explicit STA thread.
+/// Clearing hours or minutes is a valid empty value. WPF controls run on an STA thread.
 /// </summary>
 public class TimePickerTests
 {
@@ -40,8 +38,9 @@ public class TimePickerTests
             }
         });
         thread.SetApartmentState(ApartmentState.STA);
+        thread.IsBackground = true;
         thread.Start();
-        thread.Join();
+        thread.Join(TimeSpan.FromSeconds(30)).Should().BeTrue("WPF checks must finish within 30 seconds");
 
         failure.Should().BeNull();
     }

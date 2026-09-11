@@ -1,9 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using FixPortal.FixAtdl.Wpf.Core.ViewModels;
 
 namespace FixPortal.FixAtdl.Wpf.Controls;
 
@@ -18,7 +21,7 @@ public partial class Slider : UserControl, INotifyPropertyChanged
     private bool _selectedIndexChangeInProgress = false;
     public static readonly DependencyProperty ItemsSourceProperty = DependencyProperty.Register(
         "ItemsSource",
-        typeof(ViewModelListItemCollection),
+        typeof(IList<ListItemViewModel>),
         typeof(Slider),
         new FrameworkPropertyMetadata(OnListItemsChanged)
     );
@@ -30,27 +33,23 @@ public partial class Slider : UserControl, INotifyPropertyChanged
         new FrameworkPropertyMetadata(OnSelectedValueChanged)
     );
 
-    #region INotifyPropertyChanged Members
-
     public event PropertyChangedEventHandler? PropertyChanged;
-
-    #endregion
 
     public Slider()
     {
         InitializeComponent();
     }
 
-    public ViewModelListItemCollection? ItemsSource
+    public IList<ListItemViewModel>? ItemsSource
     {
-        get => (ViewModelListItemCollection?)GetValue(ItemsSourceProperty);
+        get => (IList<ListItemViewModel>?)GetValue(ItemsSourceProperty);
         set => SetValue(ItemsSourceProperty, value);
     }
 
     public string? SelectedValue
     {
         get => (string?)GetValue(SelectedValueProperty);
-        set => SetValue(SelectedValueProperty, value);
+        set => SetCurrentValue(SelectedValueProperty, value);
     }
 
     public int SelectedIndex
@@ -59,7 +58,7 @@ public partial class Slider : UserControl, INotifyPropertyChanged
         {
             if (ItemsSource != null)
             {
-                return ItemsSource.GetFirstSelectedEnumIdIndex();
+                return ItemsSource.ToList().FindIndex(item => item.EnumId == SelectedValue);
             }
 
             return -1;
@@ -84,7 +83,7 @@ public partial class Slider : UserControl, INotifyPropertyChanged
 
     private static void OnListItemsChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
     {
-        if (e.NewValue is ViewModelListItemCollection items)
+        if (e.NewValue is IList<ListItemViewModel> items)
         {
             ((Slider)dependencyObject).LayoutControl(items);
         }
@@ -99,7 +98,7 @@ public partial class Slider : UserControl, INotifyPropertyChanged
     {
         if (!_selectedIndexChangeInProgress && ItemsSource != null && enumId != null)
         {
-            SelectedIndex = ItemsSource.GetIndexOfEnumId(enumId);
+            // The source value already changed; only notify the inner slider.
 
             NotifyPropertyChanged("SelectedIndex");
         }
@@ -110,7 +109,7 @@ public partial class Slider : UserControl, INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 
-    private void LayoutControl(ViewModelListItemCollection items)
+    private void LayoutControl(IList<ListItemViewModel> items)
     {
         double desiredWidth = 0;
 
@@ -164,7 +163,7 @@ public partial class Slider : UserControl, INotifyPropertyChanged
             labelArea.Children.Add(new Label() { Content = items[n].UiRep, Margin = new Thickness(offset, 0, 0, 0) });
         }
 
-        sliderControl.Width = spacing * (numItems - 1) + internalMargin + 10;
-        sliderControl.Maximum = numItems - 1;
+        sliderControl.Width = spacing * Math.Max(0, numItems - 1) + internalMargin + 10;
+        sliderControl.Maximum = Math.Max(0, numItems - 1);
     }
 }

@@ -68,12 +68,6 @@ internal struct TimeInstant
         }
     }
 
-    public static bool operator <(TimeInstant lhs, TimeInstant rhs) =>
-        lhs.Hours < rhs.Hours || lhs.Hours == rhs.Hours && lhs.Minutes <= rhs.Minutes;
-
-    public static bool operator >(TimeInstant lhs, TimeInstant rhs) =>
-        lhs.Hours > rhs.Hours || lhs.Hours == rhs.Hours && lhs.Minutes >= rhs.Minutes;
-
     public DateTime? ToDateTime()
     {
         if (IsEmpty)
@@ -81,9 +75,8 @@ internal struct TimeInstant
             return null;
         }
 
-        DateTime today = DateTime.Now;
-
-        return new DateTime(today.Year, today.Month, today.Day, Hours, Minutes, 0, today.Kind);
+        // The core Clock_t anchors a time-only value using its injected clock and market zone.
+        return new DateTime(1, 1, 1, Hours, Minutes, 0, DateTimeKind.Unspecified);
     }
 
     public void FromDateTime(DateTime? value)

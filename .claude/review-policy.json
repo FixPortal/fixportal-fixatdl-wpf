@@ -1,0 +1,21 @@
+{
+  "$comment": [
+    "Review controls and the merge barrier follow the FixPortal scaffold-ci policy. Package metadata and README are shipped, so they remain NORMAL."
+  ],
+  "version": 1,
+  "high": [
+    ".claude/review-policy.json",
+    ".coderabbit.yaml",
+    ".github/workflows/ci.yml",
+    ".github/workflows/review-policy-guard.yml",
+    ".github/scripts/assert_gate_coverage.py",
+    ".github/scripts/assert_workflow_hygiene.py",
+    ".github/dependabot.yml",
+    "nuget.config",
+    "global.json",
+    "Directory.Build.props"
+  ],
+  "low": [
+    "docs/**"
+  ]
+}

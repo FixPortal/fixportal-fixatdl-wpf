@@ -16,7 +16,7 @@ internal class RadioButtonListRenderer : IControlRenderer<RadioButtonList_t>
             control,
             (c, gridCoordinate) =>
             {
-                using (writer.New(DefaultNamespaceProvider.Atdl4netNamespaceUri, typeof(RadioButtonList).Name))
+                using (writer.New(DefaultNamespaceProvider.ControlsNamespaceUri, typeof(RadioButtonList).Name))
                 {
                     writer.WriteAttribute(WpfXmlWriterAttribute.GridColumn, gridCoordinate.Column.ToString());
                     writer.WriteAttribute(WpfXmlWriterAttribute.GridRow, gridCoordinate.Row.ToString());
@@ -27,11 +27,11 @@ internal class RadioButtonListRenderer : IControlRenderer<RadioButtonList_t>
                     }
                     writer.WriteAttribute(
                         WpfXmlWriterAttribute.DataContext,
-                        string.Format("{{Binding Path=Controls[{0}]}}", id)
+                        string.Format("{{Binding Path=Controls[{0}]}}", writer.ControlIndex(control))
                     );
                     writer.WriteAttribute(WpfXmlWriterAttribute.ToolTip, "{Binding Path=ToolTip, Mode=OneWay}");
                     writer.WriteAttribute(WpfXmlWriterAttribute.Orientation, "{Binding Path=Orientation, Mode=OneWay}");
-                    writer.WriteAttribute(WpfXmlWriterAttribute.ItemsSource, "{Binding Path=ListItems}");
+                    writer.WriteAttribute(WpfXmlWriterAttribute.ItemsSource, "{Binding Path=Items}");
                     writer.WriteAttribute(WpfXmlWriterAttribute.IsEnabled, "{Binding Path=Enabled, Mode=OneWay}");
                     writer.WriteAttribute(WpfXmlWriterAttribute.Visibility, "{Binding Path=Visibility, Mode=OneWay}");
                 }

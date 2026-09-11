@@ -70,7 +70,7 @@ public class NumericSpinnerControlBase : UserControl
     public decimal? Value
     {
         get => (decimal?)GetValue(ValueProperty);
-        set => SetValue(ValueProperty, value);
+        set => SetCurrentValue(ValueProperty, value);
     }
 
     /// <summary>
@@ -88,7 +88,7 @@ public class NumericSpinnerControlBase : UserControl
     public string? Text
     {
         get => (string?)GetValue(TextProperty);
-        set => SetValue(TextProperty, value);
+        set => SetCurrentValue(TextProperty, value);
     }
 
     /// <summary>
@@ -97,7 +97,7 @@ public class NumericSpinnerControlBase : UserControl
     public bool IsContentValid
     {
         get => (bool)GetValue(IsContentValidProperty);
-        set => SetValue(IsContentValidProperty, value);
+        set => SetCurrentValue(IsContentValidProperty, value);
     }
 
     private static void OnValuePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -132,7 +132,7 @@ public class NumericSpinnerControlBase : UserControl
             }
             else
             {
-                if (decimal.TryParse(newValue, out decimal decimalValue))
+                if (decimal.TryParse(newValue, NumberStyles.Number, FormatProvider, out decimal decimalValue))
                 {
                     Value = decimalValue;
 

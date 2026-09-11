@@ -37,8 +37,6 @@ public partial class SingleSpinner : NumericSpinnerControlBase
         set => SetValue(IncrementProperty, value);
     }
 
-    #region Private Methods
-
     private void DecrementValue()
     {
         if (!IsContentValid)
@@ -120,6 +118,4 @@ public partial class SingleSpinner : NumericSpinnerControlBase
             e.Handled = true;
         }
     }
-
-    #endregion
 }

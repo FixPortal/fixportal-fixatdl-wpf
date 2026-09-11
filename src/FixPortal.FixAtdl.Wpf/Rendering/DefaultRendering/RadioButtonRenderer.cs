@@ -16,27 +16,22 @@ internal class RadioButtonRenderer : IControlRenderer<RadioButton_t>
             writer.WriteAttribute(WpfXmlWriterAttribute.Margin, "1,8,4,3");
             if (!string.IsNullOrEmpty(control.Label))
             {
-                writer.WriteAttribute(WpfXmlWriterAttribute.Content, control.Label);
+                writer.WriteLiteralAttribute(WpfXmlWriterAttribute.Content, control.Label);
             }
             if (!string.IsNullOrEmpty(control.Id))
             {
                 writer.WriteAttribute(WpfXmlWriterAttribute.Name, id);
             }
-            // For .NET 4.0 we can rely on GroupName, but for .NET 3.5 we have to provide our own mechanism to
-            // ensure that only one radio button is enabled at a time
-#if NET_40
-            if (!string.IsNullOrEmpty(control.RadioGroup))
-                writer.WriteAttribute(
-                    WpfXmlWriterAttribute.GroupName,
-                    WpfControlRenderer.CleanName(control.RadioGroup)
-                );
-#endif
+            writer.WriteLiteralAttribute(
+                WpfXmlWriterAttribute.GroupName,
+                writer.RadioGroupName(string.IsNullOrEmpty(control.RadioGroup) ? control.Id : control.RadioGroup)
+            );
             writer.WriteAttribute(
                 WpfXmlWriterAttribute.DataContext,
-                string.Format("{{Binding Path=Controls[{0}]}}", id)
+                string.Format("{{Binding Path=Controls[{0}]}}", writer.ControlIndex(control))
             );
             writer.WriteAttribute(WpfXmlWriterAttribute.ToolTip, "{Binding Path=ToolTip, Mode=OneWay}");
-            writer.WriteAttribute(WpfXmlWriterAttribute.IsChecked, "{Binding Path=UiValue, Mode=TwoWay}");
+            writer.WriteAttribute(WpfXmlWriterAttribute.IsChecked, "{Binding Path=Value, Mode=TwoWay}");
             writer.WriteAttribute(WpfXmlWriterAttribute.IsEnabled, "{Binding Path=Enabled, Mode=OneWay}");
             writer.WriteAttribute(WpfXmlWriterAttribute.Visibility, "{Binding Path=Visibility, Mode=OneWay}");
         }

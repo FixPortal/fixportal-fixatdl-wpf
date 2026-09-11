@@ -5,8 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace FixPortal.FixAtdl.Wpf.Tests.UI;
 
 /// <summary>
-/// See ResourceDictionaryLoadTests for why WPF-touching tests run on an explicit STA thread
-/// rather than the default MTA test-runner thread.
+/// WPF controls require an STA thread; the test runner uses MTA threads.
 /// </summary>
 public class ServiceCollectionExtensionsTests
 {
@@ -34,7 +33,12 @@ public class ServiceCollectionExtensionsTests
             services.AddFixAtdlWpf();
             var provider = services.BuildServiceProvider();
 
-            provider.GetServices<IControlRenderer>().Should().NotBeEmpty();
+            provider
+                .GetServices<IControlRenderer>()
+                .Select(renderer => renderer.ControlType)
+                .Should()
+                .HaveCount(15)
+                .And.OnlyHaveUniqueItems();
         });
     }
 
@@ -53,8 +57,9 @@ public class ServiceCollectionExtensionsTests
             }
         });
         thread.SetApartmentState(ApartmentState.STA);
+        thread.IsBackground = true;
         thread.Start();
-        thread.Join();
+        thread.Join(TimeSpan.FromSeconds(30)).Should().BeTrue("WPF checks must finish within 30 seconds");
 
         if (failure != null)
         {

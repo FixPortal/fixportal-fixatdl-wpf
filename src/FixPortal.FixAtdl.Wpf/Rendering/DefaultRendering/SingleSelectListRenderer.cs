@@ -7,8 +7,6 @@ internal class SingleSelectListRenderer : IControlRenderer<SingleSelectList_t>
 {
     public Type ControlType => typeof(SingleSelectList_t);
 
-    // FP Enhancement: the original Atdl4netConfiguration.Settings.Wpf.View.AutoSizeDropDowns switch
-    // has no equivalent in the current core, so the combo-box-sizer registration call is dropped.
     public void Render(WpfXmlWriter writer, SingleSelectList_t control)
     {
         string id = WpfControlRenderer.CleanName(control.Id);
@@ -32,11 +30,11 @@ internal class SingleSelectListRenderer : IControlRenderer<SingleSelectList_t>
 
                     writer.WriteAttribute(
                         WpfXmlWriterAttribute.DataContext,
-                        string.Format("{{Binding Path=Controls[{0}]}}", id)
+                        string.Format("{{Binding Path=Controls[{0}]}}", writer.ControlIndex(control))
                     );
 
                     writer.WriteAttribute(WpfXmlWriterAttribute.ToolTip, "{Binding Path=ToolTip, Mode=OneWay}");
-                    writer.WriteAttribute(WpfXmlWriterAttribute.ItemsSource, "{Binding Path=ListItems}");
+                    writer.WriteAttribute(WpfXmlWriterAttribute.ItemsSource, "{Binding Path=Items}");
                     writer.WriteAttribute(WpfXmlWriterAttribute.SelectedValue, "{Binding Path=SelectedValue}");
                     writer.WriteAttribute(WpfXmlWriterAttribute.SelectedValuePath, "EnumId");
                     writer.WriteAttribute(WpfXmlWriterAttribute.DisplayMemberPath, "UiRep");

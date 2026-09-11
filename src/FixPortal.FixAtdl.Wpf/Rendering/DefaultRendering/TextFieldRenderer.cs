@@ -16,7 +16,7 @@ internal class TextFieldRenderer : IControlRenderer<TextField_t>
             control,
             (c, gridCoordinate) =>
             {
-                using (writer.New(DefaultNamespaceProvider.Atdl4netNamespaceUri, typeof(ClickSelectTextBox).Name))
+                using (writer.New(DefaultNamespaceProvider.ControlsNamespaceUri, typeof(ClickSelectTextBox).Name))
                 {
                     writer.WriteAttribute(WpfXmlWriterAttribute.GridColumn, gridCoordinate.Column.ToString());
                     writer.WriteAttribute(WpfXmlWriterAttribute.GridRow, gridCoordinate.Row.ToString());
@@ -29,12 +29,12 @@ internal class TextFieldRenderer : IControlRenderer<TextField_t>
                     writer.WriteAttribute(WpfXmlWriterAttribute.HorizontalAlignment, "Left");
                     writer.WriteAttribute(
                         WpfXmlWriterAttribute.DataContext,
-                        string.Format("{{Binding Path=Controls[{0}]}}", id)
+                        string.Format("{{Binding Path=Controls[{0}]}}", writer.ControlIndex(control))
                     );
                     writer.WriteAttribute(WpfXmlWriterAttribute.ToolTip, "{Binding Path=ToolTip, Mode=OneWay}");
                     writer.WriteAttribute(
                         WpfXmlWriterAttribute.Text,
-                        "{Binding Path=UiValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        "{Binding Path=Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                     );
                     writer.WriteAttribute(WpfXmlWriterAttribute.IsEnabled, "{Binding Path=Enabled, Mode=OneWay}");
                     writer.WriteAttribute(WpfXmlWriterAttribute.Visibility, "{Binding Path=Visibility, Mode=OneWay}");

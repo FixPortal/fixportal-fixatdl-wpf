@@ -20,37 +20,8 @@ public class WpfControlRenderer : IControlVisitor
         public static readonly GridCoordinate Control = new GridCoordinate(0, 1);
     }
 
-    /// <summary>
-    /// Enumeration for controls that use lists of other controls (radio buttons, check boxes).
-    /// </summary>
-    protected enum ListControlType
-    {
-        /// <summary>CheckBoxList.</summary>
-        CheckBoxList,
-
-        /// <summary>RadioButtonList.</summary>
-        RadioButtonList,
-    }
-
-    /// <summary>
-    /// Enumeration for controls that use ComboBoxes.
-    /// </summary>
-    protected enum ComboControlType
-    {
-        /// <summary>DropDownList.</summary>
-        DropDownList,
-
-        /// <summary>EditableDropDownList</summary>
-        EditableDropDownList,
-    }
-
-    private readonly WpfComboBoxSizer _comboBoxSizer;
     private readonly WpfXmlWriter _writer;
 
-    // FP Enhancement: MEF [Import]/[ImportingConstructor] replaced with plain constructor injection.
-    // The per-control-type properties (CheckBoxRenderer, LabelRenderer, etc.) are replaced by a
-    // Type-keyed lookup built from the injected IEnumerable&lt;IControlRenderer&gt;, mirroring the
-    // approach StrategyPanelRenderer uses one level up.
     public INamespaceProvider NamespaceProvider { get; }
 
     private readonly IReadOnlyDictionary<Type, IControlRenderer> _renderersByControlType;
@@ -59,28 +30,18 @@ public class WpfControlRenderer : IControlVisitor
     /// Initializes a new WpfControlRenderer.
     /// </summary>
     /// <param name="writer">WpfXmlWriter to use for writing the output XAML.</param>
-    /// <param name="sizer">Combo box sizer.</param>
     /// <param name="renderers">The set of per-control-type renderers to dispatch to.</param>
     /// <param name="namespaceProvider">Provides the custom XAML namespaces needed for custom controls.</param>
     public WpfControlRenderer(
         WpfXmlWriter writer,
-        WpfComboBoxSizer sizer,
         IEnumerable<IControlRenderer> renderers,
         INamespaceProvider namespaceProvider
     )
     {
         _writer = writer;
-        _comboBoxSizer = sizer;
         NamespaceProvider = namespaceProvider;
         _renderersByControlType = renderers.ToDictionary(r => r.ControlType);
-
-        _comboBoxSizer.Clear();
     }
-
-    /// <summary>
-    /// Gets the ComboBoxSizer - a type that knows how to size comboboxes to their widest member.
-    /// </summary>
-    public WpfComboBoxSizer ComboBoxSizer => _comboBoxSizer;
 
     /// <summary>
     /// Processes each control, i.e., renders the XAML for the supplied control.
@@ -88,10 +49,6 @@ public class WpfControlRenderer : IControlVisitor
     /// <param name="control">Control to generate XAML for.</param>
     public void ProcessControl(Control_t control)
     {
-        // FP Enhancement: Control_t.DoVisit is internal to FixPortal.FixAtdl, and this renderer now
-        // lives in a separate assembly (it was part of the same assembly as the model in the
-        // original Atdl4net), so the same reflection-based dispatch that DoVisit itself used
-        // (ModelUtils.VisitHelper, which is public) is called directly here instead.
         ModelUtils.VisitHelper(typeof(IControlVisitor), this, control);
     }
 
@@ -100,8 +57,6 @@ public class WpfControlRenderer : IControlVisitor
     {
         return (T)_renderersByControlType[controlType];
     }
-
-    #region IControl_tVisitor Members
 
     /// <summary>
     /// Renders the supplied CheckBox_t as XAML.
@@ -247,8 +202,6 @@ public class WpfControlRenderer : IControlVisitor
         throw new NotImplementedException();
     }
 
-    #endregion
-
     /// <summary>
     /// Delegate that is used to call each control renderer.
     /// </summary>
@@ -267,7 +220,7 @@ public class WpfControlRenderer : IControlVisitor
     public static void RenderLabelledControl<T>(WpfXmlWriter writer, T control, ControlRenderer<T> controlRenderer)
         where T : Control_t
     {
-        bool isVertical = (control as IParentable<StrategyPanel_t>).Parent.Orientation == Orientation_t.Vertical;
+        bool isVertical = ((IParentable<StrategyPanel_t>)control).Parent.Orientation == Orientation_t.Vertical;
 
         // If this is a vertical StrategyPanel, we don't bother with a containing Grid - this provides nice alignment of labels and controls
         if (isVertical)
@@ -316,7 +269,7 @@ public class WpfControlRenderer : IControlVisitor
     /// <param name="control">Control.</param>
     public static void WriteGridAttribute(WpfXmlWriter writer, Control_t control)
     {
-        bool isVertical = (control as IParentable<StrategyPanel_t>).Parent.Orientation == Orientation_t.Vertical;
+        bool isVertical = ((IParentable<StrategyPanel_t>)control).Parent.Orientation == Orientation_t.Vertical;
 
         writer.WriteAttribute(
             isVertical ? WpfXmlWriterAttribute.GridRow : WpfXmlWriterAttribute.GridColumn,
@@ -329,11 +282,13 @@ public class WpfControlRenderer : IControlVisitor
     /// </summary>
     /// <param name="controlId">ID of the Control_t.</param>
     /// <returns>Cleaned up control ID.</returns>
-    /// <remarks>Currently this method does nothing, but could be adjusted if a FIXatdl file uses
-    /// characters that are not allowed within XAML.</remarks>
+    /// <remarks>Encoding every UTF-16 code unit preserves uniqueness while excluding XAML syntax.</remarks>
     public static string CleanName(string controlId)
     {
-        return controlId;
+        return "Control_"
+            + string.Concat(
+                controlId.Select(c => ((int)c).ToString("X4", System.Globalization.CultureInfo.InvariantCulture))
+            );
     }
 
     private static void RenderControlLabel(WpfXmlWriter writer, Control_t control, GridCoordinate gridCoordinate)
@@ -357,15 +312,15 @@ public class WpfControlRenderer : IControlVisitor
                     );
                     writer.WriteAttribute(
                         WpfXmlWriterAttribute.IsEnabled,
-                        string.Format("{{Binding Path=Controls[{0}].Enabled}}", CleanName(forControl))
+                        string.Format("{{Binding Path=Controls[{0}].Enabled}}", writer.ControlIndex(control))
                     );
                     writer.WriteAttribute(
                         WpfXmlWriterAttribute.Visibility,
-                        string.Format("{{Binding Path=Controls[{0}].Visibility}}", CleanName(forControl))
+                        string.Format("{{Binding Path=Controls[{0}].Visibility}}", writer.ControlIndex(control))
                     );
                 }
 
-                writer.WriteAttribute(WpfXmlWriterAttribute.Content, label);
+                writer.WriteLiteralAttribute(WpfXmlWriterAttribute.Content, label);
             }
         }
     }

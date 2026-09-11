@@ -16,7 +16,7 @@ internal class CheckBoxRenderer : IControlRenderer<CheckBox_t>
             writer.WriteAttribute(WpfXmlWriterAttribute.Margin, "1,8,2,3");
             if (!string.IsNullOrEmpty(control.Label))
             {
-                writer.WriteAttribute(WpfXmlWriterAttribute.Content, control.Label);
+                writer.WriteLiteralAttribute(WpfXmlWriterAttribute.Content, control.Label);
             }
             if (!string.IsNullOrEmpty(control.Id))
             {
@@ -24,10 +24,10 @@ internal class CheckBoxRenderer : IControlRenderer<CheckBox_t>
             }
             writer.WriteAttribute(
                 WpfXmlWriterAttribute.DataContext,
-                string.Format("{{Binding Path=Controls[{0}]}}", id)
+                string.Format("{{Binding Path=Controls[{0}]}}", writer.ControlIndex(control))
             );
             writer.WriteAttribute(WpfXmlWriterAttribute.ToolTip, "{Binding Path=ToolTip, Mode=OneWay}");
-            writer.WriteAttribute(WpfXmlWriterAttribute.IsChecked, "{Binding Path=UiValue, Mode=TwoWay}");
+            writer.WriteAttribute(WpfXmlWriterAttribute.IsChecked, "{Binding Path=Value, Mode=TwoWay}");
             writer.WriteAttribute(WpfXmlWriterAttribute.IsEnabled, "{Binding Path=Enabled, Mode=OneWay}");
             writer.WriteAttribute(WpfXmlWriterAttribute.Visibility, "{Binding Path=Visibility, Mode=OneWay}");
         }

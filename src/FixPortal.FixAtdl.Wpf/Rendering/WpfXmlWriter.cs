@@ -1,12 +1,13 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Xml;
+using FixPortal.FixAtdl.Model.Elements;
 
 namespace FixPortal.FixAtdl.Wpf.Rendering;
 
 public class WpfXmlWriter
 {
-    #region Supporting structs (TagInformation, AttributeInformation)
-
     private struct AttributeInformation
     {
         public readonly string Name;
@@ -31,10 +32,6 @@ public class WpfXmlWriter
             Namespace = ns;
         }
     }
-
-    #endregion Supporting structs (TagInformation, AttributeInformation)
-
-    #region WpfEnclosingTagHelper helper class
 
     /// <summary>
     /// Helper class to simplify writing xHTML when dealing with tags that open and eventually close (e.g., &lt;table&gt;).
@@ -64,8 +61,6 @@ public class WpfXmlWriter
             _writer.WriteBeginTag(localName, tag);
         }
 
-        #region IDisposable Members
-
         protected virtual void Dispose(bool disposing)
         {
             if (disposing && _writer != null)
@@ -82,13 +77,11 @@ public class WpfXmlWriter
 
             GC.SuppressFinalize(this);
         }
-
-        #endregion
     }
 
-    #endregion WpfEnclosingTagHelper helper class
-
     private readonly XmlWriter _writer;
+    private readonly string _radioGroupScope = Guid.NewGuid().ToString("N");
+    private readonly IReadOnlyDictionary<Control_t, int> _controlIndexes;
     private static AttributeInformation[] _attributeInformation = [];
     private static TagInformation[] _tagInformation = [];
 
@@ -98,10 +91,17 @@ public class WpfXmlWriter
         RegisterAttributes();
     }
 
-    public WpfXmlWriter(XmlWriter writer)
+    public WpfXmlWriter(XmlWriter writer, IEnumerable<Control_t> controls)
     {
         _writer = writer;
+        _controlIndexes = controls
+            .Select((control, index) => (control, index))
+            .ToDictionary(p => p.control, p => p.index);
     }
+
+    public int ControlIndex(Control_t control) => _controlIndexes[control];
+
+    public string RadioGroupName(string group) => _radioGroupScope + group;
 
     public void WriteBeginTag(string localName, string tag)
     {
@@ -137,6 +137,12 @@ public class WpfXmlWriter
         _writer.WriteAttributeString(attribute, value);
     }
 
+    /// <summary>Writes venue text without allowing XAML markup-extension evaluation.</summary>
+    public void WriteLiteralAttribute(WpfXmlWriterAttribute attribute, string value)
+    {
+        WriteAttribute(attribute, value.StartsWith('{') ? "{}" + value : value);
+    }
+
     public void WriteNamespaceAttribute(string prefix, string uri)
     {
         _writer.WriteAttributeString("xmlns", prefix, null, uri);
@@ -162,26 +168,16 @@ public class WpfXmlWriter
         _tagInformation = new TagInformation[Enum.GetValues(typeof(WpfXmlWriterTag)).Length];
 
         _tagInformation[(int)WpfXmlWriterTag.CheckBox] = new TagInformation("CheckBox");
-        _tagInformation[(int)WpfXmlWriterTag.CheckBoxList] = new TagInformation("CheckBoxList", "atdl");
-        _tagInformation[(int)WpfXmlWriterTag.Clock] = new TagInformation("Clock", "atdl");
-        _tagInformation[(int)WpfXmlWriterTag.StrategyPanelFrame] = new TagInformation("StrategyPanelFrame", "atdl4net");
-        _tagInformation[(int)WpfXmlWriterTag.GroupBox] = new TagInformation("GroupBox");
         _tagInformation[(int)WpfXmlWriterTag.ColumnDefinition] = new TagInformation("ColumnDefinition");
         _tagInformation[(int)WpfXmlWriterTag.ComboBox] = new TagInformation("ComboBox");
-        _tagInformation[(int)WpfXmlWriterTag.DoubleSpinner] = new TagInformation("DoubleSpinner", "atdl");
         _tagInformation[(int)WpfXmlWriterTag.Grid] = new TagInformation("Grid");
         _tagInformation[(int)WpfXmlWriterTag.GridColumnDefinitions] = new TagInformation("Grid.ColumnDefinitions");
         _tagInformation[(int)WpfXmlWriterTag.GridRowDefinitions] = new TagInformation("Grid.RowDefinitions");
         _tagInformation[(int)WpfXmlWriterTag.Label] = new TagInformation("Label");
         _tagInformation[(int)WpfXmlWriterTag.ListBox] = new TagInformation("ListBox");
         _tagInformation[(int)WpfXmlWriterTag.RadioButton] = new TagInformation("RadioButton");
-        _tagInformation[(int)WpfXmlWriterTag.RadioButtonList] = new TagInformation("RadioButtonList", "atdl");
         _tagInformation[(int)WpfXmlWriterTag.Rectangle] = new TagInformation("Rectangle");
         _tagInformation[(int)WpfXmlWriterTag.RowDefinition] = new TagInformation("RowDefinition");
-        _tagInformation[(int)WpfXmlWriterTag.SingleSpinner] = new TagInformation("SingleSpinner", "atdl");
-        _tagInformation[(int)WpfXmlWriterTag.Slider] = new TagInformation("Slider", "atdl");
-        _tagInformation[(int)WpfXmlWriterTag.StackPanel] = new TagInformation("StackPanel");
-        _tagInformation[(int)WpfXmlWriterTag.TextBox] = new TagInformation("TextBox");
     }
 
     protected static void RegisterAttributes()

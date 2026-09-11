@@ -5,10 +5,20 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Authors>FixPortal contributors</Authors>
+    <RepositoryUrl>https://github.com/FixPortal/fixportal-fixatdl-wpf</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/FixPortal/fixportal-fixatdl-wpf</PackageProjectUrl>
+    <PackageLicenseExpression>Apache-2.0 AND MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>FIX;FIXatdl;WPF;trading</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="FixPortal.CodeStyle" PrivateAssets="all" />
+    <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="/" />
+    <None Include="$(MSBuildThisFileDirectory)NOTICE" Pack="true" PackagePath="/" />
+    <None Include="$(MSBuildThisFileDirectory)LICENSE" Pack="true" PackagePath="/" />
   </ItemGroup>
 
 </Project>
