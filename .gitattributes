@@ -3,3 +3,4 @@
 *.cmd text eol=crlf
 *.sh text eol=lf
 *.png binary
+*.cs text eol=crlf
