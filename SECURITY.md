@@ -23,8 +23,16 @@ surface is:
   a value that is silently wrong is more dangerous than one that fails
   loudly.
 
-This library performs no network I/O and no XML parsing of its own; strategy
-parsing and FIX-tag emission are `FixPortal.FixAtdl`'s responsibility.
+The renderer composes XAML with an XML writer and parses it with
+`XamlReader.Parse`. XML escaping prevents element injection; literal XAML
+escaping prevents venue labels and titles from becoming markup extensions.
+Control names are encoded, binding indexes are generated from the control
+collection, and duplicate or empty IDs are rejected before panel creation.
+Custom renderers are trusted application code and must preserve these boundaries.
+
+The adapter performs no network I/O. Strategy XML parsing and parameter wire
+conversion belong to `FixPortal.FixAtdl`. Invalid edits are exposed through
+`HasErrors`; FIX read-back refuses a strategy with validation errors.
 
 ## Supported versions
 

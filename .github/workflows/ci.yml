@@ -1,0 +1,120 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/') }}
+
+jobs:
+  build-and-test:
+    name: Build and test (Windows)
+    runs-on: windows-latest
+    timeout-minutes: 10
+    env:
+      GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Lint workflows
+        uses: raven-actions/actionlint@3d39aea434753780c3b3d4a1a31c854b4dbf49d7 # v2
+        with:
+          shellcheck: true
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+      - run: dotnet tool restore
+      - run: dotnet csharpier check .
+      - name: Select package version
+        env:
+          REF_NAME: ${{ github.ref_name }}
+          REF_TYPE: ${{ github.ref_type }}
+        run: |
+          $packageVersion = '1.0.0'
+          if ($env:REF_TYPE -eq 'tag') {
+            if ($env:REF_NAME -notmatch '^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$') {
+              throw 'Release tags must use vMAJOR.MINOR.PATCH.'
+            }
+            $packageVersion = $env:REF_NAME.Substring(1)
+          }
+          "PACKAGE_VERSION=$packageVersion" >> $env:GITHUB_ENV
+      - run: dotnet restore FixPortal.FixAtdl.Wpf.slnx
+      - run: dotnet build FixPortal.FixAtdl.Wpf.slnx -c Release --no-restore "-p:Version=$env:PACKAGE_VERSION"
+      - run: dotnet test --solution FixPortal.FixAtdl.Wpf.slnx -c Release --no-build -- --timeout 5m
+      - run: dotnet pack src/FixPortal.FixAtdl.Wpf.Core -c Release --no-build -o artifacts "-p:Version=$env:PACKAGE_VERSION"
+      - run: dotnet pack src/FixPortal.FixAtdl.Wpf -c Release --no-build -o artifacts "-p:Version=$env:PACKAGE_VERSION"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: packages
+          path: artifacts/*.nupkg
+          if-no-files-found: error
+
+  gate-coverage:
+    name: Gate coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Assert every quality job is gated
+        env:
+          GATE_EXEMPT: publish
+        run: python3 .github/scripts/assert_gate_coverage.py .github/workflows/ci.yml
+
+  ci-gate:
+    name: CI Gate
+    if: always()
+    needs: [build-and-test, gate-coverage]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Fail if any upstream job did not succeed
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1
+
+  publish:
+    name: Publish Packages (GitHub NuGet)
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs: [build-and-test, ci-gate]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Lint workflows
+        uses: raven-actions/actionlint@3d39aea434753780c3b3d4a1a31c854b4dbf49d7 # v2
+        with:
+          shellcheck: true
+      - name: Require a tag reachable from main
+        run: git merge-base --is-ancestor "${GITHUB_SHA}^{commit}" origin/main
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+      - uses: actions/download-artifact@v8
+        with:
+          name: packages
+          path: artifacts
+      - name: Publish validated packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: dotnet nuget push 'artifacts/*.nupkg' --source https://nuget.pkg.github.com/FixPortal/index.json --api-key "$GITHUB_TOKEN" --skip-duplicate

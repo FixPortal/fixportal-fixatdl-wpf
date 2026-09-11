@@ -8,20 +8,11 @@ public enum WpfXmlWriterTag
     /// <summary>CheckBox</summary>
     CheckBox,
 
-    /// <summary>CheckBoxList</summary>
-    CheckBoxList,
-
-    /// <summary>Clock</summary>
-    Clock,
-
     /// <summary>ColumnDefinition</summary>
     ColumnDefinition,
 
     /// <summary>ComboBox</summary>
     ComboBox,
-
-    /// <summary>DoubleSpinner</summary>
-    DoubleSpinner,
 
     /// <summary>Grid</summary>
     Grid,
@@ -32,9 +23,6 @@ public enum WpfXmlWriterTag
     /// <summary>GridRowDefinitions</summary>
     GridRowDefinitions,
 
-    /// <summary>GroupBox</summary>
-    GroupBox,
-
     /// <summary>Label</summary>
     Label,
 
@@ -44,27 +32,9 @@ public enum WpfXmlWriterTag
     /// <summary>RadioButton</summary>
     RadioButton,
 
-    /// <summary>RadioButtonList</summary>
-    RadioButtonList,
-
     /// <summary>Rectangle</summary>
     Rectangle,
 
     /// <summary>RowDefinition</summary>
     RowDefinition,
-
-    /// <summary>SingleSpinner</summary>
-    SingleSpinner,
-
-    /// <summary>Slider</summary>
-    Slider,
-
-    /// <summary>StackPanel</summary>
-    StackPanel,
-
-    /// <summary>StrategyPanelFrame</summary>
-    StrategyPanelFrame,
-
-    /// <summary>TextBox</summary>
-    TextBox,
 }

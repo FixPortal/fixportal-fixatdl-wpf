@@ -23,6 +23,10 @@ public partial class ListItemViewModel : ObservableObject
 
     public string UiRep => _item.UiRep;
 
+    public string GroupName => _owner.GroupName;
+
+    public bool IsRequiredParameter => _owner.IsRequiredParameter;
+
     [ObservableProperty]
     private bool _isSelected;
 

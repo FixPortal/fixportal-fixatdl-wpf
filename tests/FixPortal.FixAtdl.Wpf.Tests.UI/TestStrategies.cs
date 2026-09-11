@@ -16,7 +16,7 @@ internal static class TestStrategies
     /// <summary>
     /// A minimal strategy with a single numeric control (a <see cref="SingleSpinner_t"/>) referencing a
     /// parameter with FIX tag <see cref="QtyFixTag"/>, wired through the real StrategyPanel_t so both
-    /// rendering (Task 3) and view-model construction (Task 4) can exercise it.
+    /// rendering and view-model construction can exercise it.
     /// </summary>
     public static Strategy_t MinimalOneControlStrategy()
     {
@@ -26,7 +26,7 @@ internal static class TestStrategies
         strategy.StrategyLayout = new StrategyLayout_t { StrategyPanel = panel };
 
         var control = new SingleSpinner_t("Qty") { ParameterRef = "Qty" };
-        var parameter = new Parameter_t<Int_t>("Qty") { FixTag = QtyFixTag };
+        var parameter = new Parameter_t<Float_t>("Qty") { FixTag = QtyFixTag };
 
         panel.Controls.Add(control);
         strategy.Parameters.Add(parameter);

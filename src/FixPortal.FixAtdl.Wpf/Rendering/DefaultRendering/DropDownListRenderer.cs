@@ -7,9 +7,6 @@ internal class DropDownListRenderer : IControlRenderer<DropDownList_t>
 {
     public Type ControlType => typeof(DropDownList_t);
 
-    // FP Enhancement: the original Atdl4netConfiguration.Settings.Wpf.View.AutoSizeDropDowns switch
-    // has no equivalent in the current core (no Wpf configuration section exists there), so the
-    // auto-size-to-widest-item behaviour is dropped here rather than guessed at.
     public void Render(WpfXmlWriter writer, DropDownList_t control)
     {
         string id = WpfControlRenderer.CleanName(control.Id);
@@ -35,11 +32,11 @@ internal class DropDownListRenderer : IControlRenderer<DropDownList_t>
 
                     writer.WriteAttribute(
                         WpfXmlWriterAttribute.DataContext,
-                        string.Format("{{Binding Path=Controls[{0}]}}", id)
+                        string.Format("{{Binding Path=Controls[{0}]}}", writer.ControlIndex(control))
                     );
 
                     writer.WriteAttribute(WpfXmlWriterAttribute.ToolTip, "{Binding Path=ToolTip, Mode=OneWay}");
-                    writer.WriteAttribute(WpfXmlWriterAttribute.ItemsSource, "{Binding Path=ListItems}");
+                    writer.WriteAttribute(WpfXmlWriterAttribute.ItemsSource, "{Binding Path=Items}");
                     writer.WriteAttribute(WpfXmlWriterAttribute.SelectedValue, "{Binding Path=SelectedValue}");
                     writer.WriteAttribute(WpfXmlWriterAttribute.SelectedValuePath, "EnumId");
                     writer.WriteAttribute(WpfXmlWriterAttribute.DisplayMemberPath, "UiRep");

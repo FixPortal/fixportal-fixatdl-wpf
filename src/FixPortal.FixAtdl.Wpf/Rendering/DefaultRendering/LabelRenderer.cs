@@ -16,19 +16,19 @@ internal class LabelRenderer : IControlRenderer<Label_t>
             WpfControlRenderer.WriteGridAttribute(writer, control);
             writer.WriteAttribute(
                 WpfXmlWriterAttribute.ToolTip,
-                string.Format("{{Binding Path=Controls[{0}].ToolTip}}", id)
+                string.Format("{{Binding Path=Controls[{0}].ToolTip}}", writer.ControlIndex(control))
             );
             writer.WriteAttribute(
                 WpfXmlWriterAttribute.Content,
-                string.Format("{{Binding Path=Controls[{0}].UiValue}}", id)
+                string.Format("{{Binding Path=Controls[{0}].Value}}", writer.ControlIndex(control))
             );
             writer.WriteAttribute(
                 WpfXmlWriterAttribute.IsEnabled,
-                string.Format("{{Binding Path=Controls[{0}].Enabled}}", id)
+                string.Format("{{Binding Path=Controls[{0}].Enabled}}", writer.ControlIndex(control))
             );
             writer.WriteAttribute(
                 WpfXmlWriterAttribute.Visibility,
-                string.Format("{{Binding Path=Controls[{0}].Visibility}}", id)
+                string.Format("{{Binding Path=Controls[{0}].Visibility}}", writer.ControlIndex(control))
             );
             writer.WriteAttribute(WpfXmlWriterAttribute.AutomationProperties_AutomationId, id);
         }

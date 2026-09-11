@@ -21,6 +21,7 @@ validation).
 - Tests: `tests/FixPortal.FixAtdl.Wpf.Core.Tests` (xUnit v3 + AwesomeAssertions
   + NSubstitute) and `tests/FixPortal.FixAtdl.Wpf.Tests.UI` (STA smoke tests
   for WPF controls). Assert with `.Should()`, never xUnit `Assert.*`.
+  Run both with `dotnet test --solution FixPortal.FixAtdl.Wpf.slnx --configuration Release`.
 
 ## Private feed restore
 

@@ -12,6 +12,9 @@ namespace FixPortal.FixAtdl.Wpf.Controls;
 public partial class TimePicker : UserControl, INotifyPropertyChanged
 {
     private bool _minutesHasFocus;
+    private bool _updatingTime;
+    private bool _hoursValid = true;
+    private bool _minutesValid = true;
     private TimeInstant _value = new TimeInstant() { IsEmpty = true };
 
     /// <summary>
@@ -56,24 +59,7 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
     public DateTime? Time
     {
         get => (DateTime?)this.GetValue(TimeProperty);
-        set
-        {
-            this.SetValue(TimeProperty, value);
-
-            TimeInstant prevValue = _value;
-
-            if (value == null)
-            {
-                _value.IsEmpty = true;
-            }
-            else
-            {
-                _value.FromDateTime((DateTime)value);
-            }
-
-            NotifyMinutesPropertyChanged(prevValue, _value);
-            NotifyHoursPropertyChanged(prevValue, _value);
-        }
+        set => SetCurrentValue(TimeProperty, value);
     }
 
     /// <summary>
@@ -82,7 +68,7 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
     public bool IsContentValid
     {
         get => (bool)GetValue(IsContentValidProperty);
-        set => SetValue(IsContentValidProperty, value);
+        set => SetCurrentValue(IsContentValidProperty, value);
     }
 
     /// <summary>
@@ -99,11 +85,14 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
                 TimeInstant prevValue = _value;
 
                 _value.IsEmpty = true;
+                _hoursValid = true;
+                _minutesValid = true;
 
                 NotifyMinutesPropertyChanged(prevValue, _value);
                 NotifyHoursPropertyChanged(prevValue, _value);
 
-                UpdateIsContentValid(true);
+                _minutesValid = true;
+                UpdateIsContentValid();
             }
             else if (int.TryParse(value, out int parsedMinutes) && parsedMinutes is >= 0 and <= 59)
             {
@@ -121,11 +110,13 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
 
                 NotifyMinutesPropertyChanged(prevValue, _value);
 
-                UpdateIsContentValid(true);
+                _minutesValid = true;
+                UpdateIsContentValid();
             }
             else
             {
-                UpdateIsContentValid(false);
+                _minutesValid = false;
+                UpdateIsContentValid();
             }
         }
     }
@@ -144,11 +135,14 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
                 TimeInstant prevValue = _value;
 
                 _value.IsEmpty = true;
+                _hoursValid = true;
+                _minutesValid = true;
 
                 NotifyMinutesPropertyChanged(prevValue, _value);
                 NotifyHoursPropertyChanged(prevValue, _value);
 
-                UpdateIsContentValid(true);
+                _hoursValid = true;
+                UpdateIsContentValid();
             }
             else if (int.TryParse(value, out int parsedHours) && parsedHours is >= 0 and <= 23)
             {
@@ -166,40 +160,47 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
 
                 NotifyHoursPropertyChanged(prevValue, _value);
 
-                UpdateIsContentValid(true);
+                _hoursValid = true;
+                UpdateIsContentValid();
             }
             else
             {
-                UpdateIsContentValid(false);
+                _hoursValid = false;
+                UpdateIsContentValid();
             }
         }
     }
 
-    #region Private Methods
-
     private static void OnTimeChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
     {
-        ((TimePicker)dependencyObject).OnTimeChanged((DateTime?)e.OldValue, (DateTime?)e.NewValue);
+        ((TimePicker)dependencyObject).OnTimeChanged((DateTime?)e.NewValue);
     }
 
-    private void OnTimeChanged(DateTime? oldValue, DateTime? newValue)
+    private void OnTimeChanged(DateTime? newValue)
     {
-        // FP Enhancement (Gitar PR #4 fix-round-1 regression): the parameterless TimeInstant()
-        // struct ctor leaves IsEmpty at its bool default (false), which silently un-clears the
-        // control the moment Time round-trips through this DependencyProperty callback with a
-        // null value. Must use the explicit "empty" state here.
-        TimeInstant oldTime =
-            oldValue != null
-                ? new TimeInstant(((DateTime)oldValue).Hour, ((DateTime)oldValue).Minute)
-                : new TimeInstant { IsEmpty = true };
+        if (_updatingTime)
+        {
+            return;
+        }
+        _value.FromDateTime(newValue);
+        _hoursValid = true;
+        _minutesValid = true;
+        NotifyPropertyChanged(nameof(Hours));
+        NotifyPropertyChanged(nameof(Minutes));
+        UpdateIsContentValid();
+    }
 
-        _value =
-            newValue != null
-                ? new TimeInstant(((DateTime)newValue).Hour, ((DateTime)newValue).Minute)
-                : new TimeInstant { IsEmpty = true };
-
-        NotifyMinutesPropertyChanged(oldTime, _value);
-        NotifyHoursPropertyChanged(oldTime, _value);
+    private void CommitTime()
+    {
+        _updatingTime = true;
+        try
+        {
+            SetCurrentValue(TimeProperty, _value.ToDateTime());
+        }
+        finally
+        {
+            _updatingTime = false;
+        }
     }
 
     private void upButton_Click(object sender, RoutedEventArgs? e)
@@ -383,7 +384,7 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
         {
             NotifyPropertyChanged("Hours");
 
-            this.SetValue(TimeProperty, _value.ToDateTime());
+            CommitTime();
         }
     }
 
@@ -394,19 +395,17 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
         {
             NotifyPropertyChanged("Minutes");
 
-            this.SetValue(TimeProperty, _value.ToDateTime());
+            CommitTime();
         }
     }
 
-    private void UpdateIsContentValid(bool value)
+    private void UpdateIsContentValid()
     {
-        IsContentValid = value;
+        IsContentValid = _hoursValid && _minutesValid;
     }
 
     private void NotifyPropertyChanged(string propertyName)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
-
-    #endregion
 }
