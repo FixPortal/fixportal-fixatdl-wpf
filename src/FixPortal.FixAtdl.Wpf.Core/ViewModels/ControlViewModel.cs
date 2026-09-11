@@ -45,6 +45,12 @@ public partial class ControlViewModel : ObservableValidator
     public string Id => _control.Id;
 
     /// <summary>
+    /// Gets the FIX tag number of the control's referenced parameter, or <see langword="null"/> when the
+    /// control has no referenced parameter (or the parameter has no FIX tag assigned).
+    /// </summary>
+    public int? FixTag => _parameter?.FixTag is { } tag ? (int)tag : null;
+
+    /// <summary>
     /// Pushes the candidate value into the underlying control, then validates it against the control's
     /// referenced parameter (if any). A control with no <see cref="ParameterRef"/> — and therefore no
     /// resolved parameter — has no ATDL constraints to enforce here and is always valid.

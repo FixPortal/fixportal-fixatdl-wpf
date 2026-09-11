@@ -34,6 +34,15 @@ public partial class EditViewModel : ObservableObject
 
     public bool HasErrors => Controls.Any(c => c.HasErrors);
 
+    /// <summary>
+    /// Reads back edited control values keyed by FIX tag number, for the outbound message (spec data-flow
+    /// step 5). Controls with no referenced parameter (no FIX tag) or no value are omitted.
+    /// </summary>
+    public IReadOnlyDictionary<int, string> ReadBackFixValues() =>
+        Controls
+            .Where(c => c.FixTag is not null && c.Value is not null)
+            .ToDictionary(c => c.FixTag!.Value, c => c.Value!.ToString()!);
+
     private static IParameter? ResolveParameter(Strategy_t strategy, Control_t control)
     {
         return control.ParameterRef is { } parameterRef && strategy.Parameters.Contains(parameterRef)

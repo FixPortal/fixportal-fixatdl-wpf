@@ -25,14 +25,11 @@ public sealed class StrategyPanelRenderer
 {
     public const string ExceptionContext = "StrategyPanelRenderer";
 
-    // FP Enhancement: the original used StrategyViewModel.DataContextKey (Atdl4net.Wpf.ViewModel),
-    // a type that is not part of this port (the ViewModel layer is a later task). This is a
-    // placeholder StaticResource key name for the strategy's data context; whichever task wires up
-    // the ViewModel layer and its application-level resource dictionary must confirm/rename this key
-    // to match what it actually registers the strategy view model under.
-    private const string DataContextKey = "StrategyViewModel";
-
-    public static readonly string AtdlDataContext = string.Format("{0}StaticResource {1}{2}", "{", DataContextKey, "}");
+    // FP Enhancement: the original used StrategyViewModel.DataContextKey (Atdl4net.Wpf.ViewModel), a type
+    // that is not part of this port. Task 6 (AtdlPanel.Create) is the task that wires up the ViewModel
+    // layer, and it sets the root FrameworkElement's DataContext directly rather than via a
+    // StaticResource — WPF's DataContext inherits to children, so no application resource dictionary is
+    // needed. The placeholder StaticResource key/binding that used to live here has been removed.
     public static readonly string CollapsedVisibility = nameof(Visibility.Collapsed);
     public static readonly string VisibleVisibility = nameof(Visibility.Visible);
 
@@ -128,11 +125,11 @@ public sealed class StrategyPanelRenderer
 
             using (writer.New(WpfXmlWriterTag.Grid))
             {
-                if (depth == 1)
-                {
-                    writer.WriteAttribute(WpfXmlWriterAttribute.DataContext, AtdlDataContext);
-                }
-
+                // FP Enhancement: the placeholder StaticResource DataContext binding that used to be written
+                // here at depth 1 is gone. Task 6 (AtdlPanel.Create) is "whichever task wires up the ViewModel
+                // layer" referenced in the class remarks above — it sets the root FrameworkElement's
+                // DataContext directly (WPF's DataContext inherits to children), which needs no application
+                // resource dictionary and works with plain XamlReader.Parse.
                 WriteGridDefinitions(writer, isVertical, containsControls, childCount);
                 ProcessPanelChildrenOrControls(panel, writer, controlRenderer, isVertical, ref depth);
             }
