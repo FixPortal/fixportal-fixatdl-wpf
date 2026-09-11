@@ -1,0 +1,284 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Windows;
+using System.Windows.Markup;
+using System.Xml;
+using FixPortal.FixAtdl.Diagnostics.Exceptions;
+using FixPortal.FixAtdl.Model.Collections;
+using FixPortal.FixAtdl.Model.Elements;
+using FixPortal.FixAtdl.Model.Enumerations;
+using FixPortal.FixAtdl.Utility;
+using FixPortal.FixAtdl.Wpf.Rendering.DefaultRendering;
+using ThrowHelper = FixPortal.FixAtdl.Diagnostics.ThrowHelper;
+
+namespace FixPortal.FixAtdl.Wpf.Rendering;
+
+// FP Enhancement: MEF's static CompositionContainer/TypeCatalog/AssemblyCatalog dance (including
+// the CustomControlRenderer assembly-override path) is replaced by plain constructor injection of
+// IEnumerable<IControlRenderer>, per the port decision. The rendering pipeline itself — writing XAML
+// markup text via WpfXmlWriter, one control/panel at a time — is unchanged from the original; only
+// this outermost Render() now returns the FrameworkElement built by parsing that composed XAML via
+// XamlReader.Parse, which is the one contract point the plan's public interface requires.
+public sealed class StrategyPanelRenderer
+{
+    public const string ExceptionContext = "StrategyPanelRenderer";
+
+    // FP Enhancement: the original used StrategyViewModel.DataContextKey (Atdl4net.Wpf.ViewModel),
+    // a type that is not part of this port (the ViewModel layer is a later task). This is a
+    // placeholder StaticResource key name for the strategy's data context; whichever task wires up
+    // the ViewModel layer and its application-level resource dictionary must confirm/rename this key
+    // to match what it actually registers the strategy view model under.
+    private const string DataContextKey = "StrategyViewModel";
+
+    public static readonly string AtdlDataContext = string.Format("{0}StaticResource {1}{2}", "{", DataContextKey, "}");
+    public static readonly string CollapsedVisibility = nameof(Visibility.Collapsed);
+    public static readonly string VisibleVisibility = nameof(Visibility.Visible);
+
+    private readonly IReadOnlyDictionary<Type, IControlRenderer> _renderersByControlType;
+    private readonly INamespaceProvider _namespaceProvider = new DefaultNamespaceProvider();
+
+    public StrategyPanelRenderer(IEnumerable<IControlRenderer> renderers)
+    {
+        _renderersByControlType = renderers.ToDictionary(r => r.ControlType);
+    }
+
+    public FrameworkElement? Render(Strategy_t strategy, IServiceProvider services)
+    {
+        // FP Enhancement: services is part of the plan's fixed public signature (later tasks may use it
+        // for DI-resolved dependencies); this port has nothing to resolve from it yet.
+        _ = services;
+
+        if (strategy.StrategyLayout == null)
+        {
+            // FP Enhancement: the original message came from FixPortal.FixAtdl.Resources.ErrorMessages,
+            // which is internal to that assembly and not accessible from here (a separate assembly).
+            throw ThrowHelper.New<RenderingException>(ExceptionContext, "No strategy layout was supplied.");
+        }
+
+        StrategyPanel_t rootPanel = strategy.StrategyLayout.StrategyPanel;
+
+        if (rootPanel == null)
+        {
+            throw ThrowHelper.New<RenderingException>(
+                ExceptionContext,
+                "No strategy panels were found in this strategy."
+            );
+        }
+
+        var xamlText = new StringBuilder();
+
+        var settings = new XmlWriterSettings
+        {
+            OmitXmlDeclaration = true,
+            ConformanceLevel = ConformanceLevel.Fragment,
+        };
+
+        using (XmlWriter xmlWriter = XmlWriter.Create(xamlText, settings))
+        {
+            WpfXmlWriter wpfWriter = new WpfXmlWriter(xmlWriter);
+
+            WpfControlRenderer controlRenderer = new WpfControlRenderer(
+                wpfWriter,
+                new WpfComboBoxSizer(),
+                _renderersByControlType.Values,
+                _namespaceProvider
+            );
+
+            int depth = 0;
+
+            ProcessPanel(rootPanel, wpfWriter, controlRenderer, -1, ref depth);
+        }
+
+        return XamlReader.Parse(xamlText.ToString()) as FrameworkElement;
+    }
+
+    private static void ProcessPanel(
+        StrategyPanel_t panel,
+        WpfXmlWriter writer,
+        WpfControlRenderer controlRenderer,
+        int rowOrColumn,
+        ref int depth
+    )
+    {
+        depth++;
+
+        bool isVertical = panel.Orientation == Orientation_t.Vertical;
+
+        using (
+            writer.New(
+                DefaultNamespaceProvider.Atdl4netNamespace,
+                "StrategyPanelFrame",
+                DefaultNamespaceProvider.Atdl4netNamespaceUri
+            )
+        )
+        {
+            writer.WriteAttribute(WpfXmlWriterAttribute.Padding, "1");
+            writer.WriteAttribute(WpfXmlWriterAttribute.Margin, "1");
+
+            WritePanelAttributes(writer, panel);
+            WritePanelPositionOrNamespaces(writer, controlRenderer, panel, rowOrColumn);
+
+            bool containsControls = panel.Controls.Count > 0;
+
+            // For grids containing a horizontal arrangement of controls, we add an empty column so we can set its width to "*"
+            int horizontalPad = isVertical ? 0 : 1;
+            int childCount = containsControls ? panel.Controls.Count + horizontalPad : panel.StrategyPanels.Count;
+
+            using (writer.New(WpfXmlWriterTag.Grid))
+            {
+                if (depth == 1)
+                {
+                    writer.WriteAttribute(WpfXmlWriterAttribute.DataContext, AtdlDataContext);
+                }
+
+                WriteGridDefinitions(writer, isVertical, containsControls, childCount);
+                ProcessPanelChildrenOrControls(panel, writer, controlRenderer, isVertical, ref depth);
+            }
+        }
+    }
+
+    private static void WritePanelPositionOrNamespaces(
+        WpfXmlWriter writer,
+        WpfControlRenderer controlRenderer,
+        StrategyPanel_t panel,
+        int rowOrColumn
+    )
+    {
+        if (rowOrColumn == -1)
+        {
+            foreach (KeyValuePair<string, string> ns in controlRenderer.NamespaceProvider.CustomNamespaces)
+            {
+                writer.WriteNamespaceAttribute(ns.Key, ns.Value);
+            }
+
+            return;
+        }
+
+        bool parentIsVertical = (panel as IParentable<StrategyPanel_t>).Parent.Orientation == Orientation_t.Vertical;
+        WpfXmlWriterAttribute positionAttribute = parentIsVertical
+            ? WpfXmlWriterAttribute.GridRow
+            : WpfXmlWriterAttribute.GridColumn;
+
+        writer.WriteAttribute(positionAttribute, rowOrColumn.ToString());
+    }
+
+    private static void WriteGridDefinitions(
+        WpfXmlWriter writer,
+        bool isVertical,
+        bool containsControls,
+        int childCount
+    )
+    {
+        using (writer.New(WpfXmlWriterTag.GridRowDefinitions))
+        {
+            int rowCount = isVertical ? childCount : 1;
+
+            for (int n = 0; n < rowCount; n++)
+            {
+                using (writer.New(WpfXmlWriterTag.RowDefinition))
+                {
+                    writer.WriteAttribute(WpfXmlWriterAttribute.Height, "Auto");
+                }
+            }
+        }
+
+        using (writer.New(WpfXmlWriterTag.GridColumnDefinitions))
+        {
+            // Special treatment for vertical panels that contain controls - put in two columns, one for the label and
+            // one for the control itself.
+            int verticalColumnCount = containsControls ? 2 : 1;
+            int columnCount = isVertical ? verticalColumnCount : childCount;
+
+            for (int n = 0; n < columnCount; n++)
+            {
+                using (writer.New(WpfXmlWriterTag.ColumnDefinition))
+                {
+                    if (containsControls)
+                    {
+                        string width = n < childCount - 1 ? "Auto" : "*";
+
+                        writer.WriteAttribute(WpfXmlWriterAttribute.Width, width);
+                    }
+                }
+            }
+        }
+    }
+
+    private static void ProcessPanelChildrenOrControls(
+        StrategyPanel_t panel,
+        WpfXmlWriter writer,
+        WpfControlRenderer controlRenderer,
+        bool isVertical,
+        ref int depth
+    )
+    {
+        // Note that a StrategyPanel_t can either contain other strategy panels, or controls but NOT BOTH.
+        if (panel.StrategyPanels != null && panel.StrategyPanels.Count > 0)
+        {
+            int thisRowOrColumn = 0;
+
+            foreach (StrategyPanel_t childPanel in panel.StrategyPanels)
+            {
+                ProcessPanel(childPanel, writer, controlRenderer, thisRowOrColumn, ref depth);
+
+                thisRowOrColumn++;
+            }
+
+            return;
+        }
+
+        ProcessControls(panel, controlRenderer);
+
+        // For horizontal strategy panels, put a dummy rectangle in the last column to trick
+        // WPF to sizing the other columns to their control size.
+        if (!isVertical)
+        {
+            using (writer.New(WpfXmlWriterTag.Rectangle))
+            {
+                writer.WriteAttribute(WpfXmlWriterAttribute.GridColumn, panel.Controls.Count.ToString());
+            }
+        }
+    }
+
+    private static void ProcessControls(StrategyPanel_t panel, WpfControlRenderer renderer)
+    {
+        ControlCollection controls = panel.Controls;
+
+        if (controls == null || controls.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var control in controls)
+        {
+            renderer.ProcessControl(control);
+        }
+    }
+
+    private static void WritePanelAttributes(WpfXmlWriter writer, StrategyPanel_t panel)
+    {
+        writer.WriteAttribute(
+            WpfXmlWriterAttribute.BorderVisibility,
+            panel.Border == Border_t.Line ? VisibleVisibility : CollapsedVisibility
+        );
+        writer.WriteAttribute(
+            WpfXmlWriterAttribute.HeaderVisibility,
+            string.IsNullOrEmpty(panel.Title) ? CollapsedVisibility : VisibleVisibility
+        );
+        writer.WriteAttribute(
+            WpfXmlWriterAttribute.CollapseButtonVisibility,
+            panel.Collapsible == true ? VisibleVisibility : CollapsedVisibility
+        );
+        writer.WriteAttribute(
+            WpfXmlWriterAttribute.IsExpanded,
+            panel.Collapsible == true && panel.Collapsed == true ? "False" : "True"
+        );
+
+        if (!string.IsNullOrEmpty(panel.Title))
+        {
+            writer.WriteAttribute(WpfXmlWriterAttribute.Header, panel.Title);
+        }
+    }
+}
