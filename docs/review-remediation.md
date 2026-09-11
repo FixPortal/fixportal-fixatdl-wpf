@@ -29,7 +29,8 @@ This pass addresses the final review recorded on 2026-09-11.
 Additional regressions cover actual spinner text input and culture, preservation
 of bindings after repeated edits, invalid-to-valid strategy refresh, clock field
 validation and clearing, editable dropdown updates, and preservation of explicitly
-cleared amendment values.
+cleared amendment values. Invalid state-rule values surface as strategy errors;
+they remain errors while active and recover when their condition becomes false.
 
 ## Initialization and compatibility
 

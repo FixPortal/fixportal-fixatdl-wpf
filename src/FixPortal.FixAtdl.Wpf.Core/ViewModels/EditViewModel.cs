@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using FixPortal.FixAtdl.Diagnostics.Exceptions;
 using FixPortal.FixAtdl.Fix;
 using FixPortal.FixAtdl.Model.Controls;
 using FixPortal.FixAtdl.Model.Controls.Support;
@@ -122,6 +123,17 @@ public class EditViewModel : ObservableObject
                 .Select(edit => edit.ErrorMessage)
                 .ToArray();
         }
+        catch (Exception ex)
+            when (ex
+                    is FixAtdlException
+                        or ArgumentException
+                        or FormatException
+                        or InvalidCastException
+                        or OverflowException
+            )
+        {
+            StrategyErrors = [ex.Message];
+        }
         finally
         {
             _refreshing = false;
@@ -149,7 +161,6 @@ public class EditViewModel : ObservableObject
             {
                 return;
             }
-            _active = active;
             if (rule.Enabled is { } enabled)
             {
                 control.Enabled = active ? enabled : !enabled;
@@ -160,6 +171,7 @@ public class EditViewModel : ObservableObject
             }
             if (rule.Value is null)
             {
+                _active = active;
                 return;
             }
 
@@ -172,6 +184,7 @@ public class EditViewModel : ObservableObject
             {
                 control.Value = ControlViewModel.Snapshot(_previousValue);
             }
+            _active = active;
         }
     }
 }
