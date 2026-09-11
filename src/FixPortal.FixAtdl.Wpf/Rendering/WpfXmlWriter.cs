@@ -97,6 +97,14 @@ public class WpfXmlWriter
         _controlIndexes = controls
             .Select((control, index) => (control, index))
             .ToDictionary(p => p.control, p => p.index);
+        var ids = new HashSet<string>(StringComparer.Ordinal);
+        var invalid = _controlIndexes.Keys.FirstOrDefault(control =>
+            string.IsNullOrEmpty(control.Id) || !ids.Add(control.Id)
+        );
+        if (invalid is not null)
+        {
+            throw new ArgumentException($"Control IDs must be nonempty and unique: '{invalid.Id}'.", nameof(controls));
+        }
     }
 
     public int ControlIndex(Control_t control) => _controlIndexes[control];

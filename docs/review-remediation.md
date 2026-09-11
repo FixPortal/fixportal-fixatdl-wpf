@@ -31,6 +31,16 @@ of bindings after repeated edits, invalid-to-valid strategy refresh, clock field
 validation and clearing, editable dropdown updates, and preservation of explicitly
 cleared amendment values. Invalid state-rule values surface as strategy errors;
 they remain errors while active and recover when their condition becomes false.
+The public renderer also rejects empty/duplicate IDs before emitting XAML;
+the registration test asserts the exact supported control types.
+
+PR review dispositions: the proposed double-quote decoder change was declined
+because its sample condition is invalid YAML (confirmed by actionlint). The
+shared gate checker's handling of workspace-prefixed script paths is deferred:
+this repository uses literal relative paths, all of which are tiered HIGH.
+Dropping `/` from the proposed regex lookbehind would also misidentify nested
+vendor paths when a same-named root script exists. Broader prefix handling belongs
+in the canonical checker with its regression suite.
 
 ## Initialization and compatibility
 

@@ -1,4 +1,5 @@
 using AwesomeAssertions;
+using FixPortal.FixAtdl.Model.Controls;
 using FixPortal.FixAtdl.Wpf.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -37,7 +38,26 @@ public class ServiceCollectionExtensionsTests
                 .GetServices<IControlRenderer>()
                 .Select(renderer => renderer.ControlType)
                 .Should()
-                .HaveCount(15)
+                .BeEquivalentTo(
+                    new[]
+                    {
+                        typeof(CheckBox_t),
+                        typeof(CheckBoxList_t),
+                        typeof(Clock_t),
+                        typeof(DoubleSpinner_t),
+                        typeof(DropDownList_t),
+                        typeof(EditableDropDownList_t),
+                        typeof(HiddenField_t),
+                        typeof(Label_t),
+                        typeof(MultiSelectList_t),
+                        typeof(RadioButton_t),
+                        typeof(RadioButtonList_t),
+                        typeof(SingleSelectList_t),
+                        typeof(SingleSpinner_t),
+                        typeof(Slider_t),
+                        typeof(TextField_t),
+                    }
+                )
                 .And.OnlyHaveUniqueItems();
         });
     }
