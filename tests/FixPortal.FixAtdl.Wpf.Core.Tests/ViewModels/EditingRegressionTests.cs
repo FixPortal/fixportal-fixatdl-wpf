@@ -11,6 +11,45 @@ namespace FixPortal.FixAtdl.Wpf.Core.Tests.ViewModels;
 
 public class EditingRegressionTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void UnknownEnumInStateRule_IsValidatedAndCanRecover(bool editable)
+    {
+        var strategy = TestControls.MinimalStrategyWithOneRequiredControl();
+        strategy.Controls["Qty"].SetValue(12m);
+        var toggle = new CheckBox_t("Toggle");
+        FixPortal.FixAtdl.Model.Controls.Support.ListControlBase list = editable
+            ? new EditableDropDownList_t("List")
+            : new DropDownList_t("List");
+        list.ListItems.Add(new ListItem_t { EnumId = "A", UiRep = "Alpha" });
+        list.StateRules.Add(
+            new StateRule_t
+            {
+                Value = "unknown",
+                Edit = new Edit_t<Control_t>
+                {
+                    Field = "Toggle",
+                    Operator = Operator_t.Equal,
+                    Value = "true",
+                },
+            }
+        );
+        strategy.StrategyLayout.StrategyPanel.Controls.Add(toggle);
+        strategy.StrategyLayout.StrategyPanel.Controls.Add(list);
+        var model = new EditViewModel(strategy);
+        var activate = () => model.Controls[1].Value = true;
+
+        activate.Should().NotThrow();
+        model.HasErrors.Should().Be(!editable);
+        var listModel = model.Controls[2].Should().BeOfType<ListControlViewModel>().Subject;
+        listModel.Text.Should().Be(editable ? "unknown" : null);
+        model.Controls[0].Value = 13m;
+        model.HasErrors.Should().Be(!editable);
+        model.Controls[1].Value = false;
+        model.HasErrors.Should().BeFalse();
+    }
+
     [Fact]
     public void CyclicNullRule_BlocksSubmissionWithoutRecursing()
     {
