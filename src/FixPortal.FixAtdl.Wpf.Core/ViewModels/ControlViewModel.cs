@@ -67,16 +67,30 @@ public partial class ControlViewModel : ObservableValidator
         return result.IsValid ? ValidationResult.Success! : new ValidationResult(result.ErrorText);
     }
 
-    // ponytail: only converts numeric literals (int/double/etc.) to decimal for numeric controls whose
+    // Note: only converts numeric literals (int/double/etc.) to decimal for numeric controls whose
     // SetValue only accepts decimal/string/null; a richer per-control-type coercion table can be added if
-    // more control kinds need it.
+    // more control kinds need it. A value that fails decimal conversion (bool, DateTime, char, etc.) is
+    // passed through unchanged so it still reaches SetValue/validation and can fail as a validation error
+    // rather than as an unhandled exception from inside the CustomValidation method.
     private static object? ConvertForControl(object? value)
     {
-        return value switch
+        if (value is null or decimal or string or bool)
         {
-            null or decimal or string => value,
-            IConvertible convertible => Convert.ToDecimal(convertible, CultureInfo.InvariantCulture),
-            _ => value,
-        };
+            return value;
+        }
+
+        if (value is IConvertible convertible)
+        {
+            try
+            {
+                return Convert.ToDecimal(convertible, CultureInfo.InvariantCulture);
+            }
+            catch (Exception ex) when (ex is InvalidCastException or FormatException or OverflowException)
+            {
+                return value;
+            }
+        }
+
+        return value;
     }
 }
