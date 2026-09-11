@@ -1,0 +1,38 @@
+using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
+using FixPortal.FixAtdl.Model.Elements;
+using FixPortal.FixAtdl.Model.Elements.Support;
+
+namespace FixPortal.FixAtdl.Wpf.Core.ViewModels;
+
+/// <summary>
+/// Aggregates a <see cref="Strategy_t"/>'s controls as <see cref="ControlViewModel"/>s for editing.
+/// </summary>
+/// <remarks>
+/// <see cref="HasErrors"/> is what Task 6's submit-gating and Task 7's error handling both read.
+/// </remarks>
+public partial class EditViewModel : ObservableObject
+{
+    public EditViewModel(Strategy_t strategy)
+    {
+        Controls = new ObservableCollection<ControlViewModel>(
+            strategy.Controls.Select(control => new ControlViewModel(control, ResolveParameter(strategy, control)))
+        );
+
+        foreach (ControlViewModel control in Controls)
+        {
+            control.ErrorsChanged += (_, _) => OnPropertyChanged(nameof(HasErrors));
+        }
+    }
+
+    public ObservableCollection<ControlViewModel> Controls { get; }
+
+    public bool HasErrors => Controls.Any(c => c.HasErrors);
+
+    private static IParameter? ResolveParameter(Strategy_t strategy, Control_t control)
+    {
+        return control.ParameterRef is { } parameterRef && strategy.Parameters.Contains(parameterRef)
+            ? strategy.Parameters[parameterRef]
+            : null;
+    }
+}
