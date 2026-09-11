@@ -9,6 +9,33 @@ namespace FixPortal.FixAtdl.Wpf.Tests.UI;
 /// </summary>
 public class AtdlPanelTests
 {
+    [Theory]
+    [InlineData("RadioButton", "")]
+    [InlineData("CheckBoxList", "")]
+    [InlineData("RadioButtonList", "")]
+    [InlineData("RadioButton", "Qty")]
+    [InlineData("CheckBoxList", "Qty")]
+    [InlineData("RadioButtonList", "Qty")]
+    public void DirectRenderer_RejectsInvalidControlIdentities(string kind, string id)
+    {
+        RunOnSta(() =>
+        {
+            var strategy = TestStrategies.MinimalOneControlStrategy();
+            FixPortal.FixAtdl.Model.Elements.Control_t control = kind switch
+            {
+                "RadioButton" => new FixPortal.FixAtdl.Model.Controls.RadioButton_t("Other"),
+                "CheckBoxList" => new FixPortal.FixAtdl.Model.Controls.CheckBoxList_t("Other"),
+                _ => new FixPortal.FixAtdl.Model.Controls.RadioButtonList_t("Other"),
+            };
+            strategy.StrategyLayout.StrategyPanel.Controls.Add(control);
+            control.Id = id;
+            using var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
+            var render = () =>
+                services.GetRequiredService<Rendering.StrategyPanelRenderer>().Render(strategy, services);
+            render.Should().Throw<ArgumentException>().WithMessage("*nonempty and unique*");
+        });
+    }
+
     [Fact]
     public void Clock_RemainsInvalidUntilBothFieldsAreValid()
     {
