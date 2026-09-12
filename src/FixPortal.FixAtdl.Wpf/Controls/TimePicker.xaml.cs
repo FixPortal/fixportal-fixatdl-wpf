@@ -13,8 +13,6 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
 {
     private bool _minutesHasFocus;
     private bool _updatingTime;
-    private bool _hoursValid = true;
-    private bool _minutesValid = true;
     private string? _hoursText;
     private string? _minutesText;
     private TimeInstant _value = new TimeInstant() { IsEmpty = true };
@@ -83,47 +81,8 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
         set
         {
             _minutesText = value;
-            if (string.IsNullOrEmpty(value))
-            {
-                TimeInstant prevValue = _value;
-
-                _value.IsEmpty = true;
-                _hoursText = _minutesText = null;
-                _hoursValid = true;
-                _minutesValid = true;
-
-                NotifyMinutesPropertyChanged(prevValue, _value);
-                NotifyHoursPropertyChanged(prevValue, _value);
-
-                _minutesValid = true;
-                UpdateIsContentValid();
-            }
-            else if (int.TryParse(value, out int parsedMinutes) && parsedMinutes is >= 0 and <= 59)
-            {
-                TimeInstant prevValue = _value;
-
-                _value.Minutes = parsedMinutes;
-
-                if (_value.IsEmpty)
-                {
-                    _value.IsEmpty = false;
-                    _value.Hours = 0;
-                    _hoursText = null;
-                    _hoursValid = true;
-
-                    NotifyHoursPropertyChanged(prevValue, _value);
-                }
-
-                NotifyMinutesPropertyChanged(prevValue, _value);
-
-                _minutesValid = true;
-                UpdateIsContentValid();
-            }
-            else
-            {
-                _minutesValid = false;
-                UpdateIsContentValid();
-            }
+            UpdateTypedTime();
+            NotifyPropertyChanged(nameof(Minutes));
         }
     }
 
@@ -137,47 +96,8 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
         set
         {
             _hoursText = value;
-            if (string.IsNullOrEmpty(value))
-            {
-                TimeInstant prevValue = _value;
-
-                _value.IsEmpty = true;
-                _hoursText = _minutesText = null;
-                _hoursValid = true;
-                _minutesValid = true;
-
-                NotifyMinutesPropertyChanged(prevValue, _value);
-                NotifyHoursPropertyChanged(prevValue, _value);
-
-                _hoursValid = true;
-                UpdateIsContentValid();
-            }
-            else if (int.TryParse(value, out int parsedHours) && parsedHours is >= 0 and <= 23)
-            {
-                TimeInstant prevValue = _value;
-
-                _value.Hours = parsedHours;
-
-                if (_value.IsEmpty)
-                {
-                    _value.IsEmpty = false;
-                    _value.Minutes = 0;
-                    _minutesText = null;
-                    _minutesValid = true;
-
-                    NotifyMinutesPropertyChanged(prevValue, _value);
-                }
-
-                NotifyHoursPropertyChanged(prevValue, _value);
-
-                _hoursValid = true;
-                UpdateIsContentValid();
-            }
-            else
-            {
-                _hoursValid = false;
-                UpdateIsContentValid();
-            }
+            UpdateTypedTime();
+            NotifyPropertyChanged(nameof(Hours));
         }
     }
 
@@ -194,11 +114,9 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
         }
         _value.FromDateTime(newValue);
         _hoursText = _minutesText = null;
-        _hoursValid = true;
-        _minutesValid = true;
+        IsContentValid = true;
         NotifyPropertyChanged(nameof(Hours));
         NotifyPropertyChanged(nameof(Minutes));
-        UpdateIsContentValid();
     }
 
     private void CommitTime()
@@ -320,6 +238,7 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
 
         if (_value.IsEmpty)
         {
+            _hoursText = _minutesText = null;
             _value = TimeInstant.StartOfDay;
 
             NotifyMinutesPropertyChanged(prevValue, _value);
@@ -342,6 +261,7 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
 
         if (_value.IsEmpty)
         {
+            _hoursText = _minutesText = null;
             _value = TimeInstant.StartOfDay;
 
             NotifyHoursPropertyChanged(prevValue, _value);
@@ -364,6 +284,7 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
 
         if (_value.IsEmpty)
         {
+            _hoursText = _minutesText = null;
             _value = TimeInstant.EndOfDay;
 
             NotifyMinutesPropertyChanged(prevValue, _value);
@@ -386,6 +307,7 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
 
         if (_value.IsEmpty)
         {
+            _hoursText = _minutesText = null;
             _value = TimeInstant.EndOfDay;
 
             NotifyHoursPropertyChanged(prevValue, _value);
@@ -418,9 +340,23 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
         }
     }
 
-    private void UpdateIsContentValid()
+    private void UpdateTypedTime()
     {
-        IsContentValid = _hoursValid && _minutesValid;
+        bool empty = string.IsNullOrEmpty(Hours) && string.IsNullOrEmpty(Minutes);
+        bool hoursValid = int.TryParse(Hours, out int hoursValue) && hoursValue is >= 0 and <= 23;
+        bool minutesValid = int.TryParse(Minutes, out int minutesValue) && minutesValue is >= 0 and <= 59;
+        IsContentValid = empty || hoursValid && minutesValid;
+        if (!IsContentValid)
+        {
+            return;
+        }
+        _value.IsEmpty = empty;
+        if (!empty)
+        {
+            _value.Hours = hoursValue;
+            _value.Minutes = minutesValue;
+        }
+        CommitTime();
     }
 
     private void NotifyPropertyChanged(string propertyName)

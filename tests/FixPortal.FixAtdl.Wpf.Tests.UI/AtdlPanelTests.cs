@@ -286,6 +286,9 @@ public partial class AtdlPanelTests
             var picker = new Controls.TimePicker { Hours = "10", Minutes = "30" };
             picker.Hours = "bad";
             picker.Minutes = "";
+            picker.Hours.Should().Be("bad");
+            picker.IsContentValid.Should().BeFalse();
+            picker.Hours = "";
             picker.Hours.Should().BeEmpty();
             picker.IsContentValid.Should().BeTrue();
             picker.Hours = "bad";
