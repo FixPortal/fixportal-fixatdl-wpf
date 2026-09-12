@@ -10,6 +10,30 @@ namespace FixPortal.FixAtdl.Wpf.Core.Tests.ViewModels;
 public class ConformanceTests
 {
     [Fact]
+    public void InvertedList_WithoutInitializationRemainsAbsentUntilEdited()
+    {
+        var strategy = TestControls.MinimalStrategyWithOneRequiredControl();
+        strategy.Controls["Qty"].SetValue(12m);
+        var parameter = new Parameter_t<MultipleStringValue_t>("Venues") { FixTag = 9001 };
+        parameter.Value.InvertOnWire = true;
+        parameter.EnumPairs.Add(new EnumPair_t { EnumId = "A", WireValue = "XNYS" });
+        parameter.EnumPairs.Add(new EnumPair_t { EnumId = "B", WireValue = "XNAS" });
+        strategy.Parameters.Add(parameter);
+        var list = new CheckBoxList_t("Venues") { ParameterRef = "Venues" };
+        list.ListItems.Add(new ListItem_t { EnumId = "A", UiRep = "New York" });
+        list.ListItems.Add(new ListItem_t { EnumId = "B", UiRep = "Nasdaq" });
+        strategy.StrategyLayout.StrategyPanel.Controls.Add(list);
+        var model = new EditViewModel(strategy);
+
+        model.ReadBackFixValues().Should().NotContainKey(9001);
+        var listModel = (ListControlViewModel)model.Controls[1];
+        listModel.Items[0].IsSelected = true;
+        model.ReadBackFixValues()[9001].Should().Be("XNAS");
+        listModel.Items[0].IsSelected = false;
+        model.ReadBackFixValues()[9001].Should().Be("XNYS XNAS");
+    }
+
+    [Fact]
     public void InvertedList_ClearAndRestoreKeepsExplicitNullDistinctFromEmptySelection()
     {
         var strategy = TestControls.MinimalStrategyWithOneRequiredControl();
