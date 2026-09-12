@@ -86,6 +86,19 @@ public class EditViewModel : ObservableObject
             .ToDictionary(control => control.FixTag!.Value, control => control.WireValue!);
     }
 
+    /// <summary>
+    /// Returns the FIX StrategyParametersGrp tag sequence (957-960) for hosts using
+    /// <see cref="Strategies_t.Tag957Support"/> transport. Check HasErrors before submitting.
+    /// </summary>
+    public IReadOnlyList<(int Tag, string Value)> ReadBackStrategyParametersGrp()
+    {
+        if (HasErrors)
+        {
+            throw new InvalidOperationException("Correct the strategy's validation errors before reading FIX values.");
+        }
+        return StrategyParametersGrpEmitter.Emit(_strategy);
+    }
+
     private void SynchronizeRadioGroup(ControlViewModel changed)
     {
         if (changed.UnderlyingControl is not RadioButton_t { RadioGroup: { Length: > 0 } group })
