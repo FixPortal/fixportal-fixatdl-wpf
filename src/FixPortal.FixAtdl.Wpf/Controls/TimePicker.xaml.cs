@@ -15,6 +15,8 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
     private bool _updatingTime;
     private bool _hoursValid = true;
     private bool _minutesValid = true;
+    private string? _hoursText;
+    private string? _minutesText;
     private TimeInstant _value = new TimeInstant() { IsEmpty = true };
 
     /// <summary>
@@ -77,14 +79,16 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
     /// <value>The minutes.</value>
     public string Minutes
     {
-        get => _value.IsEmpty ? string.Empty : _value.Minutes.ToString("D2");
+        get => _minutesText ?? (_value.IsEmpty ? string.Empty : _value.Minutes.ToString("D2"));
         set
         {
+            _minutesText = value;
             if (string.IsNullOrEmpty(value))
             {
                 TimeInstant prevValue = _value;
 
                 _value.IsEmpty = true;
+                _hoursText = _minutesText = null;
                 _hoursValid = true;
                 _minutesValid = true;
 
@@ -104,6 +108,8 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
                 {
                     _value.IsEmpty = false;
                     _value.Hours = 0;
+                    _hoursText = null;
+                    _hoursValid = true;
 
                     NotifyHoursPropertyChanged(prevValue, _value);
                 }
@@ -127,14 +133,16 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
     /// <value>The hours.</value>
     public string Hours
     {
-        get => _value.IsEmpty ? string.Empty : _value.Hours.ToString("D2");
+        get => _hoursText ?? (_value.IsEmpty ? string.Empty : _value.Hours.ToString("D2"));
         set
         {
+            _hoursText = value;
             if (string.IsNullOrEmpty(value))
             {
                 TimeInstant prevValue = _value;
 
                 _value.IsEmpty = true;
+                _hoursText = _minutesText = null;
                 _hoursValid = true;
                 _minutesValid = true;
 
@@ -154,6 +162,8 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
                 {
                     _value.IsEmpty = false;
                     _value.Minutes = 0;
+                    _minutesText = null;
+                    _minutesValid = true;
 
                     NotifyMinutesPropertyChanged(prevValue, _value);
                 }
@@ -183,6 +193,7 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
             return;
         }
         _value.FromDateTime(newValue);
+        _hoursText = _minutesText = null;
         _hoursValid = true;
         _minutesValid = true;
         NotifyPropertyChanged(nameof(Hours));
@@ -242,10 +253,12 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
         if (e.Key == Key.Down)
         {
             DecrementMinutes();
+            e.Handled = true;
         }
         else if (e.Key == Key.Up)
         {
             IncrementMinutes();
+            e.Handled = true;
         }
     }
 
@@ -254,10 +267,12 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
         if (e.Key == Key.Down)
         {
             DecrementHours();
+            e.Handled = true;
         }
         else if (e.Key == Key.Up)
         {
             IncrementHours();
+            e.Handled = true;
         }
     }
 
@@ -300,6 +315,7 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
             return;
         }
 
+        _hoursText = null;
         TimeInstant prevValue = _value;
 
         if (_value.IsEmpty)
@@ -321,6 +337,7 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
             return;
         }
 
+        _minutesText = null;
         TimeInstant prevValue = _value;
 
         if (_value.IsEmpty)
@@ -342,6 +359,7 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
             return;
         }
 
+        _hoursText = null;
         TimeInstant prevValue = _value;
 
         if (_value.IsEmpty)
@@ -363,6 +381,7 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
             return;
         }
 
+        _minutesText = null;
         TimeInstant prevValue = _value;
 
         if (_value.IsEmpty)

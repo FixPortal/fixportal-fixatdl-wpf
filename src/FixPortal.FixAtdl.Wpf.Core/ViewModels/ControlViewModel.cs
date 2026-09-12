@@ -73,10 +73,11 @@ public partial class ControlViewModel : ObservableValidator
     // Native sliders need finite bounds; retain a usable fallback interval when only one is declared.
     public decimal NumericMinimum =>
         DeclaredNumericMinimum
-        ?? (DeclaredNumericMaximum is < 0 and { } maximum ? Math.Max(decimal.MinValue + 100, maximum) - 100 : 0);
+        ?? (DeclaredNumericMaximum is <= 0 and { } maximum ? Math.Max(decimal.MinValue + 100, maximum) - 100 : 0);
 
     public decimal NumericMaximum =>
-        DeclaredNumericMaximum ?? (NumericMinimum > 100 ? Math.Min(decimal.MaxValue - 100, NumericMinimum) + 100 : 100);
+        DeclaredNumericMaximum
+        ?? (NumericMinimum >= 100 ? Math.Min(decimal.MaxValue - 100, NumericMinimum) + 100 : 100);
 
     [CustomValidation(typeof(ControlViewModel), nameof(ValidateAgainstAtdlConstraints))]
     public object? Value
@@ -160,18 +161,20 @@ public partial class ControlViewModel : ObservableValidator
                 ? ValidationResult.Success!
                 : new ValidationResult(result.ErrorText);
         }
-        catch (Exception ex)
-            when (ex
-                    is FixAtdlException
-                        or ArgumentException
-                        or FormatException
-                        or InvalidCastException
-                        or OverflowException
-            )
+        catch (Exception ex) when (IsValidationException(ex))
         {
             return new ValidationResult(ex.Message);
         }
     }
+
+    internal static bool IsValidationException(Exception ex) =>
+        ex
+            is FixAtdlException
+                or InternalErrorException
+                or ArgumentException
+                or FormatException
+                or InvalidCastException
+                or OverflowException;
 
     private static object? ConvertForControl(object? value) =>
         value is byte or sbyte or short or ushort or int or uint or long or ulong or float or double

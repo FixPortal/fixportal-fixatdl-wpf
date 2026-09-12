@@ -73,6 +73,10 @@ public partial class Slider : UserControl, INotifyPropertyChanged
                 {
                     SelectedValue = ItemsSource[value].EnumId;
                 }
+                else if (value == -1)
+                {
+                    SelectedValue = null;
+                }
             }
             finally
             {
@@ -91,12 +95,12 @@ public partial class Slider : UserControl, INotifyPropertyChanged
 
     private static void OnSelectedValueChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
     {
-        ((Slider)dependencyObject).OnSelectedValueChanged(e.NewValue as string);
+        ((Slider)dependencyObject).OnSelectedValueChanged();
     }
 
-    private void OnSelectedValueChanged(string? enumId)
+    private void OnSelectedValueChanged()
     {
-        if (!_selectedIndexChangeInProgress && ItemsSource != null && enumId != null)
+        if (!_selectedIndexChangeInProgress && ItemsSource != null)
         {
             // The source value already changed; only notify the inner slider.
 
@@ -113,19 +117,20 @@ public partial class Slider : UserControl, INotifyPropertyChanged
     {
         double desiredWidth = 0;
 
-        int numItems = items.Count;
+        var labels = new[] { "Not set" }.Concat(items.Select(item => item.UiRep)).ToArray();
+        int numItems = labels.Length;
 
         Typeface typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
         double pixelsPerDip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
 
-        double[] widths = new double[items.Count];
+        double[] widths = new double[numItems];
 
         double adjacentWidthDiff = double.MaxValue;
 
-        for (int n = 0; n < items.Count; n++)
+        for (int n = 0; n < numItems; n++)
         {
             FormattedText text = new FormattedText(
-                items[n].UiRep,
+                labels[n],
                 CultureInfo.CurrentCulture,
                 FlowDirection.LeftToRight,
                 typeface,
@@ -151,7 +156,7 @@ public partial class Slider : UserControl, INotifyPropertyChanged
 
         labelArea.Children.Clear();
 
-        for (int n = 0; n < items.Count; n++)
+        for (int n = 0; n < numItems; n++)
         {
             double offset = 0;
 
@@ -160,10 +165,11 @@ public partial class Slider : UserControl, INotifyPropertyChanged
                 offset = widths[0] / 2 + spacing * n - widths[n] / 2;
             }
 
-            labelArea.Children.Add(new Label() { Content = items[n].UiRep, Margin = new Thickness(offset, 0, 0, 0) });
+            labelArea.Children.Add(new Label() { Content = labels[n], Margin = new Thickness(offset, 0, 0, 0) });
         }
 
         sliderControl.Width = spacing * Math.Max(0, numItems - 1) + internalMargin + 10;
-        sliderControl.Maximum = Math.Max(0, numItems - 1);
+        sliderControl.Maximum = Math.Max(-1, items.Count - 1);
+        NotifyPropertyChanged(nameof(SelectedIndex));
     }
 }

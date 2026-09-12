@@ -9,7 +9,6 @@ using FixPortal.FixAtdl.Diagnostics.Exceptions;
 using FixPortal.FixAtdl.Model.Collections;
 using FixPortal.FixAtdl.Model.Elements;
 using FixPortal.FixAtdl.Model.Enumerations;
-using FixPortal.FixAtdl.Utility;
 using FixPortal.FixAtdl.Wpf.Rendering.DefaultRendering;
 using ThrowHelper = FixPortal.FixAtdl.Diagnostics.ThrowHelper;
 
@@ -27,7 +26,9 @@ public sealed class StrategyPanelRenderer
 
     public StrategyPanelRenderer(IEnumerable<IControlRenderer> renderers)
     {
-        _renderersByControlType = renderers.ToDictionary(r => r.ControlType);
+        _renderersByControlType = renderers
+            .GroupBy(r => r.ControlType)
+            .ToDictionary(group => group.Key, group => group.Last());
     }
 
     public FrameworkElement? Render(Strategy_t strategy, IServiceProvider services)
@@ -69,7 +70,7 @@ public sealed class StrategyPanelRenderer
 
             int depth = 0;
 
-            ProcessPanel(rootPanel, wpfWriter, controlRenderer, -1, ref depth);
+            ProcessPanel(rootPanel, wpfWriter, controlRenderer, -1, true, ref depth);
         }
 
         var view = (FrameworkElement)XamlReader.Parse(xamlText.ToString());
@@ -87,6 +88,7 @@ public sealed class StrategyPanelRenderer
         WpfXmlWriter writer,
         WpfControlRenderer controlRenderer,
         int rowOrColumn,
+        bool parentIsVertical,
         ref int depth
     )
     {
@@ -102,11 +104,10 @@ public sealed class StrategyPanelRenderer
             )
         )
         {
-            writer.WriteAttribute(WpfXmlWriterAttribute.Padding, "1");
             writer.WriteAttribute(WpfXmlWriterAttribute.Margin, "1");
 
             WritePanelAttributes(writer, panel);
-            WritePanelPositionOrNamespaces(writer, controlRenderer, panel, rowOrColumn);
+            WritePanelPositionOrNamespaces(writer, controlRenderer, parentIsVertical, rowOrColumn);
 
             bool containsControls = panel.Controls.Count > 0;
 
@@ -125,7 +126,7 @@ public sealed class StrategyPanelRenderer
     private static void WritePanelPositionOrNamespaces(
         WpfXmlWriter writer,
         WpfControlRenderer controlRenderer,
-        StrategyPanel_t panel,
+        bool parentIsVertical,
         int rowOrColumn
     )
     {
@@ -139,7 +140,6 @@ public sealed class StrategyPanelRenderer
             return;
         }
 
-        bool parentIsVertical = ((IParentable<StrategyPanel_t>)panel).Parent.Orientation == Orientation_t.Vertical;
         WpfXmlWriterAttribute positionAttribute = parentIsVertical
             ? WpfXmlWriterAttribute.GridRow
             : WpfXmlWriterAttribute.GridColumn;
@@ -180,7 +180,7 @@ public sealed class StrategyPanelRenderer
                 {
                     if (containsControls)
                     {
-                        string width = n < childCount - 1 ? "Auto" : "*";
+                        string width = n < columnCount - 1 ? "Auto" : "*";
 
                         writer.WriteAttribute(WpfXmlWriterAttribute.Width, width);
                     }
@@ -204,7 +204,7 @@ public sealed class StrategyPanelRenderer
 
             foreach (StrategyPanel_t childPanel in panel.StrategyPanels)
             {
-                ProcessPanel(childPanel, writer, controlRenderer, thisRowOrColumn, ref depth);
+                ProcessPanel(childPanel, writer, controlRenderer, thisRowOrColumn, isVertical, ref depth);
 
                 thisRowOrColumn++;
             }
@@ -248,7 +248,7 @@ public sealed class StrategyPanelRenderer
         );
         writer.WriteAttribute(
             WpfXmlWriterAttribute.HeaderVisibility,
-            string.IsNullOrEmpty(panel.Title) ? CollapsedVisibility : VisibleVisibility
+            string.IsNullOrEmpty(panel.Title) && panel.Collapsible != true ? CollapsedVisibility : VisibleVisibility
         );
         writer.WriteAttribute(
             WpfXmlWriterAttribute.CollapseButtonVisibility,

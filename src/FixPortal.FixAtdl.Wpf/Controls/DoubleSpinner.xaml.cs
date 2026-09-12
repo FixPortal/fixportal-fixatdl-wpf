@@ -57,71 +57,25 @@ public partial class DoubleSpinner : NumericSpinnerControlBase
         set => SetValue(OuterIncrementProperty, value);
     }
 
-    private void InnerDecrementValue()
-    {
-        if (!IsContentValid)
-        {
-            return;
-        }
+    private void InnerDecrementValue() => ChangeValue(InnerIncrement, subtract: true);
 
-        decimal currentValue = Value ?? 0;
+    private void InnerIncrementValue() => ChangeValue(InnerIncrement);
 
-        currentValue -= InnerIncrement;
+    private void OuterDecrementValue() => ChangeValue(OuterIncrement, subtract: true);
 
-        Value = currentValue;
-    }
-
-    private void InnerIncrementValue()
-    {
-        if (!IsContentValid)
-        {
-            return;
-        }
-
-        decimal currentValue = Value ?? 0;
-
-        currentValue += InnerIncrement;
-
-        Value = currentValue;
-    }
-
-    private void OuterDecrementValue()
-    {
-        if (!IsContentValid)
-        {
-            return;
-        }
-
-        decimal currentValue = Value ?? 0;
-
-        currentValue -= OuterIncrement;
-
-        Value = currentValue;
-    }
-
-    private void OuterIncrementValue()
-    {
-        if (!IsContentValid)
-        {
-            return;
-        }
-
-        decimal currentValue = Value ?? 0;
-
-        currentValue += OuterIncrement;
-
-        Value = currentValue;
-    }
+    private void OuterIncrementValue() => ChangeValue(OuterIncrement);
 
     private void value_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
     {
         if (e.Key == Key.Down)
         {
             InnerDecrementValue();
+            e.Handled = true;
         }
         else if (e.Key == Key.Up)
         {
             InnerIncrementValue();
+            e.Handled = true;
         }
     }
 

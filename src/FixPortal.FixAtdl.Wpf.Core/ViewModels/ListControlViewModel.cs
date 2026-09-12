@@ -61,7 +61,10 @@ public class ListControlViewModel : ControlViewModel
 
     public string? Text
     {
-        get => SelectedValue is { } id ? Items.First(item => item.EnumId == id).UiRep : CurrentState.NonEnumValue;
+        get =>
+            SelectedValue is { } id
+                ? Items.FirstOrDefault(item => item.EnumId == id)?.UiRep ?? CurrentState.NonEnumValue ?? id
+                : CurrentState.NonEnumValue;
         set
         {
             if (value == Text)

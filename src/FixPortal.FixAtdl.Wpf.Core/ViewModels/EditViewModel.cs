@@ -34,6 +34,15 @@ public class EditViewModel : ObservableObject
             );
         }
 
+        var duplicateTag = strategy
+            .Parameters.Where(parameter => parameter.FixTag is not null)
+            .GroupBy(parameter => parameter.FixTag)
+            .FirstOrDefault(group => group.Count() > 1);
+        if (duplicateTag is not null)
+        {
+            throw new ArgumentException($"Parameter FIX tags must be unique: '{duplicateTag.Key}'.", nameof(strategy));
+        }
+
         Controls = strategy
             .Controls.Select(control =>
                 control is ListControlBase list && list is not Slider_t { ListItems.Count: 0 }
@@ -80,10 +89,9 @@ public class EditViewModel : ObservableObject
         {
             throw new InvalidOperationException("Correct the strategy's validation errors before reading FIX values.");
         }
-        return Controls
-            .Where(control => control.FixTag is not null && control.WireValue is not null)
-            .DistinctBy(control => control.UnderlyingControl.ParameterRef)
-            .ToDictionary(control => control.FixTag!.Value, control => control.WireValue!);
+        return _strategy
+            .Parameters.Where(parameter => parameter.FixTag is not null && parameter.IsSet)
+            .ToDictionary(parameter => checked((int)parameter.FixTag!.Value), parameter => parameter.WireValue!);
     }
 
     /// <summary>
@@ -155,6 +163,7 @@ public class EditViewModel : ObservableObject
             return;
         }
         _refreshing = true;
+        var errors = new List<string>();
         try
         {
             var passes = 0;
@@ -162,36 +171,53 @@ public class EditViewModel : ObservableObject
             do
             {
                 _refreshPending = false;
+                errors.Clear();
                 foreach (var rule in _rules)
                 {
-                    rule.Apply();
+                    try
+                    {
+                        rule.Apply();
+                    }
+                    catch (Exception ex) when (ControlViewModel.IsValidationException(ex))
+                    {
+                        errors.Add(ex.Message);
+                    }
                 }
                 if (++passes > Math.Max(64, _rules.Count * 4))
                 {
-                    StrategyErrors = ["State rules did not converge. Check for a cyclic value rule."];
-                    return;
+                    errors.Add("State rules did not converge. Check for a cyclic value rule.");
+                    break;
                 }
             } while (_refreshPending);
 
             _strategy.StrategyEdits.EvaluateAll(FixFieldValueProvider.Empty, false);
-            StrategyErrors = _strategy
-                .StrategyEdits.Where(edit => !edit.CurrentState)
-                .Select(edit => edit.ErrorMessage)
-                .ToArray();
+            errors.AddRange(
+                _strategy.StrategyEdits.Where(edit => !edit.CurrentState).Select(edit => edit.ErrorMessage)
+            );
         }
-        catch (Exception ex)
-            when (ex
-                    is FixAtdlException
-                        or ArgumentException
-                        or FormatException
-                        or InvalidCastException
-                        or OverflowException
-            )
+        catch (Exception ex) when (ControlViewModel.IsValidationException(ex))
         {
-            StrategyErrors = [ex.Message];
+            errors.Add(ex.Message);
         }
         finally
         {
+            // Parameters without controls still enforce required, constant and type constraints.
+            foreach (
+                var parameter in _strategy.Parameters.Where(parameter =>
+                    !Controls.Any(control => control.UnderlyingControl.ParameterRef == parameter.Name)
+                )
+            )
+            {
+                try
+                {
+                    _ = parameter.WireValue;
+                }
+                catch (Exception ex) when (ControlViewModel.IsValidationException(ex))
+                {
+                    errors.Add(ex.Message);
+                }
+            }
+            StrategyErrors = errors.ToArray();
             _refreshing = false;
             OnPropertyChanged(nameof(StrategyErrors));
             OnPropertyChanged(nameof(HasErrors));

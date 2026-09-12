@@ -38,7 +38,7 @@
             </Grid.ColumnDefinitions>
             <Grid Grid.Column="0" Height="Auto">
                 <local:ClickSelectTextBox x:Name="value" BorderThickness="0" Margin="0,1,0,0" TextAlignment="Left" 
-                                        KeyDown="value_KeyDown">
+                                        PreviewKeyDown="value_KeyDown">
                     <Binding ElementName="controlRoot" Path="Text" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged" TargetNullValue="{x:Static sys:String.Empty}"/>
                 </local:ClickSelectTextBox>
             </Grid>

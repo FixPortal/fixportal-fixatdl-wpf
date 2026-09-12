@@ -228,6 +228,7 @@
     <BorderGapMaskConverter x:Key="BorderGapMaskConverter"/>
 
     <Style TargetType="{x:Type local:StrategyPanelFrame}">
+        <Setter Property="Padding" Value="1" />
         <Setter Property="BorderBrush" Value="{StaticResource StrategyPanelBorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Template">
@@ -265,6 +266,7 @@
                                 </Grid.ColumnDefinitions>
                                 <ToggleButton Grid.Column="0" MinHeight="0" MinWidth="0"
                 Name="HeaderToggle" Style="{StaticResource StrategyPanelToggleButtonStyle}"
+                AutomationProperties.Name="{Binding Header, RelativeSource={RelativeSource TemplatedParent}, TargetNullValue=Panel, FallbackValue=Panel}"
                 IsChecked="{Binding Path=IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
                 Visibility="{TemplateBinding CollapseButtonVisibility}" >
                                 </ToggleButton>

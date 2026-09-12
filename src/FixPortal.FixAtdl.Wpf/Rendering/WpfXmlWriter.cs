@@ -54,11 +54,11 @@ public class WpfXmlWriter
             _writer.WriteBeginTag(prefix, localName, ns);
         }
 
-        public WpfEnclosingTagHelper(WpfXmlWriter writer, string localName, string tag)
+        public WpfEnclosingTagHelper(WpfXmlWriter writer, string namespaceUri, string localName)
         {
             _writer = writer;
 
-            _writer.WriteBeginTag(localName, tag);
+            _writer.WriteBeginTag(namespaceUri, localName);
         }
 
         protected virtual void Dispose(bool disposing)
@@ -111,9 +111,9 @@ public class WpfXmlWriter
 
     public string RadioGroupName(string group) => _radioGroupScope + group;
 
-    public void WriteBeginTag(string localName, string tag)
+    public void WriteBeginTag(string namespaceUri, string localName)
     {
-        _writer.WriteStartElement(tag, localName);
+        _writer.WriteStartElement(localName, namespaceUri);
     }
 
     public void WriteBeginTag(string prefix, string localName, string ns)
@@ -161,9 +161,9 @@ public class WpfXmlWriter
         return new WpfEnclosingTagHelper(this, tag);
     }
 
-    public IDisposable New(string prefix, string tag)
+    public IDisposable New(string namespaceUri, string localName)
     {
-        return new WpfEnclosingTagHelper(this, prefix, tag);
+        return new WpfEnclosingTagHelper(this, namespaceUri, localName);
     }
 
     public IDisposable New(string prefix, string localName, string ns)
