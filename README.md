@@ -10,10 +10,32 @@ parameter/strategy validation. Templates load automatically.
 
 ## Use in a WPF application
 
-Target `net10.0-windows` with `UseWPF` enabled. Reference
-`FixPortal.FixAtdl.Wpf` from the FixPortal GitHub Packages NuGet feed.
-`FixPortal.FixAtdl.Wpf.Core` is its platform-independent dependency.
-See [CONTRIBUTING.md](CONTRIBUTING.md) for feed authentication and local builds.
+Target `net10.0-windows` with `UseWPF` enabled. Install
+[`FixPortal.FixAtdl.Wpf`](https://www.nuget.org/packages/FixPortal.FixAtdl.Wpf/)
+from NuGet.org:
+
+```sh
+dotnet add package FixPortal.FixAtdl.Wpf
+```
+
+The package brings in
+[`FixPortal.FixAtdl.Wpf.Core`](https://www.nuget.org/packages/FixPortal.FixAtdl.Wpf.Core/),
+the platform-independent view-model, state-rule and validation layer. It in
+turn uses the headless
+[`FixPortal.FixAtdl`](https://www.nuget.org/packages/FixPortal.FixAtdl/) core.
+
+Related projects:
+
+- [`FixPortal.FixAtdl`](https://github.com/FixPortal/fixportal-fixatdl) — the
+  .NET parser, model, validator and FIX-tag emitter.
+- [`FixPortal.FixAtdl.Wpf.Core`](https://github.com/FixPortal/fixportal-fixatdl-wpf/tree/main/src/FixPortal.FixAtdl.Wpf.Core)
+  — the platform-independent layer published with this repository.
+- [`@fix-portal/fixatdl-react`](https://www.npmjs.com/package/@fix-portal/fixatdl-react)
+  ([repository](https://github.com/FixPortal/fixportal-fixatdl-react)) — a
+  separate React adapter; it is not a dependency of this WPF package.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for local builds and the private feed
+used only by development tooling.
 
 Register the adapter with your host's service collection:
 
@@ -91,8 +113,8 @@ The core project and its tests run without WPF. CI checks formatting, builds,
 tests both projects on Windows and packs both libraries.
 
 Tags `vMAJOR.MINOR.PATCH` on commits reachable from `main` publish both packages
-to GitHub Packages after CI succeeds. Creating a tag is a release action;
-ordinary branch and pull-request builds only produce artifacts.
+to NuGet.org (and GitHub Packages) after CI succeeds. Creating a tag is a
+release action; ordinary branch and pull-request builds only produce artifacts.
 
 The renderer creates and parses XAML. See [SECURITY.md](SECURITY.md) for its
 trust boundaries and vulnerability reporting.
