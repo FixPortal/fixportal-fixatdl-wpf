@@ -10,6 +10,95 @@ namespace FixPortal.FixAtdl.Wpf.Tests.UI;
 public class AtdlPanelTests
 {
     [Theory]
+    [InlineData(null)]
+    [InlineData(FixPortal.FixAtdl.Model.Enumerations.IncrementPolicy_t.Tick)]
+    [InlineData(FixPortal.FixAtdl.Model.Enumerations.IncrementPolicy_t.LotSize)]
+    public void Spinner_UsesConfiguredIncrementAndRejectsValuesBeyondParameterBounds(
+        FixPortal.FixAtdl.Model.Enumerations.IncrementPolicy_t? policy
+    )
+    {
+        RunOnSta(() =>
+        {
+            var strategy = TestStrategies.MinimalOneControlStrategy();
+            var control = (FixPortal.FixAtdl.Model.Controls.SingleSpinner_t)strategy.Controls["Qty"];
+            control.Increment = 0.25m;
+            control.IncrementPolicy = policy;
+            control.SetValue(1m);
+            var parameter = (FixPortal.FixAtdl.Model.Elements.Parameter_t<FixPortal.FixAtdl.Model.Types.Float_t>)
+                strategy.Parameters["Qty"];
+            parameter.Value.MinValue = 1m;
+            parameter.Value.MaxValue = 1.25m;
+            using var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
+            var (view, model) = AtdlPanel.Create(strategy, services);
+            view.Measure(new System.Windows.Size(800, 600));
+            view.Arrange(new System.Windows.Rect(0, 0, 800, 600));
+            view.UpdateLayout();
+            var spinner = Descendants(view).OfType<Controls.SingleSpinner>().Single();
+            var up = (System.Windows.Controls.Primitives.RepeatButton)spinner.FindName("upButton");
+            var down = (System.Windows.Controls.Primitives.RepeatButton)spinner.FindName("downButton");
+            up.RaiseEvent(new System.Windows.RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+            model.ReadBackFixValues()[TestStrategies.QtyFixTag].Should().Be("1.25");
+            up.RaiseEvent(new System.Windows.RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+            model.HasErrors.Should().BeTrue();
+            var read = () => model.ReadBackFixValues();
+            read.Should().Throw<InvalidOperationException>();
+            down.RaiseEvent(
+                new System.Windows.RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent)
+            );
+            model.HasErrors.Should().BeFalse();
+            spinner.Text = "0.75";
+            model.HasErrors.Should().BeTrue();
+        });
+    }
+
+    [Theory]
+    [InlineData(2025, 12, 24, 15, "20251224-15:30:45")]
+    [InlineData(2026, 11, 1, 6, "20261101-06:30:45")]
+    public void Clock_RenderPreservesLoadedTimestampAndEditsUseInjectedMarketDate(
+        int year,
+        int month,
+        int day,
+        int hour,
+        string loadedWire
+    )
+    {
+        RunOnSta(() =>
+        {
+            var strategy = TestStrategies.MinimalOneControlStrategy();
+            var control = new FixPortal.FixAtdl.Model.Controls.Clock_t("Clock")
+            {
+                ParameterRef = "Clock",
+                LocalMktTz = "America/New_York",
+                Clock = new FixedClock(),
+            };
+            control.SetValue(new DateTime(year, month, day, hour, 30, 45, DateTimeKind.Utc));
+            strategy.Parameters.Add(
+                new FixPortal.FixAtdl.Model.Elements.Parameter_t<FixPortal.FixAtdl.Model.Types.UTCTimestamp_t>("Clock")
+                {
+                    FixTag = 9003,
+                }
+            );
+            strategy.StrategyLayout.StrategyPanel.Controls.Add(control);
+            using var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
+            var (view, model) = AtdlPanel.Create(strategy, services);
+            view.Measure(new System.Windows.Size(800, 600));
+            view.Arrange(new System.Windows.Rect(0, 0, 800, 600));
+            view.UpdateLayout();
+            var picker = Descendants(view).OfType<Controls.TimePicker>().Single();
+            model.Controls[1].GetErrors().Should().BeEmpty("the loaded clock must remain valid");
+            model.ReadBackFixValues()[9003].Should().Be(loadedWire);
+            picker.Minutes = "31";
+            model.Controls[1].GetErrors().Should().BeEmpty("the edited time must be anchored by the core");
+            model.ReadBackFixValues()[9003].Should().Be(month == 11 ? "20260101-06:31:00" : "20260101-15:31:00");
+        });
+    }
+
+    private sealed class FixedClock : NodaTime.IClock
+    {
+        public NodaTime.Instant GetCurrentInstant() => NodaTime.Instant.FromUtc(2026, 1, 2, 1, 0);
+    }
+
+    [Theory]
     [InlineData("RadioButton", "")]
     [InlineData("CheckBoxList", "")]
     [InlineData("RadioButtonList", "")]

@@ -55,6 +55,24 @@ The time picker passes a time-only value to that boundary; it never chooses a
 date from the desktop's local clock. Configure the core clock before loading
 initial values when reproducible time behavior is needed.
 
+## Conformance scope
+
+State-rule tests share `Fixtures/Conformance/state-transitions.json` with the
+headless core and React adapter. They cover initial false enabled/visible
+inversion, `{NULL}` clear/restore, ordinary value transitions, cascades and
+cycle rejection against FIXatdl 1.1 state-rule conventions i–v.
+
+Radio controls sharing a parameter emit one FIX tag; complementary
+checked/unchecked enum mappings are covered. Spinner buttons use the declared
+increment; Tick/LotSize policies fall back to that increment because the adapter
+has no instrument-data provider. Parameter limits block submission of invalid
+values; the buttons do not clamp them.
+
+The current slider renders enumerated choices, not continuous numeric ranges.
+The clock editor exposes hours and minutes; editing sets seconds to zero.
+Full FIXatdl conformance is not claimed: message construction (including tag 957
+groups), instrument data and cancel/replace business policy belong to the host.
+
 ## Build and release
 
 Windows and the .NET 10 SDK are required for the WPF project and UI tests.

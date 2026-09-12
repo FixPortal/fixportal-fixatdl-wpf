@@ -82,7 +82,11 @@ public partial class ControlViewModel : ObservableValidator
         }
         try
         {
-            model.UnderlyingControl.SetValue(ConvertForControl(value)!);
+            // Loaded display values need not round-trip to the same instant (for example during a DST overlap).
+            if (!Equals(value, model.UnderlyingControl.GetCurrentValue()))
+            {
+                model.UnderlyingControl.SetValue(ConvertForControl(value)!);
+            }
             var result = model._parameter?.SetValueFromControl(model.UnderlyingControl);
             return result is null || result.IsValid
                 ? ValidationResult.Success!
