@@ -9,6 +9,105 @@ namespace FixPortal.FixAtdl.Wpf.Tests.UI;
 /// </summary>
 public class AtdlPanelTests
 {
+    [Fact]
+    public void AmendmentPanel_DisablesImmutableControlAndPreservesItsWireValue()
+    {
+        RunOnSta(() =>
+        {
+            var strategy = TestStrategies.MinimalOneControlStrategy();
+            strategy.Controls["Qty"].SetValue(12m);
+            strategy.Parameters["Qty"].MutableOnCxlRpl = false;
+            using var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
+            var (view, model) = AtdlPanel.Create(strategy, services, isAmendment: true);
+            view.Measure(new System.Windows.Size(800, 600));
+            view.Arrange(new System.Windows.Rect(0, 0, 800, 600));
+            view.UpdateLayout();
+            var spinner = Descendants(view).OfType<Controls.SingleSpinner>().Single();
+            spinner.IsEnabled.Should().BeFalse();
+            model.Controls[0].Value = 42m;
+            model.ReadBackFixValues()[TestStrategies.QtyFixTag].Should().Be("12");
+            spinner.Value.Should().Be(12m);
+        });
+    }
+
+    [Theory]
+    [InlineData(false, null, "11")]
+    [InlineData(true, null, "0.11")]
+    [InlineData(false, 0.25, "10.25")]
+    [InlineData(true, 0.25, "0.1025")]
+    public void NumericSlider_PreservesEmptyStateAndEditsWithinParameterBounds(
+        bool percentage,
+        double? increment,
+        string expectedWire
+    )
+    {
+        RunOnSta(() =>
+        {
+            var strategy = TestStrategies.MinimalOneControlStrategy();
+            strategy.StrategyLayout.StrategyPanel.Controls.Add(
+                new FixPortal.FixAtdl.Model.Controls.Slider_t("Limit")
+                {
+                    ParameterRef = "Limit",
+                    Increment = (decimal?)increment,
+                }
+            );
+            FixPortal.FixAtdl.Model.Elements.Support.IParameter parameter;
+            if (percentage)
+            {
+                var percent =
+                    new FixPortal.FixAtdl.Model.Elements.Parameter_t<FixPortal.FixAtdl.Model.Types.Percentage_t>(
+                        "Limit"
+                    )
+                    {
+                        FixTag = 9001,
+                    };
+                percent.Value.MinValue = 0.1m;
+                percent.Value.MaxValue = 0.2m;
+                parameter = percent;
+            }
+            else
+            {
+                var number = new FixPortal.FixAtdl.Model.Elements.Parameter_t<FixPortal.FixAtdl.Model.Types.Float_t>(
+                    "Limit"
+                )
+                {
+                    FixTag = 9001,
+                };
+                number.Value.MinValue = 10m;
+                number.Value.MaxValue = 20m;
+                parameter = number;
+            }
+            strategy.Parameters.Add(parameter);
+            using var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
+            var (view, model) = AtdlPanel.Create(strategy, services);
+            view.Measure(new System.Windows.Size(800, 600));
+            view.Arrange(new System.Windows.Rect(0, 0, 800, 600));
+            view.UpdateLayout();
+            var slider = Descendants(view).OfType<Controls.NumericSlider>().Single();
+            var native = Descendants(slider).OfType<System.Windows.Controls.Slider>().Single();
+            slider.Minimum.Should().Be(10);
+            slider.Maximum.Should().Be(20);
+            model.Controls[1].Value.Should().BeNull();
+            model.ReadBackFixValues().Should().NotContainKey(9001);
+            System.Windows.Controls.Slider.IncreaseSmall.Execute(null, native);
+            model.ReadBackFixValues()[9001].Should().Be(expectedWire);
+            Descendants(slider)
+                .OfType<System.Windows.Controls.Button>()
+                .Single()
+                .RaiseEvent(
+                    new System.Windows.RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent)
+                );
+            model.Controls[1].Value.Should().BeNull();
+            model.ReadBackFixValues().Should().NotContainKey(9001);
+            model.Controls[1].Value = 25m;
+            model.HasErrors.Should().BeTrue();
+            model
+                .Controls[1]
+                .Value.Should()
+                .Be(25m, "rendering a clamped thumb must not modify the loaded or supplied value");
+        });
+    }
+
     [Theory]
     [InlineData(null)]
     [InlineData(FixPortal.FixAtdl.Model.Enumerations.IncrementPolicy_t.Tick)]

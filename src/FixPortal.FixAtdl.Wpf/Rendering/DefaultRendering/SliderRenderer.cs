@@ -16,7 +16,12 @@ internal class SliderRenderer : IControlRenderer<Slider_t>
             control,
             (c, gridCoordinate) =>
             {
-                using (writer.New(DefaultNamespaceProvider.ControlsNamespaceUri, typeof(Slider).Name))
+                using (
+                    writer.New(
+                        DefaultNamespaceProvider.ControlsNamespaceUri,
+                        control.ListItems.Count == 0 ? nameof(NumericSlider) : nameof(Slider)
+                    )
+                )
                 {
                     writer.WriteAttribute(WpfXmlWriterAttribute.GridColumn, gridCoordinate.Column.ToString());
                     writer.WriteAttribute(WpfXmlWriterAttribute.GridRow, gridCoordinate.Row.ToString());
@@ -30,11 +35,24 @@ internal class SliderRenderer : IControlRenderer<Slider_t>
                         string.Format("{{Binding Path=Controls[{0}]}}", writer.ControlIndex(control))
                     );
                     writer.WriteAttribute(WpfXmlWriterAttribute.ToolTip, "{Binding Path=ToolTip, Mode=OneWay}");
-                    writer.WriteAttribute(WpfXmlWriterAttribute.ItemsSource, "{Binding Path=Items}");
-                    writer.WriteAttribute(
-                        WpfXmlWriterAttribute.SelectedValue,
-                        "{Binding Path=SelectedValue, Mode=TwoWay}"
-                    );
+                    if (control.ListItems.Count == 0)
+                    {
+                        writer.WriteAttribute("Value", "{Binding Path=Value, Mode=TwoWay}");
+                        writer.WriteAttribute("Minimum", "{Binding Path=NumericMinimum}");
+                        writer.WriteAttribute("Maximum", "{Binding Path=NumericMaximum}");
+                        writer.WriteAttribute(
+                            "Increment",
+                            "{Binding Path=UnderlyingControl.Increment, TargetNullValue=1}"
+                        );
+                    }
+                    else
+                    {
+                        writer.WriteAttribute(WpfXmlWriterAttribute.ItemsSource, "{Binding Path=Items}");
+                        writer.WriteAttribute(
+                            WpfXmlWriterAttribute.SelectedValue,
+                            "{Binding Path=SelectedValue, Mode=TwoWay}"
+                        );
+                    }
                     writer.WriteAttribute(WpfXmlWriterAttribute.IsEnabled, "{Binding Path=Enabled, Mode=OneWay}");
                     writer.WriteAttribute(WpfXmlWriterAttribute.Visibility, "{Binding Path=Visibility, Mode=OneWay}");
                 }

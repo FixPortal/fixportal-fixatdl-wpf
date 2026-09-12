@@ -36,6 +36,11 @@ strategy state: use a separate strategy instance for each open editor.
 For order amendments, load the existing order through the core before creating
 the panel; the adapter preserves loaded control values.
 
+Use `AtdlPanel.Create(strategy, serviceProvider, isAmendment: true)` or
+`new EditViewModel(strategy, isAmendment: true)` to enforce `mutableOnCxlRpl="false"`.
+Immutable values stay disabled and reject direct assignments and state-rule
+changes. A radio group with an immutable selected member is also locked.
+
 ```csharp
 if (!editor.HasErrors)
 {
@@ -62,16 +67,20 @@ headless core and React adapter. They cover initial false enabled/visible
 inversion, `{NULL}` clear/restore, ordinary value transitions, cascades and
 cycle rejection against FIXatdl 1.1 state-rule conventions i–v.
 
-Radio controls sharing a parameter emit one FIX tag; complementary
-checked/unchecked enum mappings are covered. Spinner buttons use the declared
+Radio controls sharing a parameter emit one FIX tag from the selected member;
+complementary mappings and null unchecked mappings are covered. Spinner buttons use the declared
 increment; Tick/LotSize policies fall back to that increment because the adapter
 has no instrument-data provider. Parameter limits block submission of invalid
 values; the buttons do not clamp them.
 
-The current slider renders enumerated choices, not continuous numeric ranges.
+Sliders with ListItems render enumerated choices; sliders without ListItems
+render a continuous numeric range using parameter bounds and the declared
+increment. Percentage bounds are displayed in whole-percent units. Unset values
+stay unset during rendering and can be cleared explicitly. Without declared
+bounds, the numeric slider uses 0–100 (or the parameter type's minimum).
 The clock editor exposes hours and minutes; editing sets seconds to zero.
 Full FIXatdl conformance is not claimed: message construction (including tag 957
-groups), instrument data and cancel/replace business policy belong to the host.
+groups), instrument data and cancel/replace message policy belong to the host.
 
 ## Build and release
 

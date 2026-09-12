@@ -11,7 +11,10 @@ namespace FixPortal.FixAtdl.Wpf.Core.ViewModels;
 public class ListControlViewModel : ControlViewModel
 {
     public ListControlViewModel(ListControlBase control, IParameter? parameter = null)
-        : base(control, parameter)
+        : this(control, parameter, false) { }
+
+    public ListControlViewModel(ListControlBase control, IParameter? parameter, bool isAmendment)
+        : base(control, parameter, isAmendment)
     {
         Items = new ObservableCollection<ListItemViewModel>(
             control.ListItems.Select(item => new ListItemViewModel(this, item))

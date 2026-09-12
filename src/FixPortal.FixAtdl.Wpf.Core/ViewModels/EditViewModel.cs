@@ -15,8 +15,12 @@ public class EditViewModel : ObservableObject
     private readonly List<RuleState> _rules = [];
     private bool _refreshing;
     private bool _refreshPending;
+    private bool _synchronizingRadioGroup;
 
     public EditViewModel(Strategy_t strategy)
+        : this(strategy, false) { }
+
+    public EditViewModel(Strategy_t strategy, bool isAmendment)
     {
         _strategy = strategy;
         var duplicate = strategy
@@ -32,14 +36,18 @@ public class EditViewModel : ObservableObject
 
         Controls = strategy
             .Controls.Select(control =>
-                control is ListControlBase list
-                    ? new ListControlViewModel(list, ResolveParameter(strategy, control))
-                    : new ControlViewModel(control, ResolveParameter(strategy, control))
+                control is ListControlBase list && list is not Slider_t { ListItems.Count: 0 }
+                    ? new ListControlViewModel(list, ResolveParameter(strategy, control), isAmendment)
+                    : new ControlViewModel(control, ResolveParameter(strategy, control), isAmendment)
             )
             .ToArray();
 
+        ProtectImmutableRadioGroups();
+
         foreach (var control in Controls)
         {
+            control.ParameterValueSource = strategy.Controls.GetParameterValueSource;
+            control.Revalidate();
             control.UnderlyingControl.StateRules.ResolveAll(strategy);
             _rules.AddRange(control.UnderlyingControl.StateRules.Select(rule => new RuleState(control, rule)));
             control.ErrorsChanged += (_, _) => OnPropertyChanged(nameof(HasErrors));
@@ -47,6 +55,10 @@ public class EditViewModel : ObservableObject
             {
                 if (args.PropertyName is nameof(ControlViewModel.Value) or nameof(ControlViewModel.IsContentValid))
                 {
+                    if (_synchronizingRadioGroup)
+                    {
+                        return;
+                    }
                     SynchronizeRadioGroup(control);
                     _refreshPending = true;
                     RefreshRules();
@@ -76,20 +88,50 @@ public class EditViewModel : ObservableObject
 
     private void SynchronizeRadioGroup(ControlViewModel changed)
     {
-        if (
-            changed.Value is not true
-            || changed.UnderlyingControl is not RadioButton_t { RadioGroup: { Length: > 0 } group }
-        )
+        if (changed.UnderlyingControl is not RadioButton_t { RadioGroup: { Length: > 0 } group })
         {
             return;
         }
-        foreach (
-            var sibling in Controls.Where(control =>
-                control != changed && control.UnderlyingControl is RadioButton_t radio && radio.RadioGroup == group
-            )
-        )
+        _synchronizingRadioGroup = true;
+        try
         {
-            sibling.Value = false;
+            var members = Controls
+                .Where(control => control.UnderlyingControl is RadioButton_t radio && radio.RadioGroup == group)
+                .ToArray();
+            if (changed.Value is true)
+            {
+                foreach (var sibling in members.Where(control => control != changed))
+                {
+                    sibling.Value = false;
+                }
+            }
+            foreach (var member in members)
+            {
+                member.Revalidate();
+            }
+        }
+        finally
+        {
+            _synchronizingRadioGroup = false;
+        }
+    }
+
+    private void ProtectImmutableRadioGroups()
+    {
+        foreach (var control in Controls.Where(control => control.IsReadOnly && control.Value is true))
+        {
+            if (control.UnderlyingControl is not RadioButton_t { RadioGroup: { Length: > 0 } group })
+            {
+                continue;
+            }
+            foreach (
+                var sibling in Controls.Where(sibling =>
+                    sibling.UnderlyingControl is RadioButton_t radio && radio.RadioGroup == group
+                )
+            )
+            {
+                sibling.MakeReadOnly();
+            }
         }
     }
 
