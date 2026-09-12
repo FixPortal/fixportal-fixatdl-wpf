@@ -110,7 +110,7 @@ public partial class AtdlPanelTests
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void Clock_StartingOtherFieldReplacesInvalidEmptySibling(bool hoursFirst)
+    public void Clock_EditingOtherFieldPreservesInvalidSibling(bool hoursFirst)
     {
         RunOnSta(() =>
         {
@@ -125,9 +125,18 @@ public partial class AtdlPanelTests
                 picker.Minutes = "bad";
                 picker.Hours = "15";
             }
+            picker.IsContentValid.Should().BeFalse();
+            picker.Time.Should().BeNull();
+            (hoursFirst ? picker.Hours : picker.Minutes).Should().Be("bad");
+            if (hoursFirst)
+            {
+                picker.Hours = "00";
+            }
+            else
+            {
+                picker.Minutes = "00";
+            }
             picker.IsContentValid.Should().BeTrue();
-            picker.Time.Should().NotBeNull();
-            (hoursFirst ? picker.Hours : picker.Minutes).Should().Be("00");
         });
     }
 
@@ -164,6 +173,15 @@ public partial class AtdlPanelTests
                     );
                 }
                 input.Text.Should().Be(text);
+                picker.IsContentValid.Should().BeFalse();
+                if (field == "hours")
+                {
+                    picker.Minutes = "00";
+                }
+                else
+                {
+                    picker.Hours = "00";
+                }
                 picker.IsContentValid.Should().BeTrue();
                 (field == "hours" ? picker.Time!.Value.Hour : picker.Time!.Value.Minute).Should().Be(expected);
             }
