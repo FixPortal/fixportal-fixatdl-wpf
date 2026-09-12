@@ -9,6 +9,45 @@ namespace FixPortal.FixAtdl.Wpf.Tests.UI;
 /// </summary>
 public class AtdlPanelTests
 {
+    [Theory]
+    [InlineData(null, -1d, -50d, "-49")]
+    [InlineData(150d, null, 175d, "176")]
+    public void NumericSlider_OneSidedBoundsLeaveAnEditableRange(
+        double? minimum,
+        double? maximum,
+        double loaded,
+        string expectedWire
+    )
+    {
+        RunOnSta(() =>
+        {
+            var strategy = TestStrategies.MinimalOneControlStrategy();
+            var parameter = new FixPortal.FixAtdl.Model.Elements.Parameter_t<FixPortal.FixAtdl.Model.Types.Float_t>(
+                "Limit"
+            )
+            {
+                FixTag = 9001,
+            };
+            parameter.Value.MinValue = (decimal?)minimum;
+            parameter.Value.MaxValue = (decimal?)maximum;
+            strategy.Parameters.Add(parameter);
+            var control = new FixPortal.FixAtdl.Model.Controls.Slider_t("Limit") { ParameterRef = "Limit" };
+            control.SetValue((decimal)loaded);
+            strategy.StrategyLayout.StrategyPanel.Controls.Add(control);
+            using var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
+            var (view, model) = AtdlPanel.Create(strategy, services);
+            view.Measure(new System.Windows.Size(800, 600));
+            view.Arrange(new System.Windows.Rect(0, 0, 800, 600));
+            view.UpdateLayout();
+            var native = Descendants(view).OfType<System.Windows.Controls.Slider>().Single();
+
+            System.Windows.Controls.Slider.IncreaseSmall.Execute(null, native);
+
+            model.HasErrors.Should().BeFalse();
+            model.ReadBackFixValues()[9001].Should().Be(expectedWire);
+        });
+    }
+
     [Fact]
     public void AmendmentPanel_DisablesImmutableControlAndPreservesItsWireValue()
     {

@@ -78,6 +78,8 @@ render a continuous numeric range using parameter bounds and the declared
 increment. Percentage bounds are displayed in whole-percent units. Unset values
 stay unset during rendering and can be cleared explicitly. Without declared
 bounds, the numeric slider uses 0–100 (or the parameter type's minimum).
+If only a negative maximum or a minimum above 100 is declared, the missing
+opposite bound leaves a range of 100 display units, capped at decimal limits.
 The clock editor exposes hours and minutes; editing sets seconds to zero.
 Full FIXatdl conformance is not claimed: message construction (including tag 957
 groups), instrument data and cancel/replace message policy belong to the host.

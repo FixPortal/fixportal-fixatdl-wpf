@@ -51,24 +51,32 @@ public partial class ControlViewModel : ObservableValidator
 
     internal void MakeReadOnly() => IsReadOnly = true;
 
-    public decimal NumericMinimum =>
+    private decimal? DeclaredNumericMinimum =>
         _parameter?.GetValueForControl() switch
         {
-            Percentage_t value => value.MinValue * 100 ?? 0,
-            Float_t value => value.MinValue ?? 0,
-            Int_t value => value.MinValue ?? 0,
+            Percentage_t value => value.MinValue * 100,
+            Float_t value => value.MinValue,
+            Int_t value => value.MinValue,
             NonZeroPositiveIntegerTypeBase => 1,
-            _ => 0,
+            _ => null,
         };
 
-    public decimal NumericMaximum =>
+    private decimal? DeclaredNumericMaximum =>
         _parameter?.GetValueForControl() switch
         {
             Percentage_t { MaxValue: { } value } => value * 100,
             Float_t { MaxValue: { } value } => value,
             Int_t { MaxValue: { } value } => value,
-            _ => Math.Max(NumericMinimum, 100),
+            _ => null,
         };
+
+    // Native sliders need finite bounds; retain a usable fallback interval when only one is declared.
+    public decimal NumericMinimum =>
+        DeclaredNumericMinimum
+        ?? (DeclaredNumericMaximum is < 0 and { } maximum ? Math.Max(decimal.MinValue + 100, maximum) - 100 : 0);
+
+    public decimal NumericMaximum =>
+        DeclaredNumericMaximum ?? (NumericMinimum > 100 ? Math.Min(decimal.MaxValue - 100, NumericMinimum) + 100 : 100);
 
     [CustomValidation(typeof(ControlViewModel), nameof(ValidateAgainstAtdlConstraints))]
     public object? Value
