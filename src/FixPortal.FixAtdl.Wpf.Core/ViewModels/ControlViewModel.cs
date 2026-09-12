@@ -147,6 +147,18 @@ public partial class ControlViewModel : ObservableValidator
         {
             return new ValidationResult("Enter a valid value.");
         }
+        if (model.UnderlyingControl is TextControlBase && value is not null and not string)
+        {
+            return new ValidationResult("Enter a text value.");
+        }
+        if (
+            model.UnderlyingControl is ListControlBase and not Slider_t { ListItems.Count: 0 }
+            && value is not null and not EnumState
+            && !Equals(value, "{NULL}")
+        )
+        {
+            return new ValidationResult("Select a list value.");
+        }
         try
         {
             // Loaded display values need not round-trip to the same instant (for example during a DST overlap).
@@ -168,13 +180,7 @@ public partial class ControlViewModel : ObservableValidator
     }
 
     internal static bool IsValidationException(Exception ex) =>
-        ex
-            is FixAtdlException
-                or InternalErrorException
-                or ArgumentException
-                or FormatException
-                or InvalidCastException
-                or OverflowException;
+        ex is FixAtdlException or ArgumentException or FormatException or InvalidCastException or OverflowException;
 
     private static object? ConvertForControl(object? value) =>
         value is byte or sbyte or short or ushort or int or uint or long or ulong or float or double

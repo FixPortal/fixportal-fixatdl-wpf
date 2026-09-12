@@ -1,15 +1,51 @@
 using AwesomeAssertions;
+using FixPortal.FixAtdl.Diagnostics.Exceptions;
 using FixPortal.FixAtdl.Model.Controls;
 using FixPortal.FixAtdl.Model.Elements;
 using FixPortal.FixAtdl.Model.Elements.Support;
 using FixPortal.FixAtdl.Model.Enumerations;
 using FixPortal.FixAtdl.Model.Types;
 using FixPortal.FixAtdl.Wpf.Core.ViewModels;
+using NSubstitute;
 
 namespace FixPortal.FixAtdl.Wpf.Core.Tests.ViewModels;
 
 public class ReviewRegressionTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void InternalParameterFailure_IsNotReportedAsUserInputError(bool withoutControl)
+    {
+        var parameter = Substitute.For<IParameter>();
+        parameter.Name.Returns("Broken");
+        if (withoutControl)
+        {
+            parameter.WireValue.Returns(_ => throw new InternalErrorException("Broken parameter invariant"));
+        }
+        else
+        {
+            parameter
+                .SetValueFromControl(Arg.Any<Control_t>())
+                .Returns(_ => throw new InternalErrorException("Broken parameter invariant"));
+        }
+
+        Action create = () =>
+        {
+            if (withoutControl)
+            {
+                var strategy = TestControls.MinimalStrategyWithOneRequiredControl();
+                strategy.Parameters.Add(parameter);
+                _ = new EditViewModel(strategy);
+            }
+            else
+            {
+                _ = new ControlViewModel(new TextField_t("Input"), parameter);
+            }
+        };
+        create.Should().Throw<InternalErrorException>().WithMessage("Broken parameter invariant");
+    }
+
     [Fact]
     public void ReadBack_IncludesConstantAndLoadedParametersWithoutControls()
     {

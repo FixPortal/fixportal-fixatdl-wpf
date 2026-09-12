@@ -57,11 +57,12 @@ public partial class AtdlPanelTests
     }
 
     [Fact]
-    public void Spinner_CommaDecimalCannotBecomeTenTimesLarger()
+    public void Spinner_InvariantInputRejectsCommaDecimalUnderGermanCulture()
     {
         RunOnSta(() =>
         {
             CultureInfo.CurrentCulture = new CultureInfo("de-DE");
+            // Reproduce the user's locale; the renderer deliberately keeps invariant input syntax.
             using var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
             var (view, model) = AtdlPanel.Create(TestStrategies.MinimalOneControlStrategy(), services);
             Layout(view);
@@ -269,6 +270,8 @@ public partial class AtdlPanelTests
                 var frame = (Controls.StrategyPanelFrame)view;
                 var toggle = (ToggleButton)frame.Template.FindName("HeaderToggle", frame);
                 toggle.IsVisible.Should().BeTrue();
+                new ToggleButtonAutomationPeer(toggle).GetName().Should().NotBeNullOrWhiteSpace();
+                frame.Header = string.Empty;
                 new ToggleButtonAutomationPeer(toggle).GetName().Should().NotBeNullOrWhiteSpace();
                 toggle.SetCurrentValue(ToggleButton.IsCheckedProperty, true);
                 frame.IsExpanded.Should().BeTrue();
