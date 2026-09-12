@@ -3,10 +3,12 @@ using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using FixPortal.FixAtdl.Diagnostics.Exceptions;
 using FixPortal.FixAtdl.Fix;
+using FixPortal.FixAtdl.Model.Controls;
 using FixPortal.FixAtdl.Model.Controls.Support;
 using FixPortal.FixAtdl.Model.Elements;
 using FixPortal.FixAtdl.Model.Elements.Support;
 using FixPortal.FixAtdl.Model.Enumerations;
+using FixPortal.FixAtdl.Model.Types;
 using FixPortal.FixAtdl.Model.Types.Support;
 
 namespace FixPortal.FixAtdl.Wpf.Core.ViewModels;
@@ -17,11 +19,15 @@ public partial class ControlViewModel : ObservableValidator
     private readonly IParameter? _parameter;
 
     public ControlViewModel(Control_t control, IParameter? parameter = null)
+        : this(control, parameter, false) { }
+
+    public ControlViewModel(Control_t control, IParameter? parameter, bool isAmendment)
     {
         UnderlyingControl = control;
         _parameter = parameter;
+        IsReadOnly = isAmendment && parameter?.MutableOnCxlRpl == false;
         // A cleared list retains an EnumState; null means it has never been initialized.
-        if (control is ListControlBase && control.GetCurrentValue() is null)
+        if (control is ListControlBase and not Slider_t { ListItems.Count: 0 } && control.GetCurrentValue() is null)
         {
             control.LoadInitValue(FixFieldValueProvider.Empty);
         }
@@ -35,14 +41,58 @@ public partial class ControlViewModel : ObservableValidator
     public string? ToolTip => UnderlyingControl.ToolTip;
     public bool IsRequiredParameter => _parameter?.Use == Use_t.Required;
     internal string? WireValue => HasErrors ? null : _parameter?.WireValue;
+    internal Func<Control_t, Control_t>? ParameterValueSource { get; set; }
 
-    [ObservableProperty]
-    [NotifyDataErrorInfo]
-    [CustomValidation(typeof(ControlViewModel), nameof(ValidateAgainstAtdlConstraints))]
+    internal void Revalidate() => ValidateProperty(Value, nameof(Value));
+
     private object? _value;
 
-    [ObservableProperty]
+    public bool IsReadOnly { get; private set; }
+
+    internal void MakeReadOnly() => IsReadOnly = true;
+
+    public decimal NumericMinimum =>
+        _parameter?.GetValueForControl() switch
+        {
+            Percentage_t value => value.MinValue * 100 ?? 0,
+            Float_t value => value.MinValue ?? 0,
+            Int_t value => value.MinValue ?? 0,
+            NonZeroPositiveIntegerTypeBase => 1,
+            _ => 0,
+        };
+
+    public decimal NumericMaximum =>
+        _parameter?.GetValueForControl() switch
+        {
+            Percentage_t { MaxValue: { } value } => value * 100,
+            Float_t { MaxValue: { } value } => value,
+            Int_t { MaxValue: { } value } => value,
+            _ => Math.Max(NumericMinimum, 100),
+        };
+
+    [CustomValidation(typeof(ControlViewModel), nameof(ValidateAgainstAtdlConstraints))]
+    public object? Value
+    {
+        get => _value;
+        set
+        {
+            if (!IsReadOnly && !Equals(_value, value))
+            {
+                OnPropertyChanging();
+                _value = value;
+                ValidateProperty(value, nameof(Value));
+                OnPropertyChanged();
+            }
+        }
+    }
+
     private bool _enabled = true;
+
+    public bool Enabled
+    {
+        get => _enabled && !IsReadOnly;
+        set => SetProperty(ref _enabled, value);
+    }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(Visibility))]
@@ -59,7 +109,15 @@ public partial class ControlViewModel : ObservableValidator
 
     internal void ApplyStateValue(string value)
     {
-        if (UnderlyingControl is ListControlBase list && value != "{NULL}")
+        if (IsReadOnly)
+        {
+            return;
+        }
+        if (
+            UnderlyingControl is ListControlBase list
+            && list is not Slider_t { ListItems.Count: 0 }
+            && value != "{NULL}"
+        )
         {
             var state = new EnumState(list.ListItems.EnumIds);
             state.LoadInitValue(value, list is FixPortal.FixAtdl.Model.Controls.EditableDropDownList_t);
@@ -87,7 +145,9 @@ public partial class ControlViewModel : ObservableValidator
             {
                 model.UnderlyingControl.SetValue(ConvertForControl(value)!);
             }
-            var result = model._parameter?.SetValueFromControl(model.UnderlyingControl);
+            var result = model._parameter?.SetValueFromControl(
+                model.ParameterValueSource?.Invoke(model.UnderlyingControl) ?? model.UnderlyingControl
+            );
             return result is null || result.IsValid
                 ? ValidationResult.Success!
                 : new ValidationResult(result.ErrorText);

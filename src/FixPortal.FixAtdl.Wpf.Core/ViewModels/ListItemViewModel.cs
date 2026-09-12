@@ -35,6 +35,10 @@ public partial class ListItemViewModel : ObservableObject
         if (!_updatingFromOwner)
         {
             _owner.SetItemSelected(EnumId, value);
+            if (_owner.IsReadOnly)
+            {
+                RefreshSelectionFromOwner();
+            }
         }
     }
 

@@ -24,9 +24,16 @@ public static class AtdlPanel
     public static (FrameworkElement View, EditViewModel ViewModel) Create(
         Strategy_t strategy,
         IServiceProvider services
+    ) => Create(strategy, services, false);
+
+    /// <summary>Creates an editor, preserving immutable parameter values when amending an order.</summary>
+    public static (FrameworkElement View, EditViewModel ViewModel) Create(
+        Strategy_t strategy,
+        IServiceProvider services,
+        bool isAmendment
     )
     {
-        var viewModel = new EditViewModel(strategy);
+        var viewModel = new EditViewModel(strategy, isAmendment);
         var renderer = services.GetRequiredService<StrategyPanelRenderer>();
         var view =
             renderer.Render(strategy, services)
