@@ -37,33 +37,9 @@ public partial class SingleSpinner : NumericSpinnerControlBase
         set => SetValue(IncrementProperty, value);
     }
 
-    private void DecrementValue()
-    {
-        if (!IsContentValid)
-        {
-            return;
-        }
+    private void DecrementValue() => ChangeValue(Increment, subtract: true);
 
-        decimal currentValue = Value ?? 0;
-
-        currentValue -= Increment;
-
-        Value = currentValue;
-    }
-
-    private void IncrementValue()
-    {
-        if (!IsContentValid)
-        {
-            return;
-        }
-
-        decimal currentValue = Value ?? 0;
-
-        currentValue += Increment;
-
-        Value = currentValue;
-    }
+    private void IncrementValue() => ChangeValue(Increment);
 
     private void upButton_Click(object sender, RoutedEventArgs? e)
     {
@@ -80,10 +56,12 @@ public partial class SingleSpinner : NumericSpinnerControlBase
         if (e.Key == Key.Down)
         {
             DecrementValue();
+            e.Handled = true;
         }
         else if (e.Key == Key.Up)
         {
             IncrementValue();
+            e.Handled = true;
         }
     }
 

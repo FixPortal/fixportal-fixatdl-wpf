@@ -12,7 +12,6 @@ public class ClickSelectTextBox : TextBox
         AddHandler(PreviewMouseLeftButtonDownEvent, new MouseButtonEventHandler(SelectivelyIgnoreMouseButton), true);
         AddHandler(GotKeyboardFocusEvent, new RoutedEventHandler(SelectAllText), true);
         AddHandler(MouseDoubleClickEvent, new RoutedEventHandler(SelectAllText), true);
-        AddHandler(KeyDownEvent, new RoutedEventHandler(HandleHandledKeyDown), true);
     }
 
     private static void SelectivelyIgnoreMouseButton(object sender, MouseButtonEventArgs e)
@@ -44,14 +43,6 @@ public class ClickSelectTextBox : TextBox
         if (e.OriginalSource is TextBox textBox)
         {
             textBox.SelectAll();
-        }
-    }
-
-    private void HandleHandledKeyDown(object sender, RoutedEventArgs e)
-    {
-        if (e is KeyEventArgs { Key: Key.Up or Key.Down } ke)
-        {
-            ke.Handled = false;
         }
     }
 }

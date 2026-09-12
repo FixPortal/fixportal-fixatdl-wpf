@@ -7,7 +7,7 @@ namespace FixPortal.FixAtdl.Wpf.Tests.UI;
 /// <summary>
 /// WPF controls require an STA thread; the test runner uses MTA threads.
 /// </summary>
-public class AtdlPanelTests
+public partial class AtdlPanelTests
 {
     [Theory]
     [InlineData(null, -1d, -50d, "-49")]
@@ -223,6 +223,7 @@ public class AtdlPanelTests
             view.Arrange(new System.Windows.Rect(0, 0, 800, 600));
             view.UpdateLayout();
             var picker = Descendants(view).OfType<Controls.TimePicker>().Single();
+            picker.Hours.Should().Be(month == 11 ? "01" : "10");
             model.Controls[1].GetErrors().Should().BeEmpty("the loaded clock must remain valid");
             model.ReadBackFixValues()[9003].Should().Be(loadedWire);
             picker.Minutes = "31";
@@ -645,6 +646,10 @@ public class AtdlPanelTests
             catch (Exception ex)
             {
                 failure = ex;
+            }
+            finally
+            {
+                System.Windows.Threading.Dispatcher.CurrentDispatcher.InvokeShutdown();
             }
         });
         thread.SetApartmentState(ApartmentState.STA);

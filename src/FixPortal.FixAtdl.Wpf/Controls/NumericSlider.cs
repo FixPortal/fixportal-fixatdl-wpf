@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace FixPortal.FixAtdl.Wpf.Controls;
 
@@ -52,6 +53,30 @@ public sealed class NumericSlider : UserControl
                 Value = (decimal)args.NewValue;
             }
         };
+        _slider.AddHandler(MouseLeftButtonUpEvent, new MouseButtonEventHandler((_, _) => CommitEmptyValue()), true);
+        _slider.AddHandler(
+            KeyUpEvent,
+            new KeyEventHandler(
+                (_, args) =>
+                {
+                    if (
+                        args.Key
+                        is Key.Left
+                            or Key.Right
+                            or Key.Up
+                            or Key.Down
+                            or Key.Home
+                            or Key.End
+                            or Key.PageUp
+                            or Key.PageDown
+                    )
+                    {
+                        CommitEmptyValue();
+                    }
+                }
+            ),
+            true
+        );
         Synchronize();
     }
 
@@ -81,6 +106,14 @@ public sealed class NumericSlider : UserControl
 
     private static void Synchronize(DependencyObject source, DependencyPropertyChangedEventArgs args) =>
         ((NumericSlider)source).Synchronize();
+
+    private void CommitEmptyValue()
+    {
+        if (!_updating && Value is null)
+        {
+            Value = (decimal)_slider.Value;
+        }
+    }
 
     private void Synchronize()
     {

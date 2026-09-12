@@ -132,7 +132,14 @@ public class NumericSpinnerControlBase : UserControl
             }
             else
             {
-                if (decimal.TryParse(newValue, NumberStyles.Number, FormatProvider, out decimal decimalValue))
+                if (
+                    decimal.TryParse(
+                        newValue,
+                        NumberStyles.Number & ~NumberStyles.AllowThousands,
+                        FormatProvider,
+                        out decimal decimalValue
+                    )
+                )
                 {
                     Value = decimalValue;
 
@@ -155,5 +162,21 @@ public class NumericSpinnerControlBase : UserControl
     private void UpdateIsContentValid(bool value)
     {
         IsContentValid = value;
+    }
+
+    protected void ChangeValue(decimal increment, bool subtract = false)
+    {
+        if (!IsContentValid)
+        {
+            return;
+        }
+        try
+        {
+            Value = subtract ? (Value ?? 0) - increment : (Value ?? 0) + increment;
+        }
+        catch (OverflowException)
+        {
+            // Keep the representable value; the opposite step remains available.
+        }
     }
 }
