@@ -277,6 +277,9 @@
                         </Border>
                     </Grid>
                     <ControlTemplate.Triggers>
+                        <Trigger Property="Header" Value="">
+                            <Setter TargetName="HeaderToggle" Property="AutomationProperties.Name" Value="Panel"/>
+                        </Trigger>
                         <Trigger Property="IsExpanded" Value="true">
                             <Setter Property="Visibility" TargetName="ExpandSite" Value="Visible"/>
                         </Trigger>
