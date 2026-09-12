@@ -70,6 +70,7 @@ public class EditViewModel : ObservableObject
         }
         return Controls
             .Where(control => control.FixTag is not null && control.WireValue is not null)
+            .DistinctBy(control => control.UnderlyingControl.ParameterRef)
             .ToDictionary(control => control.FixTag!.Value, control => control.WireValue!);
     }
 
@@ -149,14 +150,14 @@ public class EditViewModel : ObservableObject
 
     private sealed class RuleState(ControlViewModel control, StateRule_t rule)
     {
-        private bool _active;
+        private bool? _active;
         private object? _previousValue;
 
         public void Apply()
         {
             rule.Evaluate();
             var active = rule.CurrentState;
-            // A false condition has no initial action; subsequent transitions invert enabled/visible.
+            // Initial false conditions also invert enabled/visible (FIXatdl 1.1 conventions i–ii).
             if (active == _active)
             {
                 return;
@@ -180,7 +181,7 @@ public class EditViewModel : ObservableObject
                 _previousValue = ControlViewModel.Snapshot(control.Value);
                 control.ApplyStateValue(rule.Value);
             }
-            else if (rule.Value == "{NULL}")
+            else if (_active == true && rule.Value == "{NULL}")
             {
                 control.Value = ControlViewModel.Snapshot(_previousValue);
             }
