@@ -115,10 +115,13 @@ jobs:
         with:
           name: packages
           path: artifacts
+      # `dotnet nuget push` reads NUGET_API_KEY when --api-key is absent, so the key
+      # never enters the argument vector where /proc makes it readable to any other
+      # process on the runner.
       - name: Publish validated packages
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: dotnet nuget push 'artifacts/*.nupkg' --source https://nuget.pkg.github.com/FixPortal/index.json --api-key "$GITHUB_TOKEN" --skip-duplicate
+          NUGET_API_KEY: ${{ secrets.GITHUB_TOKEN }}
+        run: dotnet nuget push 'artifacts/*.nupkg' --source https://nuget.pkg.github.com/FixPortal/index.json --skip-duplicate
 
       # NuGet.org exchanges this job's GitHub OIDC token for a one-hour, single-use
       # API key. `user` is the policy creator; package ownership remains FixPortal.
@@ -131,4 +134,4 @@ jobs:
       - name: Publish validated packages to NuGet.org
         env:
           NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
-        run: dotnet nuget push 'artifacts/*.nupkg' --source https://api.nuget.org/v3/index.json --api-key "$NUGET_API_KEY" --skip-duplicate
+        run: dotnet nuget push 'artifacts/*.nupkg' --source https://api.nuget.org/v3/index.json --skip-duplicate
