@@ -1,3 +1,5 @@
+![FixAtdl WPF: editable strategy forms from FixPortal core models](https://raw.githubusercontent.com/FixPortal/fixportal-fixatdl-wpf/main/docs/images/fixatdl-wpf-hero.png)
+
 # FixPortal.FixAtdl.Wpf
 
 A .NET 10 WPF library that renders editable FIXatdl strategy forms from
