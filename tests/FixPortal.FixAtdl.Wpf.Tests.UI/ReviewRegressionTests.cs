@@ -107,6 +107,28 @@ public partial class AtdlPanelTests
         });
     }
 
+    [Fact]
+    public void Spinner_ButtonsDoNotCommitOverInvalidContent()
+    {
+        StaTestHarness.Run(() =>
+        {
+            var spinner = new Controls.DoubleSpinner { InnerIncrement = 1m, OuterIncrement = 1m };
+            var input = (TextBox)spinner.FindName("value");
+            input.SetCurrentValue(TextBox.TextProperty, "bad");
+
+            spinner.IsContentValid.Should().BeFalse();
+            spinner.Value.Should().BeNull();
+
+            foreach (var buttonName in new[] { "innerUpButton", "innerDownButton", "outerUpButton", "outerDownButton" })
+            {
+                ((RepeatButton)spinner.FindName(buttonName)).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+
+                spinner.Value.Should().BeNull($"{buttonName} must not commit a value over invalid content");
+                input.Text.Should().Be("bad", $"{buttonName} must not rewrite visibly invalid content");
+            }
+        });
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
