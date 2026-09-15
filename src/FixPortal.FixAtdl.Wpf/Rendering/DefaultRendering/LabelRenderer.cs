@@ -14,10 +14,12 @@ internal class LabelRenderer : IControlRenderer<Label_t>
         {
             writer.WriteAttribute(WpfXmlWriterAttribute.Margin, "1,3,1,3");
             WpfControlRenderer.WriteGridAttribute(writer, control);
+            // nosemgrep: fixatdl-wpf-venue-text-requires-literal-write -- internal markup constants: the format produces a {Binding ...} path, venue text arrives as the bound VALUE, never as markup.
             writer.WriteAttribute(
                 WpfXmlWriterAttribute.ToolTip,
                 string.Format("{{Binding Path=Controls[{0}].ToolTip}}", writer.ControlIndex(control))
             );
+            // nosemgrep: fixatdl-wpf-venue-text-requires-literal-write -- internal markup constant: {Binding ...} path; the label's venue text is the bound Value, evaluated as content, not markup.
             writer.WriteAttribute(
                 WpfXmlWriterAttribute.Content,
                 string.Format("{{Binding Path=Controls[{0}].Value}}", writer.ControlIndex(control))
