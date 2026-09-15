@@ -1,3 +1,4 @@
+using System.Globalization;
 using AwesomeAssertions;
 using FixPortal.FixAtdl.Fix;
 using FixPortal.FixAtdl.Model.Controls;
@@ -66,6 +67,67 @@ public class EditingRegressionTests
         var model = new EditViewModel(strategy);
         model.HasErrors.Should().BeTrue();
         model.StrategyErrors.Should().ContainSingle().Which.Should().Contain("cyclic");
+    }
+
+    [Fact]
+    public void ReverseOrderedValueChain_ConvergesAndPropagatesEveryValue()
+    {
+        // Audit H1: the fixpoint pass bound in the EditViewModel refresh loop is the greater of 64
+        // passes and four passes per state rule. With 1-2 rules the 64-pass floor always wins, so a
+        // regression in the per-rule multiplier is invisible; this chain forces the scaling term to
+        // carry the load.
+        //
+        // Chain construction (per the audit's Phase-3 constraint): chain link i carries a state rule
+        // that fires when link i-1 holds the value i-1 and then writes i to link i. The controls are
+        // added to the panel from link N down to link 0, so the rules are applied in reverse dependency
+        // order: within one pass, a rule whose condition has just become true has already been
+        // evaluated, so exactly one rule fires per pass. (Had application order matched dependency
+        // order, the whole chain would cascade to fixpoint within a single pass - two passes regardless
+        // of N - and the test would pass even at multiplier zero.) Every value write raises a control
+        // property change that sets the refresh-pending flag, and the pass bound is checked before the
+        // loop-exit test, so convergence costs N propagation passes plus one quiescence pass: N + 1 in
+        // total.
+        //
+        // N = 100: the bound evaluates to 400 on current code (101 passes against 400 converges), but
+        // only 100 if the per-rule multiplier is regressed from four to one (101 exceeds 100, so the
+        // quiescence pass trips "State rules did not converge"). N sits above the 64-pass floor, so the
+        // multiplier alone is what this test guards.
+        const int ruleCount = 100;
+        var strategy = new Strategy_t();
+        var panel = new StrategyPanel_t(strategy);
+        strategy.StrategyLayout = new StrategyLayout_t { StrategyPanel = panel };
+
+        for (var i = ruleCount; i >= 0; i--)
+        {
+            var link = new SingleSpinner_t($"K{i}");
+            if (i > 0)
+            {
+                link.StateRules.Add(
+                    new StateRule_t
+                    {
+                        Value = i.ToString(CultureInfo.InvariantCulture),
+                        Edit = new Edit_t<Control_t>
+                        {
+                            Field = $"K{i - 1}",
+                            Operator = Operator_t.Equal,
+                            Value = (i - 1).ToString(CultureInfo.InvariantCulture),
+                        },
+                    }
+                );
+            }
+
+            panel.Controls.Add(link);
+        }
+
+        strategy.Controls["K0"].SetValue(0m);
+        var model = new EditViewModel(strategy);
+
+        model.StrategyErrors.Should().BeEmpty();
+        model.HasErrors.Should().BeFalse();
+        for (var i = 0; i <= ruleCount; i++)
+        {
+            model.Controls.Single(control => control.Id == $"K{i}").Value.Should().Be((decimal)i);
+        }
     }
 
     [Fact]
