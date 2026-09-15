@@ -23,7 +23,7 @@ public partial class AtdlPanelTests
     [InlineData("single", true)]
     public void Spinner_ArrowKeyIsConsumedWithoutResurrectingHandledInput(string kind, bool alreadyHandled)
     {
-        RunOnSta(() =>
+        StaTestHarness.Run(() =>
         {
             FrameworkElement spinner = kind switch
             {
@@ -59,7 +59,7 @@ public partial class AtdlPanelTests
     [Fact]
     public void Spinner_InvariantInputRejectsCommaDecimalUnderGermanCulture()
     {
-        RunOnSta(() =>
+        StaTestHarness.Run(() =>
         {
             CultureInfo.CurrentCulture = new CultureInfo("de-DE");
             // Reproduce the user's locale; the renderer deliberately keeps invariant input syntax.
@@ -90,7 +90,7 @@ public partial class AtdlPanelTests
         bool up
     )
     {
-        RunOnSta(() =>
+        StaTestHarness.Run(() =>
         {
             Controls.NumericSpinnerControlBase spinner = single
                 ? new Controls.SingleSpinner()
@@ -112,7 +112,7 @@ public partial class AtdlPanelTests
     [InlineData(false)]
     public void Clock_EditingOtherFieldPreservesInvalidSibling(bool hoursFirst)
     {
-        RunOnSta(() =>
+        StaTestHarness.Run(() =>
         {
             var picker = new Controls.TimePicker();
             if (hoursFirst)
@@ -145,7 +145,7 @@ public partial class AtdlPanelTests
     [InlineData("minutes", "45", 45)]
     public void Clock_TextInputAcceptsTwoDigits(string field, string text, int expected)
     {
-        RunOnSta(() =>
+        StaTestHarness.Run(() =>
         {
             var picker = new Controls.TimePicker();
             var window = new Window
@@ -197,7 +197,7 @@ public partial class AtdlPanelTests
     [InlineData(true)]
     public void NumericSlider_EmptyMinimumCanBeCommitted(bool mouse)
     {
-        RunOnSta(() =>
+        StaTestHarness.Run(() =>
         {
             var slider = new Controls.NumericSlider { Minimum = 10, Maximum = 20 };
             var native = Descendants(slider).OfType<System.Windows.Controls.Slider>().Single();
@@ -226,7 +226,7 @@ public partial class AtdlPanelTests
     [Fact]
     public void EnumeratedSlider_EmptyAndRuleClearHaveDistinctPosition()
     {
-        RunOnSta(() =>
+        StaTestHarness.Run(() =>
         {
             var strategy = TestStrategies.MinimalOneControlStrategy();
             var control = new Slider_t("List") { ParameterRef = "List" };
@@ -272,7 +272,7 @@ public partial class AtdlPanelTests
     [InlineData("Parameters")]
     public void CollapsiblePanel_HasVisibleNamedToggle(string? title)
     {
-        RunOnSta(() =>
+        StaTestHarness.Run(() =>
         {
             var strategy = TestStrategies.MinimalOneControlStrategy();
             strategy.StrategyLayout.StrategyPanel.Title = title!;
@@ -306,7 +306,7 @@ public partial class AtdlPanelTests
     [InlineData(3)]
     public void VerticalPanel_ColumnsAndHeaderlessPaddingAreStable(int count)
     {
-        RunOnSta(() =>
+        StaTestHarness.Run(() =>
         {
             var strategy = TestStrategies.MinimalOneControlStrategy();
             var panel = strategy.StrategyLayout.StrategyPanel;
@@ -332,7 +332,7 @@ public partial class AtdlPanelTests
     [InlineData(Orientation_t.Horizontal)]
     public void NestedPanels_RenderWithoutExplicitParentLinks(Orientation_t orientation)
     {
-        RunOnSta(() =>
+        StaTestHarness.Run(() =>
         {
             var strategy = new Strategy_t();
             var root = new StrategyPanel_t(strategy) { Orientation = orientation };
@@ -353,7 +353,7 @@ public partial class AtdlPanelTests
     [Fact]
     public void RepeatedRegistration_RendersSuccessfully()
     {
-        RunOnSta(() =>
+        StaTestHarness.Run(() =>
         {
             using var services = new ServiceCollection().AddFixAtdlWpf().AddFixAtdlWpf().BuildServiceProvider();
             var render = () => AtdlPanel.Create(TestStrategies.MinimalOneControlStrategy(), services);
@@ -364,7 +364,7 @@ public partial class AtdlPanelTests
     [Fact]
     public void CustomRenderer_RegisteredLastOverridesDefault()
     {
-        RunOnSta(() =>
+        StaTestHarness.Run(() =>
         {
             using var services = new ServiceCollection()
                 .AddFixAtdlWpf()
@@ -391,7 +391,7 @@ public partial class AtdlPanelTests
     [Fact]
     public void EditableDropdown_ReadBackIncludesTextBeforeFocusMoves()
     {
-        RunOnSta(() =>
+        StaTestHarness.Run(() =>
         {
             var strategy = TestStrategies.MinimalOneControlStrategy();
             strategy.StrategyLayout.StrategyPanel.Controls.Add(
