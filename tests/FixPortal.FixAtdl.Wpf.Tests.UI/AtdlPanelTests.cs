@@ -19,7 +19,7 @@ public partial class AtdlPanelTests
         string expectedWire
     )
     {
-        RunOnSta(() =>
+        StaTestHarness.Run(() =>
         {
             var strategy = TestStrategies.MinimalOneControlStrategy();
             var parameter = new FixPortal.FixAtdl.Model.Elements.Parameter_t<FixPortal.FixAtdl.Model.Types.Float_t>(
@@ -51,7 +51,7 @@ public partial class AtdlPanelTests
     [Fact]
     public void AmendmentPanel_DisablesImmutableControlAndPreservesItsWireValue()
     {
-        RunOnSta(() =>
+        StaTestHarness.Run(() =>
         {
             var strategy = TestStrategies.MinimalOneControlStrategy();
             strategy.Controls["Qty"].SetValue(12m);
@@ -80,7 +80,7 @@ public partial class AtdlPanelTests
         string expectedWire
     )
     {
-        RunOnSta(() =>
+        StaTestHarness.Run(() =>
         {
             var strategy = TestStrategies.MinimalOneControlStrategy();
             strategy.StrategyLayout.StrategyPanel.Controls.Add(
@@ -155,7 +155,7 @@ public partial class AtdlPanelTests
         FixPortal.FixAtdl.Model.Enumerations.IncrementPolicy_t? policy
     )
     {
-        RunOnSta(() =>
+        StaTestHarness.Run(() =>
         {
             var strategy = TestStrategies.MinimalOneControlStrategy();
             var control = (FixPortal.FixAtdl.Model.Controls.SingleSpinner_t)strategy.Controls["Qty"];
@@ -200,7 +200,7 @@ public partial class AtdlPanelTests
         string loadedWire
     )
     {
-        RunOnSta(() =>
+        StaTestHarness.Run(() =>
         {
             var strategy = TestStrategies.MinimalOneControlStrategy();
             var control = new FixPortal.FixAtdl.Model.Controls.Clock_t("Clock")
@@ -246,7 +246,7 @@ public partial class AtdlPanelTests
     [InlineData("RadioButtonList", "Qty")]
     public void DirectRenderer_RejectsInvalidControlIdentities(string kind, string id)
     {
-        RunOnSta(() =>
+        StaTestHarness.Run(() =>
         {
             var strategy = TestStrategies.MinimalOneControlStrategy();
             FixPortal.FixAtdl.Model.Elements.Control_t control = kind switch
@@ -267,7 +267,7 @@ public partial class AtdlPanelTests
     [Fact]
     public void Clock_RemainsInvalidUntilBothFieldsAreValid()
     {
-        RunOnSta(() =>
+        StaTestHarness.Run(() =>
         {
             var picker = new Controls.TimePicker { Hours = "10", Minutes = "30" };
             picker.Hours = "bad";
@@ -281,7 +281,7 @@ public partial class AtdlPanelTests
     [Fact]
     public void Clock_ClearOrExternalValueRemovesStaleValidation()
     {
-        RunOnSta(() =>
+        StaTestHarness.Run(() =>
         {
             var picker = new Controls.TimePicker { Hours = "10", Minutes = "30" };
             picker.Hours = "bad";
@@ -302,7 +302,7 @@ public partial class AtdlPanelTests
     [Fact]
     public void RadioGroups_AreMutuallyExclusiveAndScopedToThePanel()
     {
-        RunOnSta(() =>
+        StaTestHarness.Run(() =>
         {
             var strategy = TestStrategies.MinimalOneControlStrategy();
             strategy.StrategyLayout.StrategyPanel.Controls.Add(
@@ -335,7 +335,7 @@ public partial class AtdlPanelTests
     [Fact]
     public void DuplicateIds_AreRejectedBeforeXamlParsing()
     {
-        RunOnSta(() =>
+        StaTestHarness.Run(() =>
         {
             var strategy = TestStrategies.MinimalOneControlStrategy();
             var duplicate = new FixPortal.FixAtdl.Model.Controls.CheckBox_t("Other");
@@ -350,7 +350,7 @@ public partial class AtdlPanelTests
     [Fact]
     public void ClockEdits_KeepBindingAndUseTimeOnlyBoundary()
     {
-        RunOnSta(() =>
+        StaTestHarness.Run(() =>
         {
             var strategy = TestStrategies.MinimalOneControlStrategy();
             strategy.StrategyLayout.StrategyPanel.Controls.Add(new FixPortal.FixAtdl.Model.Controls.Clock_t("Clock"));
@@ -376,7 +376,7 @@ public partial class AtdlPanelTests
     [Fact]
     public void SpinnerTextEdits_PreserveBindingAndReportInvalidInput()
     {
-        RunOnSta(() =>
+        StaTestHarness.Run(() =>
         {
             CultureInfo.CurrentCulture = new CultureInfo("de-DE");
             using var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
@@ -403,7 +403,7 @@ public partial class AtdlPanelTests
     [Fact]
     public void CorrectingSpinnerText_RefreshesStrategyValidation()
     {
-        RunOnSta(() =>
+        StaTestHarness.Run(() =>
         {
             var strategy = TestStrategies.MinimalOneControlStrategy();
             strategy.StrategyEdits.Add(
@@ -441,7 +441,7 @@ public partial class AtdlPanelTests
     [InlineData("Slider")]
     public void ListControls_RenderAndBind(string kind)
     {
-        RunOnSta(() =>
+        StaTestHarness.Run(() =>
         {
             FixPortal.FixAtdl.Model.Controls.Support.ListControlBase control = kind switch
             {
@@ -511,7 +511,7 @@ public partial class AtdlPanelTests
     [Fact]
     public void Create_RendersContentAndBindsEdits()
     {
-        RunOnSta(() =>
+        StaTestHarness.Run(() =>
         {
             var strategy = TestStrategies.MinimalOneControlStrategy();
             using var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
@@ -549,7 +549,7 @@ public partial class AtdlPanelTests
     [InlineData("{}literal & <text>")]
     public void Create_TreatsVenueTextAsLiteral(string text)
     {
-        RunOnSta(() =>
+        StaTestHarness.Run(() =>
         {
             var strategy = TestStrategies.MinimalOneControlStrategy();
             var panel = strategy.StrategyLayout.StrategyPanel;
@@ -572,7 +572,7 @@ public partial class AtdlPanelTests
     [InlineData("X, Source={x:Static sys:Environment.MachineName}")]
     public void Create_AcceptsIdsWithoutInterpretingThemAsXaml(string id)
     {
-        RunOnSta(() =>
+        StaTestHarness.Run(() =>
         {
             var strategy = TestStrategies.MinimalOneControlStrategy();
             strategy.StrategyLayout.StrategyPanel.Controls.Add(new FixPortal.FixAtdl.Model.Controls.CheckBox_t(id));
@@ -587,7 +587,7 @@ public partial class AtdlPanelTests
     [Fact]
     public void Create_ReturnsViewAndViewModelForStrategy()
     {
-        RunOnSta(() =>
+        StaTestHarness.Run(() =>
         {
             var strategy = TestStrategies.MinimalOneControlStrategy();
             var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
@@ -602,7 +602,7 @@ public partial class AtdlPanelTests
     [Fact]
     public void ReadBackFixValues_ReturnsEditedValueKeyedByTag()
     {
-        RunOnSta(() =>
+        StaTestHarness.Run(() =>
         {
             var strategy = TestStrategies.MinimalOneControlStrategy();
             var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
@@ -622,7 +622,7 @@ public partial class AtdlPanelTests
         // culture would render 12.5m as "12,5" under a comma-decimal culture (de-DE), which is not a
         // valid FIX value and would corrupt the outbound message. Runs on a dedicated STA thread, so
         // setting its CurrentCulture does not leak to other tests.
-        RunOnSta(() =>
+        StaTestHarness.Run(() =>
         {
             CultureInfo.CurrentCulture = new CultureInfo("de-DE");
 
@@ -635,34 +635,5 @@ public partial class AtdlPanelTests
 
             values.Should().ContainKey(TestStrategies.QtyFixTag).WhoseValue.Should().Be("12.5");
         });
-    }
-
-    private static void RunOnSta(Action action)
-    {
-        Exception? failure = null;
-        var thread = new Thread(() =>
-        {
-            try
-            {
-                action();
-            }
-            catch (Exception ex)
-            {
-                failure = ex;
-            }
-            finally
-            {
-                System.Windows.Threading.Dispatcher.CurrentDispatcher.InvokeShutdown();
-            }
-        });
-        thread.SetApartmentState(ApartmentState.STA);
-        thread.IsBackground = true;
-        thread.Start();
-        thread.Join(TimeSpan.FromSeconds(30)).Should().BeTrue("WPF checks must finish within 30 seconds");
-
-        if (failure != null)
-        {
-            throw failure;
-        }
     }
 }

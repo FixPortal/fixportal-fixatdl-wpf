@@ -20,7 +20,7 @@ public partial class AtdlPanelTests
         int minute
     )
     {
-        RunOnSta(() =>
+        StaTestHarness.Run(() =>
         {
             var strategy = TestStrategies.MinimalOneControlStrategy();
             var clock = new Clock_t("Clock");
