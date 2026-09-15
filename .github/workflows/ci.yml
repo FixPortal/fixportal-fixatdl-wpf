@@ -51,7 +51,7 @@ jobs:
           "PACKAGE_VERSION=$packageVersion" >> $env:GITHUB_ENV
       - run: dotnet restore FixPortal.FixAtdl.Wpf.slnx
       - run: dotnet build FixPortal.FixAtdl.Wpf.slnx -c Release --no-restore "-p:Version=$env:PACKAGE_VERSION"
-      - run: dotnet test --solution FixPortal.FixAtdl.Wpf.slnx -c Release --no-build -- --timeout 5m
+      - run: dotnet test --solution FixPortal.FixAtdl.Wpf.slnx -c Release --no-build --report-xunit-trx --results-directory ./TestResults --timeout 5m
       - run: dotnet pack src/FixPortal.FixAtdl.Wpf.Core -c Release --no-build -o artifacts "-p:Version=$env:PACKAGE_VERSION"
       - run: dotnet pack src/FixPortal.FixAtdl.Wpf -c Release --no-build -o artifacts "-p:Version=$env:PACKAGE_VERSION"
       - uses: actions/upload-artifact@v7
@@ -59,6 +59,13 @@ jobs:
           name: packages
           path: artifacts/*.nupkg
           if-no-files-found: error
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-results
+          path: ./TestResults/*.trx
+          if-no-files-found: ignore
 
   gate-coverage:
     name: Gate coverage
