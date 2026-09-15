@@ -59,6 +59,56 @@ jobs:
         run: dotnet dotnet-coverage collect -f cobertura -o ./TestResults/coverage-core.cobertura.xml "dotnet test --project tests/FixPortal.FixAtdl.Wpf.Core.Tests --configuration Release --no-build --timeout 5m"
       - run: dotnet pack src/FixPortal.FixAtdl.Wpf.Core -c Release --no-build -o artifacts "-p:Version=$env:PACKAGE_VERSION"
       - run: dotnet pack src/FixPortal.FixAtdl.Wpf -c Release --no-build -o artifacts "-p:Version=$env:PACKAGE_VERSION"
+      - name: Validate package contents
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Add-Type -AssemblyName System.IO.Compression
+
+          function Get-ZipEntryBytes([System.IO.Compression.ZipArchive]$zip, [string]$name) {
+              $entry = $zip.GetEntry($name)
+              if ($null -eq $entry) { throw "nupkg entry '$name' not found" }
+              $ms = New-Object System.IO.MemoryStream
+              $stream = $entry.Open()
+              try { $stream.CopyTo($ms) } finally { $stream.Dispose() }
+              # The comma suppresses PowerShell's pipeline unrolling of the byte array.
+              return ,$ms.ToArray()
+          }
+
+          function Test-PackagePayload([string]$packagePath, [string[]]$requiredResources) {
+              $zip = [System.IO.Compression.ZipArchive]::new([System.IO.File]::OpenRead($packagePath), 'Read')
+              try {
+                  $dllEntry = ($zip.Entries | ForEach-Object FullName) | Where-Object { $_ -match '^lib/.+\.dll$' } | Select-Object -First 1
+                  if (-not $dllEntry) { throw "no lib/<tfm>/*.dll entry in $packagePath" }
+                  if ($requiredResources.Count -eq 0) {
+                      Write-Output "OK $(Split-Path -Leaf $packagePath): $dllEntry present"
+                      return
+                  }
+                  # Load without dependency resolution; manifest resource enumeration is metadata-only.
+                  $asm = [System.Reflection.Assembly]::Load((Get-ZipEntryBytes $zip $dllEntry))
+                  $blob = $asm.GetManifestResourceNames() | Where-Object { $_ -match '\.g\.resources$' } | Select-Object -First 1
+                  if (-not $blob) { throw "'.g.resources' blob missing from $dllEntry" }
+                  $reader = New-Object System.Resources.ResourceReader($asm.GetManifestResourceStream($blob))
+                  try { $keys = @{}; foreach ($entry in $reader) { $keys[$entry.Key] = $true } } finally { $reader.Dispose() }
+                  foreach ($required in $requiredResources) {
+                      if (-not ($keys.Keys | Where-Object { $_ -ieq $required })) {
+                          throw "resource '$required' missing from $dllEntry (have: $($keys.Keys -join ', '))"
+                      }
+                      Write-Output "OK $(Split-Path -Leaf $packagePath): $required"
+                  }
+              } finally { $zip.Dispose() }
+          }
+
+          $core = Get-ChildItem 'artifacts/FixPortal.FixAtdl.Wpf.Core.*.nupkg' | Select-Object -First 1
+          $wpf = Get-ChildItem 'artifacts/FixPortal.FixAtdl.Wpf.[0-9]*.nupkg' | Select-Object -First 1
+          if (-not $core) { throw 'FixPortal.FixAtdl.Wpf.Core nupkg missing' }
+          if (-not $wpf) { throw 'FixPortal.FixAtdl.Wpf nupkg missing' }
+
+          # Core carries no WPF payload; the WPF package must embed the component
+          # resource dictionary and generic theme that standalone hosting resolves
+          # through the assembly (audit 2026-09-15 Section 7, G6).
+          Test-PackagePayload $core.FullName @()
+          Test-PackagePayload $wpf.FullName @('themes/generic.baml', 'fixatdlwpfresources.baml')
       - uses: actions/upload-artifact@v7
         with:
           name: packages
