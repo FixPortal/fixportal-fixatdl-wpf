@@ -52,6 +52,11 @@ jobs:
       - run: dotnet restore FixPortal.FixAtdl.Wpf.slnx
       - run: dotnet build FixPortal.FixAtdl.Wpf.slnx -c Release --no-restore "-p:Version=$env:PACKAGE_VERSION"
       - run: dotnet test --solution FixPortal.FixAtdl.Wpf.slnx -c Release --no-build --report-xunit-trx --results-directory ./TestResults --timeout 5m
+      - name: Collect Core branch coverage (informational)
+        # Audit 2026-09-15 Section 7 (H1): first coverage measurement on Wpf.Core
+        # only, via dotnet-coverage wrapping the unchanged test command (the
+        # fixportal-fixatdl pattern). Informational artefact: no gate, no threshold.
+        run: dotnet dotnet-coverage collect -f cobertura -o ./TestResults/coverage-core.cobertura.xml "dotnet test --project tests/FixPortal.FixAtdl.Wpf.Core.Tests --configuration Release --no-build --timeout 5m"
       - run: dotnet pack src/FixPortal.FixAtdl.Wpf.Core -c Release --no-build -o artifacts "-p:Version=$env:PACKAGE_VERSION"
       - run: dotnet pack src/FixPortal.FixAtdl.Wpf -c Release --no-build -o artifacts "-p:Version=$env:PACKAGE_VERSION"
       - uses: actions/upload-artifact@v7
@@ -64,7 +69,9 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: test-results
-          path: ./TestResults/*.trx
+          path: |
+            ./TestResults/*.trx
+            ./TestResults/*.cobertura.xml
           if-no-files-found: ignore
 
   gate-coverage:
