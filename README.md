@@ -10,6 +10,17 @@ The adapter supports all 15 FIXatdl control types, nested panel layouts,
 single and multiple list selections, editable dropdowns, state rules and
 parameter/strategy validation. Templates load automatically.
 
+![Creating and reading back a panel: AtdlPanel.Create asks the renderer for XAML, WPF parses it into a FrameworkElement, an EditViewModel is built, and the host then edits, checks HasErrors and reads the 957-960 tags back](https://raw.githubusercontent.com/FixPortal/fixportal-fixatdl-wpf/main/docs/images/panel-sequence.png)
+
+## Read these first
+
+- [Usage guide](https://github.com/FixPortal/fixportal-fixatdl-wpf/blob/main/docs/usage.md) — parse, host a panel, validation, theming, 957 read-back.
+- [API reference](https://github.com/FixPortal/fixportal-fixatdl-wpf/blob/main/docs/api.md) — `AtdlPanel`, `EditViewModel`, custom renderers.
+- [Core usage](https://github.com/FixPortal/fixportal-fixatdl/blob/main/docs/usage.md) — loading XML and the headless model.
+
+The latest NuGet.org release is 1.0.2. Both packages version together from
+the git tag; non-tag packs default to 1.0.0.
+
 ## Use in a WPF application
 
 Target `net10.0-windows` with `UseWPF` enabled. Install
@@ -36,8 +47,8 @@ Related projects:
   ([repository](https://github.com/FixPortal/fixportal-fixatdl-react)) — a
   separate React adapter; it is not a dependency of this WPF package.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for local builds and the private feed
-used only by development tooling.
+See [CONTRIBUTING.md](https://github.com/FixPortal/fixportal-fixatdl-wpf/blob/main/CONTRIBUTING.md)
+for local builds and the private feed used only by development tooling.
 
 Register the adapter with your host's service collection:
 
@@ -54,11 +65,13 @@ var (view, editor) = AtdlPanel.Create(strategy, serviceProvider);
 contentControl.Content = view;
 ```
 
-Use `FixPortal.FixAtdl.Wpf` and `FixPortal.FixAtdl.Fix` namespaces.
-Create and use the panel on the WPF dispatcher thread. An editor owns mutable
-strategy state: use a separate strategy instance for each open editor.
-For order amendments, load the existing order through the core before creating
-the panel; the adapter preserves loaded control values.
+Use `FixPortal.FixAtdl.Wpf`, `FixPortal.FixAtdl.Wpf.Core.ViewModels`,
+`FixPortal.FixAtdl.Xml`, `FixPortal.FixAtdl.Model.Elements` and
+`FixPortal.FixAtdl.Fix`. Create and use the panel on the WPF dispatcher
+thread. An editor owns mutable strategy state: use a separate strategy
+instance for each open editor. For order amendments, load the existing
+order through the core before creating the panel; the adapter preserves
+loaded control values.
 
 Use `AtdlPanel.Create(strategy, serviceProvider, isAmendment: true)` or
 `new EditViewModel(strategy, isAmendment: true)` to enforce `mutableOnCxlRpl="false"`.
@@ -69,7 +82,8 @@ changes. A radio group with an immutable selected member is also locked.
 if (!editor.HasErrors)
 {
     IReadOnlyDictionary<int, string> values = editor.ReadBackFixValues();
-    // Pass these validated FIX tag/value pairs to the host's order builder.
+    IReadOnlyList<(int Tag, string Value)> grp = editor.ReadBackStrategyParametersGrp();
+    // Direct tags and/or the 957–960 group; the host builds the order.
 }
 ```
 
@@ -105,8 +119,30 @@ bounds, the numeric slider uses 0–100 (or the parameter type's minimum).
 If only a negative maximum or a minimum above 100 is declared, the missing
 opposite bound leaves a range of 100 display units, capped at decimal limits.
 The clock editor exposes hours and minutes; editing sets seconds to zero.
-Full FIXatdl conformance is not claimed: message construction (including tag 957
-groups), instrument data and cancel/replace message policy belong to the host.
+Full FIXatdl conformance is not claimed: instrument data and cancel/replace
+message policy belong to the host. `ReadBackStrategyParametersGrp()` emits
+tags 957–960 from the current parameter values; combining them with direct
+tags and the rest of the order is still the host's.
+
+## Custom renderers
+
+The default renderers are `IControlRenderer` services registered by
+`AddFixAtdlWpf()` and consumed as `IEnumerable<IControlRenderer>` by
+`StrategyPanelRenderer`, which keys them by `ControlType` (last registration
+wins) before handing the deduplicated set to `WpfControlRenderer`. To override one control type, implement
+`IControlRenderer<T>` for that `Control_t` and register it as an additional
+`IControlRenderer` in the host's service collection. An unrecognised broker
+control reaches the visitor fallback, which throws `NotSupportedException`
+naming the control type and id.
+
+## Troubleshooting
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `dotnet restore` fails with NU1301 or 401 on the `FixPortal` GitHub Packages source | The build consumes `FixPortal.CodeStyle` from the private feed, which needs `GITHUB_PACKAGES_TOKEN` | See [CONTRIBUTING.md](https://github.com/FixPortal/fixportal-fixatdl-wpf/blob/main/CONTRIBUTING.md) |
+| `NotSupportedException`: no renderer for control type `X` (id `Y`) | Broker XML uses a control type outside the 15 registered renderers | Guard or remap upstream, or add a custom `IControlRenderer` (above) |
+| Two editors interfere with each other | An editor owns mutable strategy state | Use a separate strategy instance per open editor |
+| Immutable values stay disabled on amendment | `isAmendment: true` enforces `mutableOnCxlRpl="false"` | Expected: load the existing order first, then create the panel with `isAmendment: true` |
 
 ## Build and release
 
@@ -118,8 +154,9 @@ Tags `vMAJOR.MINOR.PATCH` on commits reachable from `main` publish both packages
 to NuGet.org (and GitHub Packages) after CI succeeds. Creating a tag is a
 release action; ordinary branch and pull-request builds only produce artifacts.
 
-The renderer creates and parses XAML. See [SECURITY.md](SECURITY.md) for its
-trust boundaries and vulnerability reporting.
+The renderer creates and parses XAML. See
+[SECURITY.md](https://github.com/FixPortal/fixportal-fixatdl-wpf/blob/main/SECURITY.md)
+for its trust boundaries and vulnerability reporting.
 
 ## Attribution
 

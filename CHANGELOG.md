@@ -12,6 +12,10 @@ sees. Both packages version together.
 
 ### Added
 
+- Diagrams. `docs/usage.md` gains a panel-creation sequence and `docs/api.md`
+  a package-split diagram showing that `Wpf.Core` is usable without WPF; the
+  README leads with the sequence by absolute URL so it renders on the NuGet
+  gallery. Sources are self-contained HTML in `docs/diagrams/`.
 - Every source file derived from Atdl4net now carries a one-line attribution to
   Steve Wilkinson's MIT-licensed original. The `NOTICE` already reprinted the
   full upstream grant, but the per-file notices had been removed, which sits
@@ -19,6 +23,9 @@ sees. Both packages version together.
   the four that are not (`AtdlPanel`, `NumericSlider`, `ServiceCollectionExtensions`
   and `AssemblyInfo`) have no upstream counterpart and carry no line.
 - This changelog.
+- `docs/usage.md` and `docs/api.md` cover host integration, the Wpf/Core
+  split, `ReadBackStrategyParametersGrp`, theming, `RenderingException`,
+  and the namespaces a host actually imports.
 
 ### Changed
 
@@ -28,6 +35,11 @@ sees. Both packages version together.
 
 ### Fixed
 
+- README gains the missing operator docs: custom `IControlRenderer`
+  registration and a troubleshooting table (private-feed restore, unknown
+  broker controls, one strategy instance per editor, amendment immutability).
+  Links are absolute so they resolve on the NuGet gallery, and the 957
+  read-back method is named.
 - The renderer's visitor fallback threw a bare `NotImplementedException`
   documented "should never get called". It is in fact where an unrecognised
   broker control lands, so a consumer got no message and no control id. It now
