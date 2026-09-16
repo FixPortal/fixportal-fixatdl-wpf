@@ -65,6 +65,35 @@ public class RenderFailureContractTests
         });
     }
 
+    [Fact]
+    public void VisitorFallback_NamesTheControlTypeAndId()
+    {
+        // The Visit(Control_t) arm is where an unrecognised broker control lands, so it is a real
+        // diagnostic surface. It threw a bare NotImplementedException documented "should never get
+        // called", which told a consumer neither which control failed nor why.
+        StaTestHarness.Run(() =>
+        {
+            using var text = new System.IO.StringWriter();
+            using var xml = System.Xml.XmlWriter.Create(text);
+            var writer = new Rendering.WpfXmlWriter(xml, []);
+            var renderer = new Rendering.WpfControlRenderer(
+                writer,
+                [],
+                new Rendering.DefaultRendering.DefaultNamespaceProvider()
+            );
+            FixPortal.FixAtdl.Model.Elements.Control_t control = new SingleSpinner_t("theSpinner");
+
+            var visit = () => renderer.Visit(control);
+
+            visit
+                .Should()
+                .Throw<NotSupportedException>()
+                .WithMessage("*SingleSpinner_t*")
+                .And.Message.Should()
+                .Contain("theSpinner");
+        });
+    }
+
     /// <summary>
     /// Emits an element whose Width carries a non-numeric value: well-formed XML, so the writer stage
     /// succeeds, but XamlReader.Parse fails converting the value - the malformed-XAML shape a custom

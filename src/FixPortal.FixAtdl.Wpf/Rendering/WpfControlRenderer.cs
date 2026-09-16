@@ -1,3 +1,4 @@
+// Portions derived from Atdl4net (c) 2010-2011 Steve Wilkinson, MIT - see NOTICE.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -194,12 +195,20 @@ public class WpfControlRenderer : IControlVisitor
     }
 
     /// <summary>
-    /// Non-specific control render method - this method should never get called.
+    /// Visitor fallback for a control type with no registered renderer.
     /// </summary>
     /// <param name="control">Control to render.</param>
+    /// <exception cref="NotSupportedException">Always. This is where an unrecognised control lands.</exception>
     public void Visit(Control_t control)
     {
-        throw new NotImplementedException();
+        ArgumentNullException.ThrowIfNull(control);
+
+        // This is the arm an unrecognised broker control reaches, so it is a real diagnostic surface
+        // rather than dead code: name the type and the control id, and say what is unsupported. A bare
+        // NotImplementedException told the consumer neither which control failed nor why.
+        throw new NotSupportedException(
+            $"No renderer is registered for control type '{control.GetType().Name}' (control id '{control.Id}')."
+        );
     }
 
     /// <summary>

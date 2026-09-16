@@ -1,3 +1,4 @@
+// Portions derived from Atdl4net (c) 2010-2011 Steve Wilkinson, MIT - see NOTICE.
 using System;
 
 namespace FixPortal.FixAtdl.Wpf.Controls;
