@@ -25,9 +25,9 @@ validation).
 
 ## Private feed restore
 
-`FixPortal.CodeStyle` comes from the private `github-fixportal` feed
-(`nuget.config`). A restore without `GITHUB_PACKAGES_TOKEN` set fails with
-NU1301/401.
+`FixPortal.CodeStyle` comes from the private `FixPortal` GitHub Packages
+source (`nuget.config`). A restore without `GITHUB_PACKAGES_TOKEN` set fails
+with NU1301/401.
 
 ## Review workflow
 

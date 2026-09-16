@@ -1,5 +1,11 @@
 # Whole-library review remediation
 
+> **Historical record — findings as disposed on 2026-09-11.** Kept as
+> the rationale behind the first public README, CI, and template work.
+> For current host integration see [usage.md](usage.md). The "deferred
+> renderer diagnostics" row is stale: HEAD throws `NotSupportedException`
+> naming the control type and id.
+
 This pass addresses the final review recorded on 2026-09-11.
 
 | Finding | Disposition |
