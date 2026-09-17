@@ -42,6 +42,14 @@ public partial class ControlViewModel : ObservableValidator
     public string? ToolTip => UnderlyingControl.ToolTip;
     public bool IsRequiredParameter => _parameter?.Use == Use_t.Required;
     internal string? WireValue => HasErrors ? null : _parameter?.WireValue;
+
+    /// <summary>
+    /// Set when a write escaped validation by exception rather than returning a
+    /// <see cref="ValidationResult"/>. The control and its parameter may then disagree, so the
+    /// strategy must not be read back as though it were clean. One-way: the model is inconsistent
+    /// and only rebuilding it clears that.
+    /// </summary>
+    internal bool HasTornWrite { get; private set; }
     internal Func<Control_t, Control_t>? ParameterValueSource { get; set; }
 
     internal void Revalidate() => ValidateProperty(Value, nameof(Value));
@@ -90,7 +98,21 @@ public partial class ControlViewModel : ObservableValidator
             {
                 OnPropertyChanging();
                 _value = value;
-                ValidateProperty(value, nameof(Value));
+                try
+                {
+                    ValidateProperty(value, nameof(Value));
+                }
+                catch
+                {
+                    // Not a user-input failure - those come back as a ValidationResult. Validation
+                    // writes the control before the parameter, so an escape here can leave the two
+                    // holding different values with nothing recorded in the error dictionary, and
+                    // OnPropertyChanged below never runs. Latch it so a read-back cannot emit the
+                    // parameter's stale wire value behind a clean HasErrors, then let the exception
+                    // reach the host, which is the whole point of not swallowing it.
+                    HasTornWrite = true;
+                    throw;
+                }
                 OnPropertyChanged();
             }
         }

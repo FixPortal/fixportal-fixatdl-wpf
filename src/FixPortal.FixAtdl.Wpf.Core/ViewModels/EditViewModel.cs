@@ -81,7 +81,8 @@ public class EditViewModel : ObservableObject
 
     public IReadOnlyList<ControlViewModel> Controls { get; }
     public IReadOnlyList<string> StrategyErrors { get; private set; } = [];
-    public bool HasErrors => Controls.Any(control => control.HasErrors) || StrategyErrors.Count > 0;
+    public bool HasErrors =>
+        Controls.Any(control => control.HasErrors || control.HasTornWrite) || StrategyErrors.Count > 0;
 
     /// <summary>Returns validated parameter wire values. Check HasErrors before submitting.</summary>
     public IReadOnlyDictionary<int, string> ReadBackFixValues()
@@ -202,26 +203,37 @@ public class EditViewModel : ObservableObject
         }
         finally
         {
-            // Parameters without controls still enforce required, constant and type constraints.
-            foreach (
-                var parameter in _strategy.Parameters.Where(parameter =>
-                    !Controls.Any(control => control.UnderlyingControl.ParameterRef == parameter.Name)
-                )
-            )
+            // The inner try/finally is load-bearing: the parameter sweep below can throw anything
+            // IsValidationException does not cover (an InternalErrorException from the core, say),
+            // and this is the only writer of _refreshing. An escape past the reset would latch the
+            // guard at true for the lifetime of this view model, and every later RefreshRules would
+            // return at the top - rules silently stop applying while HasErrors still reads clean.
+            try
             {
-                try
+                // Parameters without controls still enforce required, constant and type constraints.
+                foreach (
+                    var parameter in _strategy.Parameters.Where(parameter =>
+                        !Controls.Any(control => control.UnderlyingControl.ParameterRef == parameter.Name)
+                    )
+                )
                 {
-                    _ = parameter.WireValue;
-                }
-                catch (Exception ex) when (ControlViewModel.IsValidationException(ex))
-                {
-                    errors.Add(ex.Message);
+                    try
+                    {
+                        _ = parameter.WireValue;
+                    }
+                    catch (Exception ex) when (ControlViewModel.IsValidationException(ex))
+                    {
+                        errors.Add(ex.Message);
+                    }
                 }
             }
-            StrategyErrors = errors.ToArray();
-            _refreshing = false;
-            OnPropertyChanged(nameof(StrategyErrors));
-            OnPropertyChanged(nameof(HasErrors));
+            finally
+            {
+                StrategyErrors = errors.ToArray();
+                _refreshing = false;
+                OnPropertyChanged(nameof(StrategyErrors));
+                OnPropertyChanged(nameof(HasErrors));
+            }
         }
     }
 

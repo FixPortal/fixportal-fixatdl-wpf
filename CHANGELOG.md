@@ -43,6 +43,16 @@ sees. Both packages version together.
 
 ### Fixed
 
+- Two defects the composition review found in the path the exclusion below opens.
+  `RefreshRules` cleared its `_refreshing` re-entrancy guard only after its
+  `finally` had swept every control-less parameter's `WireValue`, so an
+  exception escaping that sweep latched the guard forever: rules silently
+  stopped applying for the lifetime of the view model while `HasErrors` still
+  read clean. And validation writes the control before its parameter, so an
+  exception escaping mid-way left the two disagreeing with nothing recorded -
+  `ReadBackFixValues` then emitted the parameter's stale wire value behind a
+  clean `HasErrors`, which is a silently wrong order value. The guard now
+  clears on every path, and a torn write is latched so a read-back fails closed.
 - An `InternalErrorException` raised by the core was being reported to the user
   as a field validation error and swallowed. `IsValidationException` matches
   `FixAtdlException`, and `FixPortal.FixAtdl` 1.1.3 re-parented

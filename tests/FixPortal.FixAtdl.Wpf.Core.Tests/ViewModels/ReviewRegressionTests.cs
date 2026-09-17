@@ -1,10 +1,12 @@
 using AwesomeAssertions;
 using FixPortal.FixAtdl.Diagnostics.Exceptions;
+using FixPortal.FixAtdl.Fix;
 using FixPortal.FixAtdl.Model.Controls;
 using FixPortal.FixAtdl.Model.Elements;
 using FixPortal.FixAtdl.Model.Elements.Support;
 using FixPortal.FixAtdl.Model.Enumerations;
 using FixPortal.FixAtdl.Model.Types;
+using FixPortal.FixAtdl.Validation;
 using FixPortal.FixAtdl.Wpf.Core.ViewModels;
 using NSubstitute;
 
@@ -44,6 +46,86 @@ public class ReviewRegressionTests
             }
         };
         create.Should().Throw<InternalErrorException>().WithMessage("Broken parameter invariant");
+    }
+
+    /// <summary>
+    /// A strategy with the usual required "Qty" control plus a second control bound to a substituted
+    /// parameter that starts healthy, so construction succeeds and only the later edit fails.
+    /// </summary>
+    private static (Strategy_t Strategy, Action Break) BrokenOnDemand()
+    {
+        var strategy = TestControls.MinimalStrategyWithOneRequiredControl();
+        var control = new TextField_t("Broken") { ParameterRef = "Broken" };
+        strategy.StrategyLayout.StrategyPanel.Controls.Add(control);
+
+        bool failing = false;
+        var parameter = Substitute.For<IParameter>();
+        parameter.Name.Returns("Broken");
+        parameter.FixTag.Returns(new FixTag(9100));
+        parameter.IsSet.Returns(true);
+        parameter.WireValue.Returns("old");
+        parameter
+            .SetValueFromControl(Arg.Any<Control_t>())
+            .Returns(_ =>
+                failing ? throw new InternalErrorException("Broken parameter invariant") : ValidationResult.ValidResult
+            );
+        strategy.Parameters.Add(parameter);
+
+        return (strategy, () => failing = true);
+    }
+
+    [Fact]
+    public void InternalFailureDuringAnEdit_BlocksReadBackRatherThanEmittingTheStaleWireValue()
+    {
+        // Validation writes the control before the parameter, so an InternalErrorException escaping it
+        // leaves the two disagreeing with nothing recorded in the error dictionary. Without the
+        // torn-write latch HasErrors stayed false here and ReadBackFixValues emitted the parameter's
+        // OLD wire value for tag 9100 - a silently wrong order value.
+        var (strategy, breakIt) = BrokenOnDemand();
+        var model = new EditViewModel(strategy);
+        model.Controls.Single(control => control.UnderlyingControl.Id == "Qty").Value = 1m;
+
+        // Baseline must be clean, or the assertions below would hold whatever the code does.
+        model.HasErrors.Should().BeFalse();
+        model.ReadBackFixValues().Should().ContainKey(9100);
+
+        breakIt();
+        var edit = () => model.Controls.Single(control => control.UnderlyingControl.Id == "Broken").Value = "abc";
+
+        edit.Should().Throw<InternalErrorException>();
+        model.HasErrors.Should().BeTrue("the control took the value and its parameter did not");
+        var read = () => model.ReadBackFixValues();
+        read.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void InternalFailureInTheParameterSweep_DoesNotLatchTheRefreshGuard()
+    {
+        // RefreshRules' finally reads every control-less parameter's WireValue BEFORE clearing
+        // _refreshing. An exception escaping that sweep skipped the reset, and since nothing else
+        // writes the flag, every later refresh returned at the top - rules silently stopped applying
+        // for the lifetime of the view model.
+        var strategy = TestControls.MinimalStrategyWithOneRequiredControl();
+        Exception? thrown = null;
+        var orphan = Substitute.For<IParameter>();
+        orphan.Name.Returns("Orphan");
+        orphan.WireValue.Returns(_ => thrown is null ? "ok" : throw thrown);
+        strategy.Parameters.Add(orphan);
+
+        var model = new EditViewModel(strategy);
+        var qty = model.Controls.Single(control => control.UnderlyingControl.Id == "Qty");
+
+        // An exception the sweep does not catch, escaping through the finally.
+        thrown = new InternalErrorException("Broken parameter invariant");
+        var poison = () => qty.Value = 1m;
+        poison.Should().Throw<InternalErrorException>();
+
+        // Now one the sweep DOES catch and record. It can only reach StrategyErrors if a refresh
+        // still runs, which is exactly what the latched guard would have prevented.
+        thrown = new FormatException("orphan wire value is malformed");
+        qty.Value = 2m;
+
+        model.StrategyErrors.Should().ContainSingle().Which.Should().Be("orphan wire value is malformed");
     }
 
     [Fact]
