@@ -180,8 +180,21 @@ public partial class ControlViewModel : ObservableValidator
         }
     }
 
+    // InternalErrorException is excluded deliberately, and the exclusion has to be explicit: since
+    // FixPortal.FixAtdl 1.1.3 it derives from FixAtdlException, so the plain type list below now
+    // matches it. It means "the library hit a broken invariant", not "the user typed something
+    // wrong" - swallowing it would paint a bug as a field validation error and hide it from the
+    // host entirely.
     internal static bool IsValidationException(Exception ex) =>
-        ex is FixAtdlException or ArgumentException or FormatException or InvalidCastException or OverflowException;
+        ex
+            is not InternalErrorException
+                and (
+                    FixAtdlException
+                    or ArgumentException
+                    or FormatException
+                    or InvalidCastException
+                    or OverflowException
+                );
 
     private static object? ConvertForControl(object? value) =>
         value is byte or sbyte or short or ushort or int or uint or long or ulong or float or double

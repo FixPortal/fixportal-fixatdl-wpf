@@ -1,4 +1,5 @@
-﻿<local:NumericSpinnerControlBase x:Class="FixPortal.FixAtdl.Wpf.Controls.DoubleSpinner"
+﻿<!-- Portions derived from Atdl4net (c) 2010-2011 Steve Wilkinson, MIT - see NOTICE. -->
+<local:NumericSpinnerControlBase x:Class="FixPortal.FixAtdl.Wpf.Controls.DoubleSpinner"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
