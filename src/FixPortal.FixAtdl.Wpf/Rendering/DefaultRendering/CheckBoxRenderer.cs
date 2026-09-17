@@ -14,7 +14,7 @@ internal class CheckBoxRenderer : IControlRenderer<CheckBox_t>
         using (writer.New(WpfXmlWriterTag.CheckBox))
         {
             WpfControlRenderer.WriteGridAttribute(writer, control);
-            writer.WriteAttribute(WpfXmlWriterAttribute.Margin, "1,8,2,3");
+            writer.WriteAttribute(WpfXmlWriterAttribute.Margin, "2,8,3,5");
             if (!string.IsNullOrEmpty(control.Label))
             {
                 writer.WriteLiteralAttribute(WpfXmlWriterAttribute.Content, control.Label);

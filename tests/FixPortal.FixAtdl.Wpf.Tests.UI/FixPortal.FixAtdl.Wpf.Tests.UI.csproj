@@ -11,6 +11,11 @@
 
   <ItemGroup>
     <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+    <!-- The sample application's own document, linked rather than copied, so these tests fail the
+         moment the file a user runs stops parsing. -->
+    <Content Include="..\..\samples\FixPortal.FixAtdl.Wpf.Sample\Strategies\sample-strategy.xml"
+             Link="Strategies\sample-strategy.xml"
+             CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

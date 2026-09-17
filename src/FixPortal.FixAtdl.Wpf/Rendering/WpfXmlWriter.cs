@@ -83,6 +83,7 @@ public class WpfXmlWriter
     private readonly XmlWriter _writer;
     private readonly string _radioGroupScope = Guid.NewGuid().ToString("N");
     private readonly IReadOnlyDictionary<Control_t, int> _controlIndexes;
+    private readonly IReadOnlySet<string> _requiredParameterNames;
     private static AttributeInformation[] _attributeInformation = [];
     private static TagInformation[] _tagInformation = [];
 
@@ -93,7 +94,15 @@ public class WpfXmlWriter
     }
 
     public WpfXmlWriter(XmlWriter writer, IEnumerable<Control_t> controls)
+        : this(writer, controls, new HashSet<string>(StringComparer.Ordinal)) { }
+
+    /// <param name="requiredParameterNames">
+    /// Names of the parameters declared <c>use="required"</c>. A control bound to one of these gets a
+    /// required marker on its label, so the requirement is carried by something other than colour.
+    /// </param>
+    public WpfXmlWriter(XmlWriter writer, IEnumerable<Control_t> controls, IReadOnlySet<string> requiredParameterNames)
     {
+        _requiredParameterNames = requiredParameterNames;
         _writer = writer;
         _controlIndexes = controls
             .Select((control, index) => (control, index))
@@ -109,6 +118,12 @@ public class WpfXmlWriter
     }
 
     public int ControlIndex(Control_t control) => _controlIndexes[control];
+
+    /// <summary>
+    /// Whether the supplied control is bound to a parameter declared <c>use="required"</c>.
+    /// </summary>
+    public bool IsRequired(Control_t control) =>
+        control.ParameterRef is { } name && _requiredParameterNames.Contains(name);
 
     public string RadioGroupName(string group) => _radioGroupScope + group;
 
@@ -204,6 +219,9 @@ public class WpfXmlWriter
             "CollapseButtonVisibility"
         );
         _attributeInformation[(int)WpfXmlWriterAttribute.Content] = new AttributeInformation("Content");
+        _attributeInformation[(int)WpfXmlWriterAttribute.ContentStringFormat] = new AttributeInformation(
+            "ContentStringFormat"
+        );
         _attributeInformation[(int)WpfXmlWriterAttribute.DataContext] = new AttributeInformation("DataContext");
         _attributeInformation[(int)WpfXmlWriterAttribute.DisplayMemberPath] = new AttributeInformation(
             "DisplayMemberPath"
@@ -218,6 +236,9 @@ public class WpfXmlWriter
         _attributeInformation[(int)WpfXmlWriterAttribute.Height] = new AttributeInformation("Height");
         _attributeInformation[(int)WpfXmlWriterAttribute.HorizontalAlignment] = new AttributeInformation(
             "HorizontalAlignment"
+        );
+        _attributeInformation[(int)WpfXmlWriterAttribute.VerticalAlignment] = new AttributeInformation(
+            "VerticalAlignment"
         );
         _attributeInformation[(int)WpfXmlWriterAttribute.Increment] = new AttributeInformation("Increment");
         _attributeInformation[(int)WpfXmlWriterAttribute.InnerIncrement] = new AttributeInformation("InnerIncrement");

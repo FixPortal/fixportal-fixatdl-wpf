@@ -61,7 +61,12 @@ public sealed class StrategyPanelRenderer
 
         using (XmlWriter xmlWriter = XmlWriter.Create(xamlText, settings))
         {
-            WpfXmlWriter wpfWriter = new WpfXmlWriter(xmlWriter, strategy.Controls);
+            var requiredParameterNames = strategy
+                .Parameters.Where(parameter => parameter.Use == Use_t.Required)
+                .Select(parameter => parameter.Name)
+                .ToHashSet(StringComparer.Ordinal);
+
+            WpfXmlWriter wpfWriter = new WpfXmlWriter(xmlWriter, strategy.Controls, requiredParameterNames);
 
             WpfControlRenderer controlRenderer = new WpfControlRenderer(
                 wpfWriter,
@@ -105,7 +110,8 @@ public sealed class StrategyPanelRenderer
             )
         )
         {
-            writer.WriteAttribute(WpfXmlWriterAttribute.Margin, "1");
+            // Adjacent panels sat 2px apart at the upstream value of 1, which read as one block.
+            writer.WriteAttribute(WpfXmlWriterAttribute.Margin, "4");
 
             WritePanelAttributes(writer, panel);
             WritePanelPositionOrNamespaces(writer, controlRenderer, parentIsVertical, rowOrColumn);

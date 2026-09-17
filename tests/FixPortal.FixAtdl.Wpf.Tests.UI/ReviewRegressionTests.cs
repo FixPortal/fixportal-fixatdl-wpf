@@ -345,7 +345,10 @@ public partial class AtdlPanelTests
             var grid = (Grid)frame.Content;
             grid.ColumnDefinitions[0].Width.IsAuto.Should().BeTrue();
             grid.ColumnDefinitions[1].Width.IsStar.Should().BeTrue();
-            frame.Padding.Top.Should().Be(8);
+            // A headerless panel must still get top padding rather than sitting flush; the value
+            // moved from 8 to 10 with the spacing scale, and the sides from 0 to 8.
+            frame.Padding.Top.Should().Be(10);
+            frame.Padding.Left.Should().Be(8);
         });
     }
 

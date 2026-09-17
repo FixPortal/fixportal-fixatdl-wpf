@@ -313,6 +313,12 @@ public class WpfControlRenderer : IControlVisitor
                 writer.WriteAttribute(WpfXmlWriterAttribute.GridColumn, gridCoordinate.Column.ToString());
                 writer.WriteAttribute(WpfXmlWriterAttribute.GridRow, gridCoordinate.Row.ToString());
 
+                // A Label defaults to top alignment while the control beside it centres itself, so
+                // the two sat on different baselines. The right margin is the gap between label and
+                // control, which had none at all.
+                writer.WriteAttribute(WpfXmlWriterAttribute.VerticalAlignment, "Center");
+                writer.WriteAttribute(WpfXmlWriterAttribute.Margin, "0,0,8,0");
+
                 if (!string.IsNullOrEmpty(forControl))
                 {
                     writer.WriteAttribute(
@@ -327,6 +333,18 @@ public class WpfControlRenderer : IControlVisitor
                         WpfXmlWriterAttribute.Visibility,
                         string.Format("{{Binding Path=Controls[{0}].Visibility}}", writer.ControlIndex(control))
                     );
+                }
+
+                // A required parameter is marked on its label, not by colour alone. The venue's own
+                // label text stays untouched: ContentStringFormat applies the marker at render time, so
+                // Content still reads back as exactly what the strategy document declared, and a
+                // screen reader announces the marker as part of the label.
+                // A venue that already marks the requirement in its own label text keeps its marker
+                // and gets none of ours - the FIXatdl conformance corpus carries label="Urgency:*" on
+                // a use="required" parameter, which would otherwise render as "Urgency:* *".
+                if (writer.IsRequired(control) && !label.TrimEnd().EndsWith('*'))
+                {
+                    writer.WriteAttribute(WpfXmlWriterAttribute.ContentStringFormat, "{}{0} *");
                 }
 
                 writer.WriteLiteralAttribute(WpfXmlWriterAttribute.Content, label);

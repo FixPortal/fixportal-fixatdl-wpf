@@ -25,7 +25,7 @@ public class CheckBoxListRenderer : IControlRenderer<CheckBoxList_t>
                     {
                         writer.WriteAttribute(WpfXmlWriterAttribute.Name, id);
                     }
-                    writer.WriteAttribute(WpfXmlWriterAttribute.Margin, "1,3,1,3");
+                    writer.WriteAttribute(WpfXmlWriterAttribute.Margin, "2,5,2,5");
                     writer.WriteAttribute(
                         WpfXmlWriterAttribute.DataContext,
                         string.Format("{{Binding Path=Controls[{0}]}}", writer.ControlIndex(control))

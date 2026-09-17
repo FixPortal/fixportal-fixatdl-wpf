@@ -24,7 +24,7 @@ internal class ClockRenderer : IControlRenderer<Clock_t>
                     // Fixed width; revisit if this needs to self-size to content.
                     writer.WriteAttribute(WpfXmlWriterAttribute.Width, "75");
                     writer.WriteAttribute(WpfXmlWriterAttribute.HorizontalAlignment, "Left");
-                    writer.WriteAttribute(WpfXmlWriterAttribute.Margin, "1,3,1,3");
+                    writer.WriteAttribute(WpfXmlWriterAttribute.Margin, "2,5,2,5");
                     if (!string.IsNullOrEmpty(c.Id))
                     {
                         writer.WriteAttribute(WpfXmlWriterAttribute.Name, id);

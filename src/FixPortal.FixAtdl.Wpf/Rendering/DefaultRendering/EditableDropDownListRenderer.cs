@@ -22,7 +22,7 @@ internal class EditableDropDownListRenderer : IControlRenderer<EditableDropDownL
                     writer.WriteAttribute(WpfXmlWriterAttribute.GridColumn, gridCoordinate.Column.ToString());
                     writer.WriteAttribute(WpfXmlWriterAttribute.GridRow, gridCoordinate.Row.ToString());
 
-                    writer.WriteAttribute(WpfXmlWriterAttribute.Margin, "1,3,1,3");
+                    writer.WriteAttribute(WpfXmlWriterAttribute.Margin, "2,5,2,5");
 
                     writer.WriteAttribute(WpfXmlWriterAttribute.IsEditable, "True");
 

@@ -8,6 +8,52 @@ Dates are the release-tag date, in UTC. Entries are consumer-facing: build, CI
 and test-infrastructure commits are omitted unless they change what a consumer
 sees. Both packages version together.
 
+## [Unreleased]
+
+### Added
+
+- A runnable sample: `samples/FixPortal.FixAtdl.Wpf.Sample` renders a synthetic
+  "Participate" strategy exercising eleven control types, reads the FIX values
+  back, and carries a System/Light/Dark selector so the panel can be watched
+  following its host's theme. The strategy document it ships is linked into the
+  test project and rendered there, so a sample that stops parsing fails the
+  build rather than greeting the next evaluator.
+- A required parameter is marked on its label rather than by colour alone. A
+  venue document that already marks its own label keeps its marker and gets no
+  second one.
+
+### Changed
+
+- The library no longer owns a palette. Chrome resolves through `SystemColors`
+  so an embedded panel inherits its host's theme instead of painting over it;
+  the inherited `#0046D5` header and `#D0D0BF` border are gone, with hierarchy
+  carried by weight. Twenty hardcoded colour literals are down to none.
+- Spacing scale: the panel frame's padding was `1`, which left the header
+  sitting on the first control and every control against its own border. Panel
+  padding is now `8,10,8,8`, sibling panels are `4` apart, and control margins
+  moved from `1,3,1,3` to `2,5,2,5`.
+- Control labels are vertically centred against their control and separated
+  from it by 8px. They were top-aligned with no gap at all.
+
+### Fixed
+
+- A required field was tinted `MistyRose`. Under a themed host that pinned
+  light-theme colour was carried into the `ComboBox` dropdown while the theme
+  supplied a near-white foreground, leaving the list unreadable. The tint is
+  gone entirely; the label marker carries the requirement.
+- A `Border` in the multi-select template set `BorderBrush="Blue"` with no
+  thickness - inert today, a pure blue ring the moment anyone set one.
+
+### Known limitations
+
+- **Dark mode is not supported yet.** The panel follows a host's theme for
+  chrome and text, but three implicit styles (`ComboBox`, `ListBox`,
+  `ItemsControl`) are merged into the panel's own resource scope and therefore
+  shadow the host's equivalents. Under WPF's Fluent dark theme a `ComboBox`
+  renders its legacy template while its items take Fluent's foreground, so an
+  open dropdown is unreadable. Light themes are unaffected. The fix is to key
+  those styles and base them on the host's, tracked separately.
+
 ## [1.0.3] - 2026-09-17
 
 ### Added
