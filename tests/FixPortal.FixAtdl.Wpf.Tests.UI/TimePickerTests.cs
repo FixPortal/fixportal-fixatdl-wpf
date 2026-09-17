@@ -23,7 +23,10 @@ public partial class AtdlPanelTests
         StaTestHarness.Run(() =>
         {
             var strategy = TestStrategies.MinimalOneControlStrategy();
-            var clock = new Clock_t("Clock");
+            // localMktTz is required: a bare time-of-day has no way to become an instant without a
+            // zone, and since FixPortal.FixAtdl 1.1.3 the core says so rather than guessing. Every
+            // picker edit travels this path, so a Clock_t the WPF adapter can edit must carry one.
+            var clock = new Clock_t("Clock") { LocalMktTz = "America/New_York" };
             clock.SetValue(new DateTime(1, 1, 1, 10, 30, 0, DateTimeKind.Unspecified));
             strategy.StrategyLayout.StrategyPanel.Controls.Add(clock);
             using var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();

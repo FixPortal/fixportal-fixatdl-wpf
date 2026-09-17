@@ -8,7 +8,7 @@ Dates are the release-tag date, in UTC. Entries are consumer-facing: build, CI
 and test-infrastructure commits are omitted unless they change what a consumer
 sees. Both packages version together.
 
-## [Unreleased]
+## [1.0.3] - 2026-09-17
 
 ### Added
 
@@ -29,12 +29,31 @@ sees. Both packages version together.
 
 ### Changed
 
+- Takes `FixPortal.FixAtdl` 1.1.4, up from 1.1.2. Consumer-visible effects of
+  that move: exponent spellings (`1E2`) in FIX field values are rejected rather
+  than read as the expanded number; a control's `Id` can no longer be changed
+  once it belongs to a panel; a duplicate control id is rejected by the panel's
+  own collection at insertion, earlier than the renderer's guard; and a
+  `Clock_t` the adapter can edit must carry a `localMktTz`, because a bare
+  time-of-day has no way to become an instant without a zone.
+
 - `CONTRIBUTING.md` stated the licence as Apache-2.0, contradicting the package
   SPDX expression `Apache-2.0 AND MIT`. It now states the real position and asks
   contributors to preserve the per-file attribution lines.
 
 ### Fixed
 
+- An `InternalErrorException` raised by the core was being reported to the user
+  as a field validation error and swallowed. `IsValidationException` matches
+  `FixAtdlException`, and `FixPortal.FixAtdl` 1.1.3 re-parented
+  `InternalErrorException` from `Exception` onto `FixAtdlException`, so the
+  existing type list started catching it. A broken library invariant is not user
+  input; it is now excluded explicitly and propagates to the host again.
+- The five XAML files derived from Atdl4net carried no attribution line while
+  every derived `.cs` file did. `Controls/Slider.xaml`,
+  `Controls/DoubleSpinner.xaml`, `Controls/SingleSpinner.xaml`,
+  `Controls/TimePicker.xaml` and `FixAtdlWpfResources.xaml` all have exact
+  upstream counterparts and now carry the same notice the code files do.
 - README gains the missing operator docs: custom `IControlRenderer`
   registration and a troubleshooting table (private-feed restore, unknown
   broker controls, one strategy instance per editor, amendment immutability).

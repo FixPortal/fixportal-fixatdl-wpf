@@ -1,5 +1,6 @@
 using System.Globalization;
 using AwesomeAssertions;
+using FixPortal.FixAtdl.Diagnostics.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FixPortal.FixAtdl.Wpf.Tests.UI;
@@ -241,22 +242,21 @@ public partial class AtdlPanelTests
     [InlineData("RadioButton", "")]
     [InlineData("CheckBoxList", "")]
     [InlineData("RadioButtonList", "")]
-    [InlineData("RadioButton", "Qty")]
-    [InlineData("CheckBoxList", "Qty")]
-    [InlineData("RadioButtonList", "Qty")]
     public void DirectRenderer_RejectsInvalidControlIdentities(string kind, string id)
     {
         StaTestHarness.Run(() =>
         {
             var strategy = TestStrategies.MinimalOneControlStrategy();
+            // The id is set at construction: since FixPortal.FixAtdl 1.1.3, Control_t.Id cannot be
+            // changed once the control is parented, because the strategy index keys on it at
+            // insertion time. The renderer guard under test is reached the same way either route.
             FixPortal.FixAtdl.Model.Elements.Control_t control = kind switch
             {
-                "RadioButton" => new FixPortal.FixAtdl.Model.Controls.RadioButton_t("Other"),
-                "CheckBoxList" => new FixPortal.FixAtdl.Model.Controls.CheckBoxList_t("Other"),
-                _ => new FixPortal.FixAtdl.Model.Controls.RadioButtonList_t("Other"),
+                "RadioButton" => new FixPortal.FixAtdl.Model.Controls.RadioButton_t(id),
+                "CheckBoxList" => new FixPortal.FixAtdl.Model.Controls.CheckBoxList_t(id),
+                _ => new FixPortal.FixAtdl.Model.Controls.RadioButtonList_t(id),
             };
             strategy.StrategyLayout.StrategyPanel.Controls.Add(control);
-            control.Id = id;
             using var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
             var render = () =>
                 services.GetRequiredService<Rendering.StrategyPanelRenderer>().Render(strategy, services);
@@ -338,12 +338,13 @@ public partial class AtdlPanelTests
         StaTestHarness.Run(() =>
         {
             var strategy = TestStrategies.MinimalOneControlStrategy();
-            var duplicate = new FixPortal.FixAtdl.Model.Controls.CheckBox_t("Other");
-            strategy.StrategyLayout.StrategyPanel.Controls.Add(duplicate);
-            duplicate.Id = "Qty";
-            using var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
-            var create = () => AtdlPanel.Create(strategy, services);
-            create.Should().Throw<ArgumentException>().WithMessage("*unique*Qty*");
+            // Since FixPortal.FixAtdl 1.1.3 the duplicate never reaches the renderer: the panel's
+            // Controls collection is keyed by Id and rejects the insertion, and Control_t.Id can no
+            // longer be mutated afterwards to sneak one in. That is strictly earlier than the
+            // renderer guard this test used to reach, and still before any XAML is parsed.
+            var duplicate = new FixPortal.FixAtdl.Model.Controls.CheckBox_t("Qty");
+            var add = () => strategy.StrategyLayout.StrategyPanel.Controls.Add(duplicate);
+            add.Should().Throw<DuplicateKeyException>().WithMessage("*Qty*");
         });
     }
 
