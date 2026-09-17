@@ -23,7 +23,7 @@ internal class DoubleSpinnerRenderer : IControlRenderer<DoubleSpinner_t>
                     writer.WriteAttribute(WpfXmlWriterAttribute.GridRow, gridCoordinate.Row.ToString());
                     writer.WriteAttribute(WpfXmlWriterAttribute.Width, "120");
                     writer.WriteAttribute(WpfXmlWriterAttribute.HorizontalAlignment, "Left");
-                    writer.WriteAttribute(WpfXmlWriterAttribute.Margin, "1,3,3,3");
+                    writer.WriteAttribute(WpfXmlWriterAttribute.Margin, "2,5,4,5");
                     if (!string.IsNullOrEmpty(c.Id))
                     {
                         writer.WriteAttribute(WpfXmlWriterAttribute.Name, id);

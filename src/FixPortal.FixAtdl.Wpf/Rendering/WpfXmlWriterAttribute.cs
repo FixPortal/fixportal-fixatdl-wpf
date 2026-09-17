@@ -21,6 +21,9 @@ public enum WpfXmlWriterAttribute
     /// <summary>Content</summary>
     Content,
 
+    /// <summary>ContentStringFormat</summary>
+    ContentStringFormat,
+
     /// <summary>DataContext</summary>
     DataContext,
 
@@ -47,6 +50,9 @@ public enum WpfXmlWriterAttribute
 
     /// <summary>HorizontalAlignment</summary>
     HorizontalAlignment,
+
+    /// <summary>VerticalAlignment</summary>
+    VerticalAlignment,
 
     /// <summary>Increment</summary>
     Increment,

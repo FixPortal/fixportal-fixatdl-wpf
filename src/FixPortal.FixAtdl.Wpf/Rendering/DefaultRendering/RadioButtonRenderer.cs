@@ -14,7 +14,7 @@ internal class RadioButtonRenderer : IControlRenderer<RadioButton_t>
         using (writer.New(WpfXmlWriterTag.RadioButton))
         {
             WpfControlRenderer.WriteGridAttribute(writer, control);
-            writer.WriteAttribute(WpfXmlWriterAttribute.Margin, "1,8,4,3");
+            writer.WriteAttribute(WpfXmlWriterAttribute.Margin, "2,8,5,5");
             if (!string.IsNullOrEmpty(control.Label))
             {
                 writer.WriteLiteralAttribute(WpfXmlWriterAttribute.Content, control.Label);

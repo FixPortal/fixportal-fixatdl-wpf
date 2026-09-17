@@ -13,7 +13,7 @@ internal class LabelRenderer : IControlRenderer<Label_t>
         string id = WpfControlRenderer.CleanName(control.Id);
         using (writer.New(WpfXmlWriterTag.Label))
         {
-            writer.WriteAttribute(WpfXmlWriterAttribute.Margin, "1,3,1,3");
+            writer.WriteAttribute(WpfXmlWriterAttribute.Margin, "2,5,2,5");
             WpfControlRenderer.WriteGridAttribute(writer, control);
             // nosemgrep: fixatdl-wpf-venue-text-requires-literal-write -- internal markup constants: the format produces a {Binding ...} path, venue text arrives as the bound VALUE, never as markup.
             writer.WriteAttribute(

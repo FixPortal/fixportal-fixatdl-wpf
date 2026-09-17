@@ -3,6 +3,9 @@
     <Project Path="src/FixPortal.FixAtdl.Wpf.Core/FixPortal.FixAtdl.Wpf.Core.csproj" />
     <Project Path="src/FixPortal.FixAtdl.Wpf/FixPortal.FixAtdl.Wpf.csproj" />
   </Folder>
+  <Folder Name="/samples/">
+    <Project Path="samples/FixPortal.FixAtdl.Wpf.Sample/FixPortal.FixAtdl.Wpf.Sample.csproj" />
+  </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/FixPortal.FixAtdl.Wpf.Core.Tests/FixPortal.FixAtdl.Wpf.Core.Tests.csproj" />
     <Project Path="tests/FixPortal.FixAtdl.Wpf.Tests.UI/FixPortal.FixAtdl.Wpf.Tests.UI.csproj" />
