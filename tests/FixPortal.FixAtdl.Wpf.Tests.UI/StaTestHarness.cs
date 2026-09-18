@@ -1,3 +1,4 @@
+using System.Runtime.ExceptionServices;
 using System.Windows.Threading;
 using AwesomeAssertions;
 
@@ -35,7 +36,10 @@ internal static class StaTestHarness
 
         if (failure != null)
         {
-            throw failure;
+            // Capture/Throw, not "throw failure": a bare rethrow resets the stack trace to this
+            // line, which is why every intermittent failure in this suite has arrived naming only
+            // the harness and nothing about where it actually came from.
+            ExceptionDispatchInfo.Capture(failure).Throw();
         }
     }
 }

@@ -24,6 +24,10 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
+        // The declared height fits the sample strategy without scrolling; on a shorter screen, fit
+        // the work area instead of hanging off the bottom of it.
+        Height = Math.Min(Height, SystemParameters.WorkArea.Height - 40);
+
         _services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
 
         string path = Path.Combine(AppContext.BaseDirectory, "Strategies", "sample-strategy.xml");
