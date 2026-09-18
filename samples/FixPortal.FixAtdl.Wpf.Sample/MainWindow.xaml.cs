@@ -3,6 +3,7 @@ using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using FixPortal.FixAtdl.Fix;
 using FixPortal.FixAtdl.Wpf.Core.ViewModels;
 using FixPortal.FixAtdl.Xml;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,6 +29,13 @@ public partial class MainWindow : Window
         string path = Path.Combine(AppContext.BaseDirectory, "Strategies", "sample-strategy.xml");
         using FileStream stream = File.OpenRead(path);
         var strategy = new StrategiesReader().Load(stream).Strategies[0];
+
+        // A freshly loaded strategy's controls hold no values yet. This is the step that applies each
+        // control's initValue (and, where a control asks for one, a value from an inbound FIX field -
+        // there is none here, so the provider is empty). AtdlPanel.Create deliberately does not do it
+        // for you: it preserves whatever values the controls already carry, which is what makes an
+        // amendment editor possible.
+        strategy.LoadInitialControlValues(FixFieldValueProvider.Empty);
 
         (FrameworkElement view, EditViewModel model) = AtdlPanel.Create(strategy, _services);
 

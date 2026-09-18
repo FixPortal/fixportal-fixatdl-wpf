@@ -30,6 +30,9 @@ public enum WpfXmlWriterAttribute
     /// <summary>DisplayMemberPath</summary>
     DisplayMemberPath,
 
+    /// <summary>ErrorCue.HasErrors, the library's own attached property.</summary>
+    ErrorCue_HasErrors,
+
     /// <summary>GridColumn</summary>
     GridColumn,
 

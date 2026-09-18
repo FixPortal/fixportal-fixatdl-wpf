@@ -12,10 +12,17 @@ public class WpfXmlWriter
     private struct AttributeInformation
     {
         public readonly string Name;
+        public readonly string? Prefix;
+        public readonly string? Namespace;
 
         public AttributeInformation(string name)
+            : this(name, null, null) { }
+
+        public AttributeInformation(string name, string? prefix, string? ns)
         {
             Name = name;
+            Prefix = prefix;
+            Namespace = ns;
         }
     }
 
@@ -153,7 +160,14 @@ public class WpfXmlWriter
     {
         AttributeInformation attributeInfo = _attributeInformation[(int)attribute];
 
-        _writer.WriteAttributeString(attributeInfo.Name, value);
+        if (attributeInfo.Namespace is null)
+        {
+            _writer.WriteAttributeString(attributeInfo.Name, value);
+        }
+        else
+        {
+            _writer.WriteAttributeString(attributeInfo.Prefix, attributeInfo.Name, attributeInfo.Namespace, value);
+        }
     }
 
     public void WriteAttribute(string attribute, string value)
@@ -225,6 +239,11 @@ public class WpfXmlWriter
         _attributeInformation[(int)WpfXmlWriterAttribute.DataContext] = new AttributeInformation("DataContext");
         _attributeInformation[(int)WpfXmlWriterAttribute.DisplayMemberPath] = new AttributeInformation(
             "DisplayMemberPath"
+        );
+        _attributeInformation[(int)WpfXmlWriterAttribute.ErrorCue_HasErrors] = new AttributeInformation(
+            "ErrorCue.HasErrors",
+            DefaultRendering.DefaultNamespaceProvider.ControlsNamespace,
+            DefaultRendering.DefaultNamespaceProvider.ControlsNamespaceUri
         );
         _attributeInformation[(int)WpfXmlWriterAttribute.GridColumn] = new AttributeInformation("Grid.Column");
         _attributeInformation[(int)WpfXmlWriterAttribute.GridRow] = new AttributeInformation("Grid.Row");

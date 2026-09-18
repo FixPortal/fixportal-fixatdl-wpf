@@ -35,6 +35,13 @@ internal class MultiSelectListRenderer : IControlRenderer<MultiSelectList_t>
                     );
 
                     writer.WriteAttribute(WpfXmlWriterAttribute.ToolTip, "{Binding Path=ToolTip, Mode=OneWay}");
+                    // The invalid-state cue is a local value on the control, not an implicit style:
+                    // ComboBox and ListBox belong to the host, and a style for them in this panel's
+                    // dictionary would shadow the host's own. See ErrorCue.
+                    writer.WriteAttribute(
+                        WpfXmlWriterAttribute.ErrorCue_HasErrors,
+                        "{Binding Path=HasErrors, Mode=OneWay}"
+                    );
                     writer.WriteAttribute(WpfXmlWriterAttribute.ItemsSource, "{Binding Path=Items}");
                     writer.WriteAttribute(WpfXmlWriterAttribute.SelectionMode, "Multiple");
                     writer.WriteAttribute(WpfXmlWriterAttribute.VirtualizingStackPanel_IsVirtualizing, "False");
