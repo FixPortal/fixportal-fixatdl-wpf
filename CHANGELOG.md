@@ -80,6 +80,12 @@ sees. Both packages version together.
   is gone with them.
 - A `Border` in the multi-select template set `BorderBrush="Blue"` with no
   thickness - inert today, a pure blue ring the moment anyone set one.
+- The invalid-state cue reaches a spinner's and a clock's text boxes again.
+  Those boxes live inside the composite control's own XAML, so no renderer can
+  attach `ErrorCue` to them, and they had been relying on the implicit
+  `ClickSelectTextBox` style that this release deletes. They now carry
+  `ErrorCue.HasErrors` themselves, bound through the `DataContext` the
+  renderer sets on the composite.
 
 
 ## [1.0.3] - 2026-09-17

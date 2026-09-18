@@ -53,8 +53,24 @@ public partial class MainWindow : Window
     {
         if (_model.HasErrors)
         {
+            // StrategyErrors carries only strategy-level messages, so reporting it alone leaves the
+            // ordinary case - one bad field - saying "correct them" and naming nothing.
+            var problems = _model
+                .Controls.Where(control => control.HasErrors)
+                .Select(control =>
+                    $"{control.Id}: {string.Join("; ", control.GetErrors(nameof(ControlViewModel.Value)).OfType<System.ComponentModel.DataAnnotations.ValidationResult>().Select(error => error.ErrorMessage))}"
+                )
+                .Concat(_model.StrategyErrors)
+                .ToList();
+
+            // HasErrors also covers a torn write - a control and its parameter left disagreeing by an
+            // escaping exception - which is not any control's HasErrors, so it names nothing above.
+            // A host cannot enumerate those: the latch is internal and the editor has to be rebuilt.
             StatusText.Text = "The strategy has validation errors - correct them before reading FIX values.";
-            OutputText.Text = string.Join(Environment.NewLine, _model.StrategyErrors);
+            OutputText.Text =
+                problems.Count > 0
+                    ? string.Join(Environment.NewLine, problems)
+                    : "No field reports an error, so the editor is internally inconsistent: rebuild it from the strategy document.";
             return;
         }
 
