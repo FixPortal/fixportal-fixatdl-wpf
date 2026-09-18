@@ -8,7 +8,8 @@
 
 Default control classes under `FixPortal.FixAtdl.Wpf.Controls` are
 public because generated XAML references them. Do not construct them
-from host code.
+from host code. `ErrorCue` is the exception: it is an attached property
+in that namespace, not a control, and it is part of the host contract.
 
 ## `FixPortal.FixAtdl.Wpf`
 
@@ -19,6 +20,7 @@ from host code.
 | `AddFixAtdlWpf()` | Registers `StrategyPanelRenderer` and the 15 default `IControlRenderer`s as transients. |
 | `IControlRenderer` / `IControlRenderer<T>` | Custom renderer. `ControlType` selects the `Control_t` subclass; `Render` writes XAML through `WpfXmlWriter`. Register after `AddFixAtdlWpf()` — last wins. |
 | `StrategyPanelRenderer` | DI-resolved renderer used by `AtdlPanel`. Throws `RenderingException` when the strategy has no layout or no root panel. Merges `FixAtdlWpfResources.xaml` into the parsed view. |
+| `ErrorCue.HasErrors` | Attached property marking a control invalid: paints `BorderBrush` and `Foreground` with `ValidationErrorBrush` while true, and `ClearValue`s both when false so the property resolves afresh through the host's theme. The panel's dictionary declares no implicit style for a host-owned type, so this - not a `Style` - is how a custom renderer shows an invalid state. Emit `atdl:ErrorCue.HasErrors="{Binding Path=HasErrors}"`; from code, `ErrorCue.SetHasErrors(element, true)`. |
 
 An unrecognised control type reaches the visitor fallback and throws
 `NotSupportedException` naming the CLR type and control id.
@@ -42,6 +44,7 @@ Usable without the WPF package (`new EditViewModel(strategy)`).
 using FixPortal.FixAtdl.Fix;                    // FixFieldValueProvider
 using FixPortal.FixAtdl.Model.Elements;         // Strategy_t
 using FixPortal.FixAtdl.Wpf;                    // AtdlPanel, AddFixAtdlWpf
+using FixPortal.FixAtdl.Wpf.Controls;           // ErrorCue, if set from code
 using FixPortal.FixAtdl.Wpf.Core.ViewModels;    // EditViewModel
 using FixPortal.FixAtdl.Xml;                    // StrategiesReader
 using Microsoft.Extensions.DependencyInjection;
