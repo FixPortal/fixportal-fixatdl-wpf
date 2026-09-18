@@ -22,8 +22,8 @@ sees. Both packages version together.
   the documented way to apply each control's `initValue`; without it a
   strategy that pre-populates a field renders that field empty, and a required
   one opens invalid.
-  The sample window is sized to the rendered strategy so the form needs no
-  scrolling, and sets an opaque themed background: WPF's Fluent theme puts a
+  The sample window is sized to the rendered strategy (859px) so the form needs
+  no scrolling, and sets an opaque themed background: WPF's Fluent theme puts a
   Mica backdrop on a window, and Mica tints it with the desktop wallpaper's
   dominant colour, which made the sample look as though the library paints forms
   green. The rendered panel is identical either way.
@@ -64,6 +64,20 @@ sees. Both packages version together.
   three styles are gone. The invalid-state cue they carried is now `ErrorCue`,
   which sets one property and clears it; the `ItemsControl` style was dead,
   because nothing this library renders is one.
+- **Text inputs follow a dark host too.** Two separate causes, both measured.
+  `ClickSelectTextBox` derives from `TextBox`, and WPF matches an implicit
+  style on the element's EXACT type, so it never picked up a host's `TextBox`
+  style: under Fluent dark it rendered `#FFFFFFFF` chrome with `#FF000000`
+  text while a plain `TextBox` beside it was `#0FFFFFFF` on `#FFFFFFFF`.
+  It now points its own `Style` at that resource, and falls back to its theme
+  style unchanged where a host declares none. Separately, the spinner and clock
+  templates pinned `SystemColors.WindowBrushKey` and
+  `SystemColors.ControlBrushKey` for their input surface and buttons; WPF's
+  Fluent theme does not redefine the legacy `SystemColors`, so those stayed
+  white in dark mode. They now take their surface and their arrow colour from
+  their own inner text box, which means one source of truth and no pinned
+  colour. `LightSlateGray`, the last named colour literal in the dictionary,
+  is gone with them.
 - A `Border` in the multi-select template set `BorderBrush="Blue"` with no
   thickness - inert today, a pure blue ring the moment anyone set one.
 

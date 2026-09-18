@@ -33,6 +33,12 @@ internal class TextFieldRenderer : IControlRenderer<TextField_t>
                         string.Format("{{Binding Path=Controls[{0}]}}", writer.ControlIndex(control))
                     );
                     writer.WriteAttribute(WpfXmlWriterAttribute.ToolTip, "{Binding Path=ToolTip, Mode=OneWay}");
+                    // The cue is a local value, not a style: this control's Style belongs to the
+                    // host's TextBox style. See ErrorCue.
+                    writer.WriteAttribute(
+                        WpfXmlWriterAttribute.ErrorCue_HasErrors,
+                        "{Binding Path=HasErrors, Mode=OneWay}"
+                    );
                     writer.WriteAttribute(
                         WpfXmlWriterAttribute.Text,
                         "{Binding Path=Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"

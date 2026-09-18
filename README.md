@@ -10,6 +10,19 @@ The adapter supports all 15 FIXatdl control types, nested panel layouts,
 single and multiple list selections, editable dropdowns, state rules and
 parameter/strategy validation. Templates load automatically.
 
+![The sample application's Participate strategy rendered twice, in a light host and a dark host: the same form, following each host's theme](https://raw.githubusercontent.com/FixPortal/fixportal-fixatdl-wpf/main/docs/images/sample-light-dark.png)
+
+Both halves are the same strategy document rendered by the same code, in a
+host running WPF's Fluent theme in light and in dark. The library owns no
+palette: chrome resolves through the host's own brushes and styles, so an
+embedded panel follows whatever the host is running rather than painting over
+it. Run it yourself with
+[the sample](https://github.com/FixPortal/fixportal-fixatdl-wpf/blob/main/samples/FixPortal.FixAtdl.Wpf.Sample):
+
+```sh
+dotnet run --project samples/FixPortal.FixAtdl.Wpf.Sample
+```
+
 ![Creating and reading back a panel: AtdlPanel.Create asks the renderer for XAML, WPF parses it into a FrameworkElement, an EditViewModel is built, and the host then edits, checks HasErrors and reads the 957-960 tags back](https://raw.githubusercontent.com/FixPortal/fixportal-fixatdl-wpf/main/docs/images/panel-sequence.png)
 
 ## Read these first
@@ -18,7 +31,7 @@ parameter/strategy validation. Templates load automatically.
 - [API reference](https://github.com/FixPortal/fixportal-fixatdl-wpf/blob/main/docs/api.md) — `AtdlPanel`, `EditViewModel`, custom renderers.
 - [Core usage](https://github.com/FixPortal/fixportal-fixatdl/blob/main/docs/usage.md) — loading XML and the headless model.
 
-The latest NuGet.org release is 1.0.2. Both packages version together from
+The latest NuGet.org release is 1.0.3. Both packages version together from
 the git tag; non-tag packs default to 1.0.0.
 
 ## Use in a WPF application

@@ -95,6 +95,53 @@ public class HostThemeInheritanceTests
     }
 
     [Fact]
+    public void A_rendered_text_field_gets_the_hosts_TextBox_template()
+    {
+        StaTestHarness.Run(() =>
+        {
+            var (view, _) = RenderSample();
+            var reference = new TextBox();
+            var root = new StackPanel();
+            root.Children.Add(reference);
+            root.Children.Add(view);
+
+#pragma warning disable WPF0001
+            var window = new Window
+            {
+                Content = root,
+                Width = 700,
+                Height = 1200,
+                ThemeMode = ThemeMode.Dark,
+            };
+#pragma warning restore WPF0001
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                // ClickSelectTextBox derives from TextBox, and WPF matches an implicit style on the
+                // element's EXACT type - so without help it never picks up a host's TextBox style
+                // and renders light chrome inside a dark host.
+                var rendered = Descendants(view).OfType<ClickSelectTextBox>().ToList();
+                rendered.Should().NotBeEmpty("the sample has text fields, spinners and a clock");
+
+                reference.ApplyTemplate();
+                foreach (var box in rendered)
+                {
+                    box.ApplyTemplate();
+                    box.Template.Should().BeSameAs(reference.Template);
+                    box.Background.Should().BeSameAs(reference.Background);
+                    box.Foreground.Should().BeSameAs(reference.Foreground);
+                }
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
     public void The_invalid_state_cue_hands_the_border_back_to_the_host_when_it_clears()
     {
         StaTestHarness.Run(() =>

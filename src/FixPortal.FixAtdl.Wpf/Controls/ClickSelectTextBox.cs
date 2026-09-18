@@ -10,6 +10,14 @@ public class ClickSelectTextBox : TextBox
 {
     public ClickSelectTextBox()
     {
+        // WPF resolves an implicit style by the element's EXACT type, so a TextBox subclass never
+        // matches a host's Style TargetType="TextBox" - under Fluent dark, measured, this rendered
+        // a white box with black text while a plain TextBox beside it was #0FFFFFFF on #FFFFFFFF.
+        // Pointing Style at that resource is the whole fix. It is a DynamicResource, so a host that
+        // declares no TextBox style leaves this unset and the control falls back to its theme style
+        // exactly as before.
+        SetResourceReference(StyleProperty, typeof(TextBox));
+
         AddHandler(PreviewMouseLeftButtonDownEvent, new MouseButtonEventHandler(SelectivelyIgnoreMouseButton), true);
         AddHandler(GotKeyboardFocusEvent, new RoutedEventHandler(SelectAllText), true);
         AddHandler(MouseDoubleClickEvent, new RoutedEventHandler(SelectAllText), true);
