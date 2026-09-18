@@ -7,6 +7,10 @@
     <UseWPF>true</UseWPF>
     <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
     <IsPackable>false</IsPackable>
+    <!-- The dark-theme checks host the panel in a Window with ThemeMode set. ThemeMode is WPF's
+         Fluent theme switch, still evaluation-only in .NET 10. Suppressed in this test project and
+         in the sample only; the library itself takes no dependency on it. -->
+    <NoWarn>$(NoWarn);WPF0001</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

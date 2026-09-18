@@ -16,8 +16,9 @@
 
     <Parameter name="StartTime" xsi:type="UTCTimestamp_t" fixTag="6100" use="optional" />
     <Parameter name="EndTime" xsi:type="UTCTimestamp_t" fixTag="6101" use="optional" />
-    <!-- Percentage_t: the control works in percent, the wire carries the fraction, so these
-         bounds of 0.01 and 0.50 appear in the form as 1 and 50. -->
+    <!-- Percentage_t: the control works in percent, the wire carries the fraction. These bounds of
+         0.01 and 0.50 are parameter (wire) values, so they appear in the form as 1 and 50 - and the
+         control's own initValue below is in the control's units, 20, not 0.20. -->
     <Parameter name="ParticipationRate" xsi:type="Percentage_t" fixTag="6102" use="required" precision="2" minValue="0.01" maxValue="0.50" />
     <Parameter name="MaxParticipation" xsi:type="Int_t" fixTag="6103" use="optional" minValue="1" maxValue="100" />
     <Parameter name="LimitPrice" xsi:type="Price_t" fixTag="6104" use="optional" precision="4" />
@@ -63,7 +64,7 @@
         </lay:StrategyPanel>
 
         <lay:StrategyPanel title="Participation" border="Line" collapsible="false" orientation="VERTICAL">
-          <lay:Control xsi:type="lay:TextField_t" ID="c_rate" parameterRef="ParticipationRate" label="Rate (% of volume, 1-50)" initValue="0.20" />
+          <lay:Control xsi:type="lay:TextField_t" ID="c_rate" parameterRef="ParticipationRate" label="Rate (% of volume, 1-50)" initValue="20" />
           <lay:Control xsi:type="lay:SingleSpinner_t" ID="c_maxpct" parameterRef="MaxParticipation" label="Max % volume" increment="1" initValue="30" />
           <!-- DoubleSpinner_t renders TWO pairs of arrows on purpose: the inner pair steps by
                innerIncrement, the outer pair by outerIncrement. -->

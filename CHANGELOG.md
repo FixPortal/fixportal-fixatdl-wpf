@@ -17,10 +17,17 @@ sees. Both packages version together.
   back, and carries a System/Light/Dark selector so the panel can be watched
   following its host's theme. The strategy document it ships is linked into the
   test project and rendered there, so a sample that stops parsing fails the
-  build rather than greeting the next evaluator.
+  build rather than greeting the next evaluator. The sample calls
+  `Strategy_t.LoadInitialControlValues` before `AtdlPanel.Create`, which is
+  the documented way to apply each control's `initValue`; without it a
+  strategy that pre-populates a field renders that field empty, and a required
+  one opens invalid.
 - A required parameter is marked on its label rather than by colour alone. A
   venue document that already marks its own label keeps its marker and gets no
   second one.
+- `atdl:ErrorCue.HasErrors`, an attached property that carries the
+  invalid-state cue as a local value on a control rather than as an implicit
+  style. Rendered `ComboBox` and `ListBox` elements now use it.
 
 ### Changed
 
@@ -41,18 +48,20 @@ sees. Both packages version together.
   light-theme colour was carried into the `ComboBox` dropdown while the theme
   supplied a near-white foreground, leaving the list unreadable. The tint is
   gone entirely; the label marker carries the requirement.
+- **An open dropdown is now readable under a dark host theme.** The library
+  declared implicit styles for `ComboBox`, `ListBox` and `ItemsControl`,
+  and its resource dictionary is merged into the innermost resource scope in the
+  panel's tree - so those styles shadowed the host's own implicit styles
+  entirely, for every property, not just the one a trigger touched. Measured
+  under WPF's Fluent dark theme: the `ComboBox` fell back to the legacy
+  template (light chrome, `#FF000000` text) while its items, which the
+  dictionary said nothing about, kept Fluent's `#FFFFFFFF` foreground. All
+  three styles are gone. The invalid-state cue they carried is now `ErrorCue`,
+  which sets one property and clears it; the `ItemsControl` style was dead,
+  because nothing this library renders is one.
 - A `Border` in the multi-select template set `BorderBrush="Blue"` with no
   thickness - inert today, a pure blue ring the moment anyone set one.
 
-### Known limitations
-
-- **Dark mode is not supported yet.** The panel follows a host's theme for
-  chrome and text, but three implicit styles (`ComboBox`, `ListBox`,
-  `ItemsControl`) are merged into the panel's own resource scope and therefore
-  shadow the host's equivalents. Under WPF's Fluent dark theme a `ComboBox`
-  renders its legacy template while its items take Fluent's foreground, so an
-  open dropdown is unreadable. Light themes are unaffected. The fix is to key
-  those styles and base them on the host's, tracked separately.
 
 ## [1.0.3] - 2026-09-17
 
