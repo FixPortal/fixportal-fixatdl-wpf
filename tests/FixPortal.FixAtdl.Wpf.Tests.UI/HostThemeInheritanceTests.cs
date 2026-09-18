@@ -177,6 +177,67 @@ public class HostThemeInheritanceTests
         });
     }
 
+    [Theory]
+    [InlineData("c_maxpct", "c_limit")]
+    [InlineData("c_start", "c_end")]
+    public void The_invalid_state_cue_reaches_a_controls_nested_text_boxes(string invalidId, string validId)
+    {
+        StaTestHarness.Run(() =>
+        {
+            var (view, model) = RenderSample();
+            var window = new Window
+            {
+                Content = view,
+                Width = 700,
+                Height = 1200,
+            };
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                var invalid = model.Controls.First(control => control.Id == invalidId);
+                invalid.Value = "99999";
+                invalid.HasErrors.Should().BeTrue("the theory's first id must name a control this value breaks");
+                window.UpdateLayout();
+
+                // A spinner's and a clock's text boxes live inside the composite's own XAML, so no
+                // renderer can reach them - they carry ErrorCue themselves, off the DataContext the
+                // renderer set on the composite. Before that, deleting the implicit
+                // ClickSelectTextBox style silently took the cue away from every one of them.
+                BoxesOf(view, model, invalidId)
+                    .Should()
+                    .NotBeEmpty()
+                    .And.OnlyContain(box => ((SolidColorBrush)box.Foreground).Color == Colors.Red);
+
+                BoxesOf(view, model, validId)
+                    .Should()
+                    .NotBeEmpty()
+                    .And.OnlyContain(box => ((SolidColorBrush)box.Foreground).Color != Colors.Red);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    private static List<ClickSelectTextBox> BoxesOf(
+        DependencyObject view,
+        FixPortal.FixAtdl.Wpf.Core.ViewModels.EditViewModel model,
+        string controlId
+    )
+    {
+        var viewModel = model.Controls.First(control => control.Id == controlId);
+        var composite = Descendants(view)
+            .OfType<FrameworkElement>()
+            .First(element =>
+                element is SingleSpinner or DoubleSpinner or TimePicker
+                && ReferenceEquals(element.DataContext, viewModel)
+            );
+        return Descendants(composite).OfType<ClickSelectTextBox>().ToList();
+    }
+
     [Fact]
     public void The_shipped_sample_opens_with_no_control_in_error()
     {
@@ -197,7 +258,9 @@ public class HostThemeInheritanceTests
         using var stream = File.OpenRead(Path.Combine(AppContext.BaseDirectory, "Strategies", "sample-strategy.xml"));
         Strategy_t strategy = new StrategiesReader().Load(stream).Strategies[0];
         strategy.LoadInitialControlValues(FixPortal.FixAtdl.Fix.FixFieldValueProvider.Empty);
-        var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
+        // Rendering is synchronous and the returned view holds no reference to the provider, so it
+        // is disposed here rather than leaked to five call sites.
+        using var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
         return AtdlPanel.Create(strategy, services);
     }
 

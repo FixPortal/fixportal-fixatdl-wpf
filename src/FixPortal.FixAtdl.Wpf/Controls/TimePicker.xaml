@@ -1,4 +1,4 @@
-﻿<!-- Portions derived from Atdl4net (c) 2010-2011 Steve Wilkinson, MIT - see NOTICE. -->
+<!-- Portions derived from Atdl4net (c) 2010-2011 Steve Wilkinson, MIT - see NOTICE. -->
 <UserControl x:Class="FixPortal.FixAtdl.Wpf.Controls.TimePicker"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -44,7 +44,7 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <Grid Grid.Column="1" Height="Auto">
-                <local:ClickSelectTextBox x:Name="hours" BorderThickness="0" MaxLength="2" Margin="0,1,0,0" Width="20" TextAlignment="Right" 
+                <local:ClickSelectTextBox x:Name="hours" local:ErrorCue.HasErrors="{Binding Path=HasErrors}" BorderThickness="0" MaxLength="2" Margin="0,1,0,0" Width="20" TextAlignment="Right" 
                                         GotFocus="hours_GotFocus" PreviewKeyDown="hours_KeyDown">
                     <Binding ElementName="controlRoot" Path="Hours" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged"/>
                 </local:ClickSelectTextBox>
@@ -53,7 +53,7 @@
                 <TextBlock Text=":" Grid.RowSpan="2" Padding="0,1,0,0" Background="Transparent"/>
             </Grid>
             <Grid Grid.Column="3" Height="Auto">
-                <local:ClickSelectTextBox x:Name="minutes" BorderThickness="0"  MaxLength="2" Margin="0,1,4,0" Width="20"
+                <local:ClickSelectTextBox x:Name="minutes" local:ErrorCue.HasErrors="{Binding Path=HasErrors}" BorderThickness="0"  MaxLength="2" Margin="0,1,4,0" Width="20"
                                         HorizontalAlignment="Right" GotFocus="minutes_GotFocus" PreviewKeyDown="minutes_KeyDown" >
                     <Binding ElementName="controlRoot" Path="Minutes" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged"/>
                 </local:ClickSelectTextBox>
