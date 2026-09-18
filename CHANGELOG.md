@@ -80,6 +80,15 @@ sees. Both packages version together.
   is gone with them.
 - A `Border` in the multi-select template set `BorderBrush="Blue"` with no
   thickness - inert today, a pure blue ring the moment anyone set one.
+- `AtdlPanel.Create` renders before it builds the `EditViewModel`. Rendering is
+  the step that can throw and the view model's constructor is the step that
+  mutates the caller's `Strategy_t`, so a render failure used to leave the
+  strategy half-initialized; a caller that caught it and retried on the same
+  instance got fresh rule state whose restore point was the already-rule-applied
+  value, so a later `{NULL}` deactivation put back the rule's value rather than
+  the document's. Rendering reads only structure, and every `Visibility` and
+  `IsEnabled` it writes is a binding resolved later, so the emitted XAML is
+  unchanged.
 - The invalid-state cue reaches a spinner's and a clock's text boxes again.
   Those boxes live inside the composite control's own XAML, so no renderer can
   attach `ErrorCue` to them, and they had been relying on the implicit

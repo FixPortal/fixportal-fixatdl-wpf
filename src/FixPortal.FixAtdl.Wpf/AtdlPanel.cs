@@ -33,7 +33,16 @@ public static class AtdlPanel
         bool isAmendment
     )
     {
-        var viewModel = new EditViewModel(strategy, isAmendment);
+        // Render BEFORE building the view model, because rendering is the step that can fail and the
+        // view model's constructor is the step that mutates the caller's strategy - it loads init
+        // values and applies state rules through the controls. In the other order a render failure
+        // left the strategy half-initialized, and a caller that caught and retried on the same
+        // instance got fresh RuleState objects that snapshot the already-rule-applied value as their
+        // restore point, so a later {NULL} deactivation put back the rule's value rather than the
+        // document's. Rendering reads only structure - control types, ids, increments, and which
+        // parameters are required - and every Visibility and IsEnabled it writes is a binding
+        // expression resolved later against the view model, so nothing here depends on the values
+        // the view model would have established.
         var renderer = services.GetRequiredService<StrategyPanelRenderer>();
         var view =
             renderer.Render(strategy, services)
@@ -41,6 +50,8 @@ public static class AtdlPanel
                 ExceptionContext,
                 "Strategy panel rendering produced no view."
             );
+
+        var viewModel = new EditViewModel(strategy, isAmendment);
 
         view.DataContext = viewModel;
 
