@@ -4,15 +4,11 @@
                     xmlns:local="clr-namespace:FixPortal.FixAtdl.Wpf.Controls"
                     xmlns:viewmodel="clr-namespace:FixPortal.FixAtdl.Wpf.Core.ViewModels;assembly=FixPortal.FixAtdl.Wpf.Core">
 
-    <!-- Styling to support mandatory fields and validity status -->
-    <Style TargetType="local:ClickSelectTextBox">
-        <Style.Triggers>
-            <DataTrigger Binding="{Binding Path=HasErrors}" Value="True">
-                <Setter Property="BorderBrush" Value="{DynamicResource ValidationErrorBrush}"/>
-                <Setter Property="Foreground" Value="{DynamicResource ValidationErrorBrush}"/>
-            </DataTrigger>
-        </Style.Triggers>
-    </Style>
+    <!-- Styling to support mandatory fields and validity status.
+
+         ClickSelectTextBox has no style here: it points its own Style at the host's TextBox style,
+         which a local style declared here would override. Its invalid-state cue is
+         atdl:ErrorCue.HasErrors instead, the same attached property the ComboBox and ListBox use. -->
     <!-- ComboBox, ListBox and ItemsControl are the host's types, and this dictionary is merged into
          the innermost resource scope in the panel's tree. An implicit style for one of them here
          shadows the host's own implicit style entirely - every property, not just the one a trigger
@@ -27,7 +23,7 @@
                 <Setter Property="Foreground" Value="{DynamicResource ValidationErrorBrush}"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding Path=HasErrors}" Value="False">
-                <Setter Property="BorderBrush" Value="LightSlateGray"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"/>
             </DataTrigger>
         </Style.Triggers>
     </Style>
@@ -48,7 +44,7 @@
                 <Setter Property="BorderBrush" Value="{DynamicResource ValidationErrorBrush}"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding Path=HasErrors}" Value="False">
-                <Setter Property="BorderBrush" Value="LightSlateGray"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"/>
             </DataTrigger>
         </Style.Triggers>
     </Style>
@@ -60,7 +56,7 @@
                 <Setter Property="Foreground" Value="{DynamicResource ValidationErrorBrush}"/>
             </DataTrigger>
             <DataTrigger Binding="{Binding Path=HasErrors}" Value="False">
-                <Setter Property="BorderBrush" Value="LightSlateGray"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"/>
             </DataTrigger>
         </Style.Triggers>
     </Style>
