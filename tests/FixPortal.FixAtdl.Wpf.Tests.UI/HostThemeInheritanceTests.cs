@@ -72,9 +72,14 @@ public class HostThemeInheritanceTests
                 window.Show();
                 window.UpdateLayout();
 
-                var rendered = Descendants(view).First(child => child.GetType() == controlType);
+                var rendered = (Control)Descendants(view).First(child => child.GetType() == controlType);
 
-                ((Control)rendered)
+                // Both templates are read in the same layout pass, so the comparison cannot straddle
+                // a theme-dictionary change made by another test on another STA thread.
+                reference.ApplyTemplate();
+                rendered.ApplyTemplate();
+
+                rendered
                     .Template.Should()
                     .BeSameAs(
                         reference.Template,

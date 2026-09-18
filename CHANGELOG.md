@@ -22,6 +22,11 @@ sees. Both packages version together.
   the documented way to apply each control's `initValue`; without it a
   strategy that pre-populates a field renders that field empty, and a required
   one opens invalid.
+  The sample window is sized to the rendered strategy so the form needs no
+  scrolling, and sets an opaque themed background: WPF's Fluent theme puts a
+  Mica backdrop on a window, and Mica tints it with the desktop wallpaper's
+  dominant colour, which made the sample look as though the library paints forms
+  green. The rendered panel is identical either way.
 - A required parameter is marked on its label rather than by colour alone. A
   venue document that already marks its own label keeps its marker and gets no
   second one.
