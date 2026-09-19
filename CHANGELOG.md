@@ -46,6 +46,8 @@ sees. Both packages version together.
   moved from `1,3,1,3` to `2,5,2,5`.
 - Control labels are vertically centred against their control and separated
   from it by 8px. They were top-aligned with no gap at all.
+- README hero and GitHub social preview drop the angel wings from the XML
+  card. The markdown image URL is unchanged.
 
 ### Fixed
 
