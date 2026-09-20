@@ -60,13 +60,13 @@ By declared severity: 1 high, 7 medium, 15 low. 23 findings sit at 22 distinct f
 | medium | F6 | R | independent | [C15](#c15) | `tests/FixPortal.FixAtdl.Wpf.Tests.UI/TimePickerWrapTests.cs:13` RECOVERED (quote at line 16) | not probed | TimePicker wrap tests exercise the control and never assert RepeatButton brushes, so the System.Drawing resource-key fault cannot fail them. |
 | low | F1 | K | independent | [C04](#c04) | `src/FixPortal.FixAtdl.Wpf/Controls/SingleSpinner.xaml.cs:69` OK | failed - not attributable | SingleSpinner and DoubleSpinner code-behind event handlers are near-verbatim duplicates (modulo Inner/Outer naming), and the same is true of the per-file Descendants/Layout helpers copied into six UI test files. |
 | low | F5 | R | independent | [C13](#c13) | `src/FixPortal.FixAtdl.Wpf/Controls/NumericSpinnerControlBase.cs:19` RECOVERED (quote at line 18) | failed - not attributable | NumericSpinnerControlBase.ValueProperty still carries the DoubleSpinner InnerIncrement doc comment above the real summary. |
-| low | F2 | C | independent | [C05](#c05) | `src/FixPortal.FixAtdl.Wpf.Core/ViewModels/ListControlViewModel.cs:42` OK | not probed | ListControlViewModel.CurrentState casts a possibly-null control value to non-nullable EnumState; an empty Slider_t through the public constructor yields NullReferenceException on every read. |
 | low | F3 | C | independent | [C06](#c06) | `src/FixPortal.FixAtdl.Wpf/Rendering/WpfControlRenderer.cs:204` OK | not probed | Null-argument guard applied on exactly one of sixteen IControlVisitor.Visit overloads in WpfControlRenderer. |
 | low | F4 | C | independent | [C04](#c04) | `src/FixPortal.FixAtdl.Wpf/Rendering/DefaultRendering/DropDownListRenderer.cs:41` OK | not probed | Four list renderers carry the same three-line rationale comment verbatim and near-identical attribute-emission bodies. |
 | low | F7 | C | independent | [C16](#c16) | `tests/FixPortal.FixAtdl.Wpf.Core.Tests/ViewModels/RefreshRulesIdempotencyTests.cs:71` OK | not probed | RefreshRulesIdempotencyTests drives the system under test through private-method reflection, coupling the test to a name the compiler will not check. |
 | low | F8 | C | independent | [C06](#c06) | `tests/FixPortal.FixAtdl.Wpf.Tests.UI/AtdlPanelTests.cs:642` OK | not probed | Three of 21 BuildServiceProvider sites in AtdlPanelTests.cs omit the `using` the other eighteen use, leaking the provider for the life of the test run. |
 | low | F2 | R | independent | [C05](#c05) | `src/FixPortal.FixAtdl.Wpf/Rendering/StrategyPanelRenderer.cs:44` OK | not probed | Possibly-null StrategyPanel is assigned to a non-nullable local, then null-checked. |
 | low | F7 | R | independent | [C16](#c16) | `tests/FixPortal.FixAtdl.Wpf.Tests.UI/AtdlPanelTests.cs:583` RECOVERED (quote at line 582) | not probed | The same Descendants tree-walk helper is duplicated across UI test classes instead of one shared fixture. |
+| low | F2 | C | supporting F3/R | [C05](#c05) | `src/FixPortal.FixAtdl.Wpf.Core/ViewModels/ListControlViewModel.cs:42` OK | not probed | ListControlViewModel.CurrentState casts a possibly-null control value to non-nullable EnumState; an empty Slider_t through the public constructor yields NullReferenceException on every read. |
 
 ### Not named by any criticism in the corpus
 
@@ -157,39 +157,33 @@ The panel audited an ephemeral git worktree at this commit, not this checkout. N
 
 ## Implementation follow-up — 2026-09-20
 
-The maturity plan was implemented through two rebase-merged pull requests:
+The maturity plan was implemented through rebase-merged pull requests:
 
 - [FixPortal/fixportal-codestyle#65](https://github.com/FixPortal/fixportal-codestyle/pull/65)
-  — prepares credential-free consumption of the portable `FixPortal.CodeStyle`
-  package through NuGet.org OIDC, retains the existing private
-  `FixPortal.CodeStyle.ArchRules` overlay, updates adoption/release documentation,
-  and publishes only `ArchRules` to GitHub Packages.
+  and [#66](https://github.com/FixPortal/fixportal-codestyle/pull/66) — made the
+  portable `FixPortal.CodeStyle` package public through NuGet.org OIDC, retained
+  the private `FixPortal.CodeStyle.ArchRules` overlay, and corrected the release
+  action pin.
 - [FixPortal/fixportal-fixatdl-wpf#33](https://github.com/FixPortal/fixportal-fixatdl-wpf/pull/33)
-  — adds issue and pull-request templates, records the OSS maturity plan and
-  public-repository security decisions, and corrects the documented
-  `FixPortal.FixAtdl` dependency from 1.1.2 to 1.1.4.
+  — added contribution templates, the OSS maturity plan, and corrected the
+  documented `FixPortal.FixAtdl` version.
+- [FixPortal/fixportal-fixatdl-wpf#34](https://github.com/FixPortal/fixportal-fixatdl-wpf/pull/34)
+  — removed the private-feed restore requirement. Restore now uses NuGet.org
+  without FixPortal credentials.
+- [FixPortal/fixportal-fixatdl-wpf#36](https://github.com/FixPortal/fixportal-fixatdl-wpf/pull/36)
+  — updated the architecture README image/text and committed this report.
 
-Both PRs passed their repository gates, Gitar, CodeQL where applicable, and the
-review-policy checks before rebase merge. Local validation also passed:
+The WPF migration was validated without `GITHUB_PACKAGES_TOKEN`: CSharpier,
+restore, Release build with 0 warnings/errors, 197 tests, vulnerability scan
+with no vulnerable packages, package creation, and actionlint all passed.
+The final documentation follow-up also passed the full repository gate.
 
-- WPF: CSharpier check, Release build with 0 warnings/0 errors, 197 tests passed.
-- CodeStyle: CSharpier check, restore, Release build, pack, package-consumer
-  regression check, and actionlint.
-
-This follow-up initially encountered a NuGet OIDC trust-policy failure, which was
-resolved by creating the policy for `FixPortal/fixportal-codestyle` and
-`publish.yml`. The subsequent release completed successfully: NuGet accepted
-`FixPortal.CodeStyle` 0.1.12, and the WPF migration then restored from NuGet.org
-with `GITHUB_PACKAGES_TOKEN` removed. That migration passed build, 197 tests,
-vulnerability scanning, packing, and actionlint in [WPF PR #34](https://github.com/FixPortal/fixportal-fixatdl-wpf/pull/34).
-
-GitHub Secret Scanning and Push Protection were already enabled. WPF Dependabot
-security updates are now enabled, and `main` is protected with strict `CI Gate`
-and `Review policy intact` checks, one approving review, stale-review dismissal,
-linear history, conversation resolution, admin enforcement, and no
-force-push/deletion allowance. The approval count is explicitly zero for the
-solo-maintainer workflow, matching the canonical `scaffold-repo` ruleset. PR #34
-was green and merged via rebase after that correction.
+GitHub Secret Scanning and Push Protection were enabled already. Dependabot
+security updates are enabled, and `main` is protected with strict `CI Gate` and
+`Review policy intact` checks, linear history, conversation resolution, admin
+enforcement, and no force-push/deletion allowance. The required approval count
+is explicitly zero, matching the canonical solo-maintainer `scaffold-repo`
+ruleset. The plan is fully actioned as of the merge of PR #36.
 
 ## Sources
 
