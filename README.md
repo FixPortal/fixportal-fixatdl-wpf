@@ -61,7 +61,7 @@ Related projects:
   separate React adapter; it is not a dependency of this WPF package.
 
 See [CONTRIBUTING.md](https://github.com/FixPortal/fixportal-fixatdl-wpf/blob/main/CONTRIBUTING.md)
-for local builds and the private feed used only by development tooling.
+for local builds and the credential-free public package restore path.
 
 Register the adapter with your host's service collection:
 
@@ -152,7 +152,7 @@ naming the control type and id.
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| `dotnet restore` fails with NU1301 or 401 on the `FixPortal` GitHub Packages source | The build consumes `FixPortal.CodeStyle` from the private feed, which needs `GITHUB_PACKAGES_TOKEN` | See [CONTRIBUTING.md](https://github.com/FixPortal/fixportal-fixatdl-wpf/blob/main/CONTRIBUTING.md) |
+| `dotnet restore` fails to find `FixPortal.CodeStyle` | Check NuGet.org availability and your local NuGet connectivity; no FixPortal token is required | See [CONTRIBUTING.md](https://github.com/FixPortal/fixportal-fixatdl-wpf/blob/main/CONTRIBUTING.md) |
 | `NotSupportedException`: no renderer for control type `X` (id `Y`) | Broker XML uses a control type outside the 15 registered renderers | Guard or remap upstream, or add a custom `IControlRenderer` (above) |
 | Two editors interfere with each other | An editor owns mutable strategy state | Use a separate strategy instance per open editor |
 | Immutable values stay disabled on amendment | `isAmendment: true` enforces `mutableOnCxlRpl="false"` | Expected: load the existing order first, then create the panel with `isAmendment: true` |

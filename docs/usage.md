@@ -145,7 +145,7 @@ A strategy with no layout or no root panel throws
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| `dotnet restore` NU1301 / 401 on the `FixPortal` GitHub Packages source | `FixPortal.CodeStyle` needs `GITHUB_PACKAGES_TOKEN` | See [CONTRIBUTING.md](https://github.com/FixPortal/fixportal-fixatdl-wpf/blob/main/CONTRIBUTING.md) |
+| `dotnet restore` cannot find `FixPortal.CodeStyle` | Check NuGet.org availability and your local NuGet connectivity; no FixPortal token is required | See [CONTRIBUTING.md](https://github.com/FixPortal/fixportal-fixatdl-wpf/blob/main/CONTRIBUTING.md) |
 | `NotSupportedException`: no renderer for control type `X` (id `Y`) | Broker XML uses a type outside the 15 registered renderers | Guard or remap upstream, or add a custom `IControlRenderer` |
 | `RenderingException`: no strategy layout / no panels | Strategy XML has no `StrategyLayout`/`StrategyPanel` | Reject the document before `Create` |
 | Two editors interfere | An editor owns mutable strategy state | Separate `Strategy_t` instance per open editor |
