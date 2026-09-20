@@ -41,6 +41,8 @@ public class EditViewModel : ObservableObject
             .FirstOrDefault(group => group.Count() > 1);
         if (duplicateTag is not null)
         {
+            // ReadBackFixValues emits one value per FIX tag, so duplicate tags cannot be represented
+            // without silently choosing which parameter wins.
             throw new ArgumentException($"Parameter FIX tags must be unique: '{duplicateTag.Key}'.", nameof(strategy));
         }
 
@@ -285,10 +287,13 @@ public class EditViewModel : ObservableObject
 
             if (active)
             {
-                _previousValue = ControlViewModel.Snapshot(control.Value);
+                if (rule.Value != "{NULL}" || control.Value is not null)
+                {
+                    _previousValue = ControlViewModel.Snapshot(control.Value);
+                }
                 control.ApplyStateValue(rule.Value);
             }
-            else if (_active == true && rule.Value == "{NULL}")
+            else if (_active == true && rule.Value == "{NULL}" && _previousValue is not null)
             {
                 control.Value = ControlViewModel.Snapshot(_previousValue);
             }

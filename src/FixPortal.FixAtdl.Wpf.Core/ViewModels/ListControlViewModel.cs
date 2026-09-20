@@ -39,18 +39,22 @@ public class ListControlViewModel : ControlViewModel
     public string Orientation =>
         (UnderlyingControl as IOrientableControl)?.Orientation == Orientation_t.Vertical ? "Vertical" : "Horizontal";
 
-    private EnumState CurrentState => (EnumState)UnderlyingControl.GetCurrentValue();
+    private EnumState? CurrentState => UnderlyingControl.GetCurrentValue() as EnumState;
 
     public string? SelectedValue
     {
-        get => CurrentState.GetFirstSelectedEnumId() is { Length: > 0 } id ? id : null;
+        get => CurrentState?.GetFirstSelectedEnumId() is { Length: > 0 } id ? id : null;
         set
         {
             if (value == SelectedValue)
             {
                 return;
             }
-            var state = CurrentState.Copy();
+            if (CurrentState is not { } currentState)
+            {
+                return;
+            }
+            var state = currentState.Copy();
             state.ClearAll();
             if (value is not null)
             {
@@ -62,18 +66,28 @@ public class ListControlViewModel : ControlViewModel
 
     public string? Text
     {
-        get =>
-            SelectedValue is { } id
-                ? Items.FirstOrDefault(item => item.EnumId == id)?.UiRep ?? CurrentState.NonEnumValue ?? id
-                : CurrentState.NonEnumValue;
+        get
+        {
+            if (CurrentState is not { } state)
+            {
+                return null;
+            }
+            return SelectedValue is { } id
+                ? Items.FirstOrDefault(item => item.EnumId == id)?.UiRep ?? state.NonEnumValue ?? id
+                : state.NonEnumValue;
+        }
         set
         {
             if (value == Text)
             {
                 return;
             }
+            if (CurrentState is not { } currentState)
+            {
+                return;
+            }
             var item = Items.FirstOrDefault(item => item.UiRep == value);
-            var state = CurrentState.Copy();
+            var state = currentState.Copy();
             state.ClearAll();
             if (item is not null)
             {
@@ -87,11 +101,15 @@ public class ListControlViewModel : ControlViewModel
         }
     }
 
-    internal bool IsItemSelected(string enumId) => CurrentState[enumId];
+    internal bool IsItemSelected(string enumId) => CurrentState?[enumId] == true;
 
     internal void SetItemSelected(string enumId, bool selected)
     {
-        var state = CurrentState.Copy();
+        if (CurrentState is not { } currentState)
+        {
+            return;
+        }
+        var state = currentState.Copy();
         if (selected && UnderlyingControl is not (CheckBoxList_t or MultiSelectList_t))
         {
             state.ClearAll();

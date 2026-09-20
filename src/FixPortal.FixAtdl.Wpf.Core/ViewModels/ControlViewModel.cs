@@ -41,7 +41,6 @@ public partial class ControlViewModel : ObservableValidator
     public int? FixTag => _parameter?.FixTag is { } tag ? checked((int)tag) : null;
     public string? ToolTip => UnderlyingControl.ToolTip;
     public bool IsRequiredParameter => _parameter?.Use == Use_t.Required;
-    internal string? WireValue => HasErrors || HasTornWrite ? null : _parameter?.WireValue;
 
     /// <summary>
     /// Set when a write escaped validation by exception rather than returning a

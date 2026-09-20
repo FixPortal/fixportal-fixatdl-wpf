@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Reflection;
 using AwesomeAssertions;
 using FixPortal.FixAtdl.Fix;
 using FixPortal.FixAtdl.Model.Controls;
@@ -19,6 +18,7 @@ public class RefreshRulesIdempotencyTests
         strategy.Controls["Qty"].SetValue(12m);
         var toggle = new CheckBox_t("Toggle");
         strategy.StrategyLayout.StrategyPanel.Controls.Add(toggle);
+        strategy.StrategyLayout.StrategyPanel.Controls.Add(new CheckBox_t("Refresh"));
         strategy
             .Controls["Qty"]
             .StateRules.Add(
@@ -57,19 +57,12 @@ public class RefreshRulesIdempotencyTests
 
         var before = Capture(model);
 
-        // RefreshRules is private; EditViewModel normally re-enters it when a control value changes.
-        // Idempotency under the "nothing changed" re-entry is load-bearing for the fixpoint loop's
-        // termination argument, so drive a second and third converged refresh directly.
-        RefreshRulesAgain(model);
-        RefreshRulesAgain(model);
+        // A value change on an unrelated control re-enters RefreshRules through the public surface.
+        model.Controls[2].Value = true;
+        model.Controls[2].Value = false;
 
         Capture(model).Should().Be(before);
     }
-
-    private static void RefreshRulesAgain(EditViewModel model) =>
-        typeof(EditViewModel)
-            .GetMethod("RefreshRules", BindingFlags.Instance | BindingFlags.NonPublic)!
-            .Invoke(model, null);
 
     private static string Capture(EditViewModel model)
     {

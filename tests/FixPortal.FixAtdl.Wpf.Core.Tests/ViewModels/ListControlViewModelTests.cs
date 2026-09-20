@@ -78,4 +78,13 @@ public class ListControlViewModelTests
 
         viewModel.HasErrors.Should().BeFalse();
     }
+
+    [Fact]
+    public void EmptySlider_HasEmptySelectionWithoutThrowing()
+    {
+        var viewModel = new ListControlViewModel(new Slider_t("Empty"));
+
+        viewModel.SelectedValue.Should().BeNull();
+        viewModel.Text.Should().BeNull();
+    }
 }

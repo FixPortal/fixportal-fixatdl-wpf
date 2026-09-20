@@ -99,6 +99,37 @@ public class ReviewRegressionTests
     }
 
     [Fact]
+    public void InternalFailureDuringAStateRule_BlocksReadBackRatherThanEmittingTheStaleWireValue()
+    {
+        var (strategy, breakIt) = BrokenOnDemand();
+        var toggle = new CheckBox_t("Toggle");
+        strategy.StrategyLayout.StrategyPanel.Controls.Add(toggle);
+        strategy
+            .Controls["Broken"]
+            .StateRules.Add(
+                new StateRule_t
+                {
+                    Value = "abc",
+                    Edit = new Edit_t<Control_t>
+                    {
+                        Field = "Toggle",
+                        Operator = Operator_t.Equal,
+                        Value = "true",
+                    },
+                }
+            );
+        var model = new EditViewModel(strategy);
+        breakIt();
+
+        var edit = () => model.Controls.Single(control => control.UnderlyingControl.Id == "Toggle").Value = true;
+
+        edit.Should().Throw<InternalErrorException>();
+        model.HasErrors.Should().BeTrue();
+        var read = () => model.ReadBackFixValues();
+        read.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
     public void InternalFailureAfterAnExistingValidationError_RetainsTheErrorStore()
     {
         var parameter = Substitute.For<IParameter>();

@@ -639,7 +639,7 @@ public partial class AtdlPanelTests
         StaTestHarness.Run(() =>
         {
             var strategy = TestStrategies.MinimalOneControlStrategy();
-            var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
+            using var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
 
             var (view, viewModel) = AtdlPanel.Create(strategy, services);
 
@@ -654,7 +654,7 @@ public partial class AtdlPanelTests
         StaTestHarness.Run(() =>
         {
             var strategy = TestStrategies.MinimalOneControlStrategy();
-            var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
+            using var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
             var (_, viewModel) = AtdlPanel.Create(strategy, services);
 
             viewModel.Controls[0].Value = 12.5m;
@@ -676,7 +676,7 @@ public partial class AtdlPanelTests
             CultureInfo.CurrentCulture = new CultureInfo("de-DE");
 
             var strategy = TestStrategies.MinimalOneControlStrategy();
-            var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
+            using var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
             var (_, viewModel) = AtdlPanel.Create(strategy, services);
 
             viewModel.Controls[0].Value = 12.5m;

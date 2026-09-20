@@ -94,6 +94,50 @@ public class RenderFailureContractTests
         });
     }
 
+    [Fact]
+    public void TypedVisitor_RejectsNullControl()
+    {
+        StaTestHarness.Run(() =>
+        {
+            using var text = new System.IO.StringWriter();
+            using var xml = System.Xml.XmlWriter.Create(text);
+            var writer = new Rendering.WpfXmlWriter(xml, []);
+            var renderer = new Rendering.WpfControlRenderer(
+                writer,
+                [],
+                new Rendering.DefaultRendering.DefaultNamespaceProvider()
+            );
+
+            var visit = () => renderer.Visit((CheckBox_t)null!);
+
+            visit.Should().Throw<ArgumentNullException>();
+        });
+    }
+
+    [Fact]
+    public void Render_RejectsExcessivelyNestedPanels()
+    {
+        StaTestHarness.Run(() =>
+        {
+            using var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
+            var strategy = TestStrategies.MinimalOneControlStrategy();
+            var panel = strategy.StrategyLayout.StrategyPanel;
+            panel.Controls.Clear();
+
+            for (var i = 0; i < 65; i++)
+            {
+                var child = new FixPortal.FixAtdl.Model.Elements.StrategyPanel_t(strategy);
+                panel.StrategyPanels.Add(child);
+                panel = child;
+            }
+
+            var renderer = services.GetRequiredService<Rendering.StrategyPanelRenderer>();
+            var render = () => renderer.Render(strategy, services);
+
+            render.Should().Throw<RenderingException>().WithMessage("*nesting*");
+        });
+    }
+
     /// <summary>
     /// Emits an element whose Width carries a non-numeric value: well-formed XML, so the writer stage
     /// succeeds, but XamlReader.Parse fails converting the value - the malformed-XAML shape a custom
