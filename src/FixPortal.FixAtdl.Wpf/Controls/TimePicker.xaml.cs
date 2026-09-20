@@ -133,7 +133,7 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
         }
     }
 
-    private void upButton_Click(object sender, RoutedEventArgs? e)
+    private void UpButtonClick(object sender, RoutedEventArgs? e)
     {
         if (_minutesHasFocus)
         {
@@ -145,17 +145,17 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
         }
     }
 
-    private void hours_GotFocus(object sender, RoutedEventArgs e)
+    private void HoursGotFocus(object sender, RoutedEventArgs e)
     {
         _minutesHasFocus = false;
     }
 
-    private void minutes_GotFocus(object sender, RoutedEventArgs e)
+    private void MinutesGotFocus(object sender, RoutedEventArgs e)
     {
         _minutesHasFocus = true;
     }
 
-    private void downButton_Click(object sender, RoutedEventArgs? e)
+    private void DownButtonClick(object sender, RoutedEventArgs? e)
     {
         if (_minutesHasFocus)
         {
@@ -167,7 +167,7 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
         }
     }
 
-    private void minutes_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    private void MinutesKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
     {
         if (e.Key == Key.Down)
         {
@@ -181,7 +181,7 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
         }
     }
 
-    private void hours_KeyDown(object sender, KeyEventArgs e)
+    private void HoursKeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key == Key.Down)
         {
@@ -195,33 +195,33 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
         }
     }
 
-    private void upButton_KeyDown(object sender, KeyEventArgs e)
+    private void UpButtonKeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key == Key.Up)
         {
-            upButton_Click(sender, null);
+            UpButtonClick(sender, null);
 
             e.Handled = true;
         }
         else if (e.Key == Key.Down)
         {
-            downButton_Click(sender, null);
+            DownButtonClick(sender, null);
 
             e.Handled = true;
         }
     }
 
-    private void downButton_KeyDown(object sender, KeyEventArgs e)
+    private void DownButtonKeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key == Key.Down)
         {
-            downButton_Click(sender, null);
+            DownButtonClick(sender, null);
 
             e.Handled = true;
         }
         else if (e.Key == Key.Up)
         {
-            upButton_Click(sender, null);
+            UpButtonClick(sender, null);
 
             e.Handled = true;
         }

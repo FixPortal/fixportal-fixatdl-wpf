@@ -40,7 +40,7 @@
             </Grid.ColumnDefinitions>
             <Grid Grid.Column="0" Height="Auto">
                 <local:ClickSelectTextBox x:Name="value" local:ErrorCue.HasErrors="{Binding Path=HasErrors}" BorderThickness="0" Margin="0,1,0,0" TextAlignment="Left" 
-                                        PreviewKeyDown="value_KeyDown">
+                                        PreviewKeyDown="ValueKeyDown">
                     <Binding ElementName="controlRoot" Path="Text" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged" TargetNullValue="{x:Static sys:String.Empty}"/>
                 </local:ClickSelectTextBox>
             </Grid>
@@ -50,11 +50,11 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <RepeatButton Name="innerUpButton" Margin="0,1,1,0" Grid.Row="0" FocusVisualStyle="{x:Null}" Background="Transparent" 
-                              KeyboardNavigation.IsTabStop="False" Click="innerUpButton_Click" KeyDown="innerUpButton_KeyDown">
+                              KeyboardNavigation.IsTabStop="False" Click="InnerUpButtonClick" KeyDown="InnerUpButtonKeyDown">
                     <Path Fill="{Binding Foreground, ElementName=value}" Data="M 0 4 L 8 4 L 4 0 Z"/>
                 </RepeatButton>
                 <RepeatButton Name="innerDownButton" Margin="0,0,1,1" Grid.Row="1" FocusVisualStyle="{x:Null}" Background="Transparent"
-                              KeyboardNavigation.IsTabStop="False" Click="innerDownButton_Click" KeyDown="innerDownButton_KeyDown" >
+                              KeyboardNavigation.IsTabStop="False" Click="InnerDownButtonClick" KeyDown="InnerDownButtonKeyDown" >
                     <Path Fill="{Binding Foreground, ElementName=value}" Data="M 0 0 L 4 4 L 8 0 Z"/>
                 </RepeatButton>
             </Grid>
@@ -64,11 +64,11 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <RepeatButton Name="outerUpButton" Margin="0,1,1,0" Grid.Row="0" FocusVisualStyle="{x:Null}" Background="Transparent" 
-                              KeyboardNavigation.IsTabStop="False" Click="outerUpButton_Click" KeyDown="outerUpButton_KeyDown">
+                              KeyboardNavigation.IsTabStop="False" Click="OuterUpButtonClick" KeyDown="OuterUpButtonKeyDown">
                     <Path Fill="{Binding Foreground, ElementName=value}" Data="M 0 4 L 8 4 L 4 0 Z"/>
                 </RepeatButton>
                 <RepeatButton Name="outerDownButton" Margin="0,0,1,1" Grid.Row="1" FocusVisualStyle="{x:Null}" Background="Transparent"
-                              KeyboardNavigation.IsTabStop="False" Click="outerDownButton_Click" KeyDown="outerDownButton_KeyDown" >
+                              KeyboardNavigation.IsTabStop="False" Click="OuterDownButtonClick" KeyDown="OuterDownButtonKeyDown" >
                     <Path Fill="{Binding Foreground, ElementName=value}" Data="M 0 0 L 4 4 L 8 0 Z"/>
                 </RepeatButton>
             </Grid>

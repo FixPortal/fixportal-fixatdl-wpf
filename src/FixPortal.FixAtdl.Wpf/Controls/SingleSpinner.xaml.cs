@@ -42,17 +42,17 @@ public partial class SingleSpinner : NumericSpinnerControlBase
 
     private void IncrementValue() => ChangeValue(Increment);
 
-    private void upButton_Click(object sender, RoutedEventArgs? e)
+    private void UpButtonClick(object sender, RoutedEventArgs? e)
     {
         IncrementValue();
     }
 
-    private void downButton_Click(object sender, RoutedEventArgs? e)
+    private void DownButtonClick(object sender, RoutedEventArgs? e)
     {
         DecrementValue();
     }
 
-    private void value_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    private void ValueKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
     {
         if (e.Key == Key.Down)
         {
@@ -66,33 +66,33 @@ public partial class SingleSpinner : NumericSpinnerControlBase
         }
     }
 
-    private void upButton_KeyDown(object sender, KeyEventArgs e)
+    private void UpButtonKeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key == Key.Up)
         {
-            upButton_Click(sender, null);
+            UpButtonClick(sender, null);
 
             e.Handled = true;
         }
         else if (e.Key == Key.Down)
         {
-            downButton_Click(sender, null);
+            DownButtonClick(sender, null);
 
             e.Handled = true;
         }
     }
 
-    private void downButton_KeyDown(object sender, KeyEventArgs e)
+    private void DownButtonKeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key == Key.Down)
         {
-            downButton_Click(sender, null);
+            DownButtonClick(sender, null);
 
             e.Handled = true;
         }
         else if (e.Key == Key.Up)
         {
-            upButton_Click(sender, null);
+            UpButtonClick(sender, null);
 
             e.Handled = true;
         }

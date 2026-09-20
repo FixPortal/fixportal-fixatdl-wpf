@@ -66,7 +66,7 @@ public partial class DoubleSpinner : NumericSpinnerControlBase
 
     private void OuterIncrementValue() => ChangeValue(OuterIncrement);
 
-    private void value_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    private void ValueKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
     {
         if (e.Key == Key.Down)
         {
@@ -80,85 +80,85 @@ public partial class DoubleSpinner : NumericSpinnerControlBase
         }
     }
 
-    private void innerUpButton_Click(object sender, RoutedEventArgs? e)
+    private void InnerUpButtonClick(object sender, RoutedEventArgs? e)
     {
         InnerIncrementValue();
     }
 
-    private void innerDownButton_Click(object sender, RoutedEventArgs? e)
+    private void InnerDownButtonClick(object sender, RoutedEventArgs? e)
     {
         InnerDecrementValue();
     }
 
-    private void innerUpButton_KeyDown(object sender, KeyEventArgs e)
+    private void InnerUpButtonKeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key == Key.Up)
         {
-            innerUpButton_Click(sender, null);
+            InnerUpButtonClick(sender, null);
 
             e.Handled = true;
         }
         else if (e.Key == Key.Down)
         {
-            innerDownButton_Click(sender, null);
+            InnerDownButtonClick(sender, null);
 
             e.Handled = true;
         }
     }
 
-    private void innerDownButton_KeyDown(object sender, KeyEventArgs e)
+    private void InnerDownButtonKeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key == Key.Down)
         {
-            innerDownButton_Click(sender, null);
+            InnerDownButtonClick(sender, null);
 
             e.Handled = true;
         }
         else if (e.Key == Key.Up)
         {
-            innerUpButton_Click(sender, null);
+            InnerUpButtonClick(sender, null);
 
             e.Handled = true;
         }
     }
 
-    private void outerUpButton_Click(object sender, RoutedEventArgs? e)
+    private void OuterUpButtonClick(object sender, RoutedEventArgs? e)
     {
         OuterIncrementValue();
     }
 
-    private void outerDownButton_Click(object sender, RoutedEventArgs? e)
+    private void OuterDownButtonClick(object sender, RoutedEventArgs? e)
     {
         OuterDecrementValue();
     }
 
-    private void outerUpButton_KeyDown(object sender, KeyEventArgs e)
+    private void OuterUpButtonKeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key == Key.Up)
         {
-            outerUpButton_Click(sender, null);
+            OuterUpButtonClick(sender, null);
 
             e.Handled = true;
         }
         else if (e.Key == Key.Down)
         {
-            outerDownButton_Click(sender, null);
+            OuterDownButtonClick(sender, null);
 
             e.Handled = true;
         }
     }
 
-    private void outerDownButton_KeyDown(object sender, KeyEventArgs e)
+    private void OuterDownButtonKeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key == Key.Down)
         {
-            outerDownButton_Click(sender, null);
+            OuterDownButtonClick(sender, null);
 
             e.Handled = true;
         }
         else if (e.Key == Key.Up)
         {
-            outerUpButton_Click(sender, null);
+            OuterUpButtonClick(sender, null);
 
             e.Handled = true;
         }

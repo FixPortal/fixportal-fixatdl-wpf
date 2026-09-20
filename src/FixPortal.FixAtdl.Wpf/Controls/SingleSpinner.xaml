@@ -39,7 +39,7 @@
             </Grid.ColumnDefinitions>
             <Grid Grid.Column="0" Height="Auto">
                 <local:ClickSelectTextBox x:Name="value" local:ErrorCue.HasErrors="{Binding Path=HasErrors}" BorderThickness="0" Margin="0,1,0,0" TextAlignment="Left" 
-                                        PreviewKeyDown="value_KeyDown">
+                                        PreviewKeyDown="ValueKeyDown">
                     <Binding ElementName="controlRoot" Path="Text" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged" TargetNullValue="{x:Static sys:String.Empty}"/>
                 </local:ClickSelectTextBox>
             </Grid>
@@ -49,11 +49,11 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <RepeatButton Name="upButton" Margin="0,1,1,0" Grid.Row="0" FocusVisualStyle="{x:Null}" Background="Transparent" 
-                              KeyboardNavigation.IsTabStop="False" Click="upButton_Click" KeyDown="upButton_KeyDown">
+                              KeyboardNavigation.IsTabStop="False" Click="UpButtonClick" KeyDown="UpButtonKeyDown">
                     <Path Fill="{Binding Foreground, ElementName=value}" Data="M 0 4 L 8 4 L 4 0 Z"/>
                 </RepeatButton>
                 <RepeatButton Name="downButton" Margin="0,0,1,1" Grid.Row="1" FocusVisualStyle="{x:Null}" Background="Transparent"
-                              KeyboardNavigation.IsTabStop="False" Click="downButton_Click" KeyDown="downButton_KeyDown" >
+                              KeyboardNavigation.IsTabStop="False" Click="DownButtonClick" KeyDown="DownButtonKeyDown" >
                     <Path Fill="{Binding Foreground, ElementName=value}"  Data="M 0 0 L 4 4 L 8 0 Z"/>
                 </RepeatButton>
             </Grid>

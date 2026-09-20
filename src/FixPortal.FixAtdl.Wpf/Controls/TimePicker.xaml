@@ -44,7 +44,7 @@
             </Grid.ColumnDefinitions>
             <Grid Grid.Column="1" Height="Auto">
                 <local:ClickSelectTextBox x:Name="hours" local:ErrorCue.HasErrors="{Binding Path=HasErrors}" BorderThickness="0" MaxLength="2" Margin="0,1,0,0" Width="20" TextAlignment="Right" 
-                                        GotFocus="hours_GotFocus" PreviewKeyDown="hours_KeyDown">
+                                        GotFocus="HoursGotFocus" PreviewKeyDown="HoursKeyDown">
                     <Binding ElementName="controlRoot" Path="Hours" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged"/>
                 </local:ClickSelectTextBox>
             </Grid>
@@ -53,7 +53,7 @@
             </Grid>
             <Grid Grid.Column="3" Height="Auto">
                 <local:ClickSelectTextBox x:Name="minutes" local:ErrorCue.HasErrors="{Binding Path=HasErrors}" BorderThickness="0"  MaxLength="2" Margin="0,1,4,0" Width="20"
-                                        HorizontalAlignment="Right" GotFocus="minutes_GotFocus" PreviewKeyDown="minutes_KeyDown" >
+                                        HorizontalAlignment="Right" GotFocus="MinutesGotFocus" PreviewKeyDown="MinutesKeyDown" >
                     <Binding ElementName="controlRoot" Path="Minutes" Mode="TwoWay" UpdateSourceTrigger="PropertyChanged"/>
                 </local:ClickSelectTextBox>
             </Grid>
@@ -63,11 +63,11 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <RepeatButton Name="upButton" Margin="0,1,1,0" Grid.Row="0" FocusVisualStyle="{x:Null}" Background="Transparent" 
-                              KeyboardNavigation.IsTabStop="False" Click="upButton_Click" KeyDown="upButton_KeyDown">
+                              KeyboardNavigation.IsTabStop="False" Click="UpButtonClick" KeyDown="UpButtonKeyDown">
                     <Path Fill="{Binding Foreground, ElementName=hours}" Data="M 0 4 L 8 4 L 4 0 Z"/>
                 </RepeatButton>
                 <RepeatButton Name="downButton" Margin="0,0,1,1" Grid.Row="1" FocusVisualStyle="{x:Null}" Background="Transparent"
-                              KeyboardNavigation.IsTabStop="False" Click="downButton_Click" KeyDown="downButton_KeyDown" >
+                              KeyboardNavigation.IsTabStop="False" Click="DownButtonClick" KeyDown="DownButtonKeyDown" >
                         <Path Fill="{Binding Foreground, ElementName=hours}" Data="M 0 0 L 4 4 L 8 0 Z"/>
                 </RepeatButton>
             </Grid>
