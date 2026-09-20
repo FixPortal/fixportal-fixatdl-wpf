@@ -52,10 +52,10 @@ jobs:
       - run: dotnet restore FixPortal.FixAtdl.Wpf.slnx
       - run: dotnet build FixPortal.FixAtdl.Wpf.slnx -c Release --no-restore "-p:Version=$env:PACKAGE_VERSION"
       - run: dotnet test --solution FixPortal.FixAtdl.Wpf.slnx -c Release --no-build --report-xunit-trx --results-directory ./TestResults --timeout 5m
-      - name: Collect Core branch coverage (informational)
+      - name: Collect Core branch coverage
         # Audit 2026-09-15 Section 7 (H1): first coverage measurement on Wpf.Core
         # only, via dotnet-coverage wrapping the unchanged test command (the
-        # fixportal-fixatdl pattern). Informational artefact: no gate, no threshold.
+        # fixportal-fixatdl pattern). Coverage failures block CI; no threshold is applied.
         run: dotnet dotnet-coverage collect -f cobertura -o ./TestResults/coverage-core.cobertura.xml "dotnet test --project tests/FixPortal.FixAtdl.Wpf.Core.Tests --configuration Release --no-build --timeout 5m"
       - run: dotnet pack src/FixPortal.FixAtdl.Wpf.Core -c Release --no-build -o artifacts "-p:Version=$env:PACKAGE_VERSION"
       - run: dotnet pack src/FixPortal.FixAtdl.Wpf -c Release --no-build -o artifacts "-p:Version=$env:PACKAGE_VERSION"
@@ -78,8 +78,9 @@ jobs:
           function Test-PackagePayload([string]$packagePath, [string[]]$requiredResources) {
               $zip = [System.IO.Compression.ZipArchive]::new([System.IO.File]::OpenRead($packagePath), 'Read')
               try {
-                  $dllEntry = ($zip.Entries | ForEach-Object FullName) | Where-Object { $_ -match '^lib/.+\.dll$' } | Select-Object -First 1
-                  if (-not $dllEntry) { throw "no lib/<tfm>/*.dll entry in $packagePath" }
+                  $dllEntries = @($zip.Entries | ForEach-Object FullName | Where-Object { $_ -match '^lib/.+\.dll$' })
+                  if ($dllEntries.Count -ne 1) { throw "expected exactly one lib/<tfm>/*.dll entry in $packagePath, found $($dllEntries.Count)" }
+                  $dllEntry = $dllEntries[0]
                   if ($requiredResources.Count -eq 0) {
                       Write-Output "OK $(Split-Path -Leaf $packagePath): $dllEntry present"
                       return
@@ -119,10 +120,15 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: test-results
-          path: |
-            ./TestResults/*.trx
-            ./TestResults/*.cobertura.xml
-          if-no-files-found: ignore
+          path: ./TestResults/*.trx
+          if-no-files-found: error
+      - name: Upload coverage results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-results
+          path: ./TestResults/*.cobertura.xml
+          if-no-files-found: warn
 
   gate-coverage:
     name: Gate coverage
@@ -180,8 +186,8 @@ jobs:
           name: packages
           path: artifacts
       # `dotnet nuget push` reads NUGET_API_KEY when --api-key is absent, so the key
-      # never enters the argument vector where /proc makes it readable to any other
-      # process on the runner.
+      # never enters the argument vector where /proc makes it readable to another
+      # step in the same job.
       - name: Publish validated packages
         env:
           NUGET_API_KEY: ${{ secrets.GITHUB_TOKEN }}
