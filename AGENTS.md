@@ -23,11 +23,11 @@ validation).
   for WPF controls). Assert with `.Should()`, never xUnit `Assert.*`.
   Run both with `dotnet test --solution FixPortal.FixAtdl.Wpf.slnx --configuration Release`.
 
-## Private feed restore
+## Package restore
 
-`FixPortal.CodeStyle` comes from the private `FixPortal` GitHub Packages
-source (`nuget.config`). A restore without `GITHUB_PACKAGES_TOKEN` set fails
-with NU1301/401.
+All current package dependencies restore from NuGet.org. Contributor restore,
+build, test, pack, and vulnerability scanning do not require FixPortal
+credentials.
 
 ## Review workflow
 

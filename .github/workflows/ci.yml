@@ -10,7 +10,6 @@ on:
 
 permissions:
   contents: read
-  packages: read
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -21,8 +20,6 @@ jobs:
     name: Build and test (Windows)
     runs-on: windows-latest
     timeout-minutes: 10
-    env:
-      GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v7
         with:

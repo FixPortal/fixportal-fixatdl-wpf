@@ -6,13 +6,9 @@ package.
 
 ## Getting set up
 
-The build consumes `FixPortal.CodeStyle` from the private FixPortal GitHub
-Packages feed, so restore needs a token with `read:packages` on the `FixPortal`
-org exported first:
-
-```powershell
-$env:GITHUB_PACKAGES_TOKEN = "<token with read:packages>"
-```
+The build consumes the public `FixPortal.CodeStyle` package from NuGet.org.
+Contributor restore, build, test, pack, and vulnerability scanning require no
+FixPortal credentials.
 
 Then the standard loop:
 
