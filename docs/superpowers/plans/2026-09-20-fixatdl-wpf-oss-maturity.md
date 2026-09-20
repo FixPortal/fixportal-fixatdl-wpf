@@ -138,21 +138,21 @@
 - Add: a documented clean-room bootstrap check under `.github/scripts/` only if it is needed to prove the public path
 
 **Interfaces:**
-- Preferred outcome: this repository consumes a public portable `FixPortal.CodeStyle` package, while internal-only rules move to a separate private `FixPortal.CodeStyle.Internal` package.
+- Preferred outcome: this repository consumes a public portable `FixPortal.CodeStyle` package, while the existing private `FixPortal.CodeStyle.ArchRules` overlay remains separate.
 - `FixPortal.FixAtdl` is already published on NuGet.org; this repository must stop routing that public package through the private feed once the CodeStyle dependency is public.
 - Internal repositories may consume both tiers; this public repository must consume only public package sources.
 
 - [ ] **Step 1: Define the two CodeStyle tiers**
 
-  Keep the stable package identity `FixPortal.CodeStyle` for the portable, public rules so consuming repositories do not need a coordinated package-ID migration. Create `FixPortal.CodeStyle.Internal` for rules that expose internal architecture, organisation policy, proprietary paths, or other material not intended for public distribution.
+  Keep the stable package identity `FixPortal.CodeStyle` for the portable, public rules so consuming repositories do not need a coordinated package-ID migration. Reuse the existing `FixPortal.CodeStyle.ArchRules` package for rules that expose internal architecture or organisation policy; do not invent a third package identity.
 
 - [ ] **Step 2: Classify and test the CodeStyle contents**
 
-  In `FixPortal/fixportal-codestyle`, classify every global rule, bundled analyzer, suppression, and documentation asset as public or internal. Verify redistribution terms for bundled analyzers and confirm the public package contains no secrets, internal URLs, private repository names, or organisation-only assumptions. Add package-consumer tests for both tiers: a public fixture restores without credentials; an internal fixture proves the private overlay remains enforced where intended.
+  In `FixPortal/fixportal-codestyle`, classify every global rule, bundled analyzer, suppression, and documentation asset as public or internal. Verify redistribution terms for bundled analyzers and confirm the public package contains no secrets, internal URLs, private repository names, or organisation-only assumptions. Add package-consumer tests for both tiers: a public fixture restores without credentials; the existing ArchRules package remains available to authenticated internal consumers.
 
 - [ ] **Step 3: Publish the public package and migrate internal consumers**
 
-  Publish the portable `FixPortal.CodeStyle` package to NuGet.org with the existing versioned release process. Move internal-only rules into `FixPortal.CodeStyle.Internal` on the authenticated FixPortal feed. Update internal repositories to reference the overlay explicitly; do not make internal rules appear magically in the public package.
+  Publish the portable `FixPortal.CodeStyle` package to NuGet.org with the existing versioned release process. Keep `FixPortal.CodeStyle.ArchRules` on the authenticated FixPortal feed. Update internal repositories to reference the overlay explicitly; do not make internal rules appear magically in the public package.
 
 - [ ] **Step 4: Remove private-feed routing from this public repository**
 
@@ -173,7 +173,7 @@
   dotnet pack src/FixPortal.FixAtdl.Wpf -c Release --no-build -o artifacts/oss-check
   ```
 
-  Inspect both nuspec files and confirm neither `FixPortal.CodeStyle` nor `FixPortal.CodeStyle.Internal` is a runtime dependency.
+  Inspect both nuspec files and confirm neither `FixPortal.CodeStyle` nor `FixPortal.CodeStyle.ArchRules` is a runtime dependency.
 
 - [ ] **Step 8: Commit the contributor bootstrap slice**
 
@@ -322,7 +322,7 @@ The first three PRs are required for “fully complete.” The fourth is maturit
 ## Self-review
 
 - The plan covers the known OSS blockers: private restore dependency, absent effective branch protection, missing secret-sweep control, missing contribution templates, stale dependency documentation, and incomplete public API documentation.
-- The CodeStyle remediation is now explicit: public portable rules remain under `FixPortal.CodeStyle`; internal-only rules move to `FixPortal.CodeStyle.Internal`; this repository removes private-feed routing once the public package is available.
+- The CodeStyle remediation is now explicit: public portable rules remain under `FixPortal.CodeStyle`; the existing private `FixPortal.CodeStyle.ArchRules` overlay remains separate; this repository removes private-feed routing once the public package is available.
 - It preserves the existing application architecture and does not introduce speculative abstractions.
 - Every proposed implementation slice has a repository-level validation command and a separate commit boundary.
 - The plan does not claim the private-feed issue can be solved entirely inside this repository; the package distribution decision is an explicit prerequisite.
