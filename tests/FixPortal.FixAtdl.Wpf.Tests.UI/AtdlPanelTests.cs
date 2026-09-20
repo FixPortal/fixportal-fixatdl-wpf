@@ -528,6 +528,35 @@ public partial class AtdlPanelTests
         });
     }
 
+    [Theory]
+    [InlineData("CheckBoxList")]
+    [InlineData("MultiSelectList")]
+    public void Long_list_labels_align_to_the_first_item(string kind)
+    {
+        StaTestHarness.Run(() =>
+        {
+            var strategy = TestStrategies.MinimalOneControlStrategy();
+            FixPortal.FixAtdl.Model.Controls.Support.ListControlBase control =
+                kind == "CheckBoxList"
+                    ? new FixPortal.FixAtdl.Model.Controls.CheckBoxList_t("List")
+                    : new FixPortal.FixAtdl.Model.Controls.MultiSelectList_t("List");
+            control.Label = "List";
+            control.ListItems.Add(new FixPortal.FixAtdl.Model.Elements.ListItem_t { EnumId = "A", UiRep = "Alpha" });
+            strategy.StrategyLayout.StrategyPanel.Controls.Add(control);
+            using var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
+            var (view, _) = AtdlPanel.Create(strategy, services);
+            view.Measure(new System.Windows.Size(800, 600));
+            view.Arrange(new System.Windows.Rect(0, 0, 800, 600));
+            view.UpdateLayout();
+
+            Descendants(view)
+                .OfType<System.Windows.Controls.Label>()
+                .Single(label => Equals(label.Content, "List"))
+                .VerticalAlignment.Should()
+                .Be(System.Windows.VerticalAlignment.Top);
+        });
+    }
+
     [Fact]
     public void Create_RendersContentAndBindsEdits()
     {

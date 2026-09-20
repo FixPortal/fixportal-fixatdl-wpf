@@ -316,7 +316,10 @@ public class WpfControlRenderer : IControlVisitor
                 // A Label defaults to top alignment while the control beside it centres itself, so
                 // the two sat on different baselines. The right margin is the gap between label and
                 // control, which had none at all.
-                writer.WriteAttribute(WpfXmlWriterAttribute.VerticalAlignment, "Center");
+                writer.WriteAttribute(
+                    WpfXmlWriterAttribute.VerticalAlignment,
+                    control is CheckBoxList_t or MultiSelectList_t ? "Top" : "Center"
+                );
                 writer.WriteAttribute(WpfXmlWriterAttribute.Margin, "0,0,8,0");
 
                 if (!string.IsNullOrEmpty(forControl))

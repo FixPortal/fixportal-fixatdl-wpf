@@ -31,6 +31,7 @@ internal class CheckBoxRenderer : IControlRenderer<CheckBox_t>
                 WpfXmlWriterAttribute.DataContext,
                 string.Format("{{Binding Path=Controls[{0}]}}", writer.ControlIndex(control))
             );
+            writer.WriteAttribute(WpfXmlWriterAttribute.ErrorCue_HasErrors, "{Binding Path=HasErrors, Mode=OneWay}");
             writer.WriteAttribute(WpfXmlWriterAttribute.ToolTip, "{Binding Path=ToolTip, Mode=OneWay}");
             writer.WriteAttribute(WpfXmlWriterAttribute.IsChecked, "{Binding Path=Value, Mode=TwoWay}");
             writer.WriteAttribute(WpfXmlWriterAttribute.IsEnabled, "{Binding Path=Enabled, Mode=OneWay}");

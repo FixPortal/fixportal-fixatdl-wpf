@@ -99,6 +99,29 @@ public class ReviewRegressionTests
     }
 
     [Fact]
+    public void InternalFailureAfterAnExistingValidationError_RetainsTheErrorStore()
+    {
+        var parameter = Substitute.For<IParameter>();
+        parameter.Name.Returns("Input");
+        var calls = 0;
+        parameter
+            .SetValueFromControl(Arg.Any<Control_t>())
+            .Returns(_ =>
+                calls++ == 0
+                    ? new ValidationResult(ValidationResult.ResultType.Invalid, "already invalid")
+                    : throw new InternalErrorException("Broken parameter invariant")
+            );
+        var model = new ControlViewModel(new TextField_t("Input"), parameter);
+
+        model.HasErrors.Should().BeTrue();
+        var edit = () => model.Value = "changed";
+
+        edit.Should().Throw<InternalErrorException>();
+        model.HasErrors.Should().BeTrue();
+        model.GetErrors(nameof(ControlViewModel.Value)).Should().NotBeEmpty();
+    }
+
+    [Fact]
     public void InternalFailureInTheParameterSweep_DoesNotLatchTheRefreshGuard()
     {
         // RefreshRules' finally reads every control-less parameter's WireValue BEFORE clearing
