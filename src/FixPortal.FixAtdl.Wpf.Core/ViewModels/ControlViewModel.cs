@@ -41,7 +41,7 @@ public partial class ControlViewModel : ObservableValidator
     public int? FixTag => _parameter?.FixTag is { } tag ? checked((int)tag) : null;
     public string? ToolTip => UnderlyingControl.ToolTip;
     public bool IsRequiredParameter => _parameter?.Use == Use_t.Required;
-    internal string? WireValue => HasErrors ? null : _parameter?.WireValue;
+    internal string? WireValue => HasErrors || HasTornWrite ? null : _parameter?.WireValue;
 
     /// <summary>
     /// Set when a write escaped validation by exception rather than returning a
@@ -49,10 +49,16 @@ public partial class ControlViewModel : ObservableValidator
     /// strategy must not be read back as though it were clean. One-way: the model is inconsistent
     /// and only rebuilding it clears that.
     /// </summary>
-    internal bool HasTornWrite { get; private set; }
+    private bool _hasTornWrite;
+
+    internal bool HasTornWrite
+    {
+        get => _hasTornWrite;
+        private set => SetProperty(ref _hasTornWrite, value);
+    }
     internal Func<Control_t, Control_t>? ParameterValueSource { get; set; }
 
-    internal void Revalidate() => ValidateProperty(Value, nameof(Value));
+    internal void Revalidate() => RunValidation(Value);
 
     private object? _value;
 
@@ -98,21 +104,7 @@ public partial class ControlViewModel : ObservableValidator
             {
                 OnPropertyChanging();
                 _value = value;
-                try
-                {
-                    ValidateProperty(value, nameof(Value));
-                }
-                catch
-                {
-                    // Not a user-input failure - those come back as a ValidationResult. Validation
-                    // writes the control before the parameter, so an escape here can leave the two
-                    // holding different values with nothing recorded in the error dictionary, and
-                    // OnPropertyChanged below never runs. Latch it so a read-back cannot emit the
-                    // parameter's stale wire value behind a clean HasErrors, then let the exception
-                    // reach the host, which is the whole point of not swallowing it.
-                    HasTornWrite = true;
-                    throw;
-                }
+                RunValidation(value);
                 OnPropertyChanged();
             }
         }
@@ -135,7 +127,30 @@ public partial class ControlViewModel : ObservableValidator
     [ObservableProperty]
     private bool _isContentValid = true;
 
-    partial void OnIsContentValidChanged(bool value) => ValidateProperty(Value, nameof(Value));
+    partial void OnIsContentValidChanged(bool value) => RunValidation(Value);
+
+    private bool _validationWriteStarted;
+
+    private void RunValidation(object? value)
+    {
+        _validationWriteStarted = false;
+        try
+        {
+            ValidateProperty(value, nameof(Value));
+        }
+        catch
+        {
+            if (_validationWriteStarted)
+            {
+                HasTornWrite = true;
+            }
+            throw;
+        }
+        finally
+        {
+            _validationWriteStarted = false;
+        }
+    }
 
     internal static object? Snapshot(object? value) => value is EnumState state ? state.Copy() : value;
 
@@ -187,6 +202,7 @@ public partial class ControlViewModel : ObservableValidator
             // Loaded display values need not round-trip to the same instant (for example during a DST overlap).
             if (!Equals(value, model.UnderlyingControl.GetCurrentValue()))
             {
+                model._validationWriteStarted = true;
                 model.UnderlyingControl.SetValue(ConvertForControl(value)!);
             }
             var result = model._parameter?.SetValueFromControl(
@@ -210,6 +226,8 @@ public partial class ControlViewModel : ObservableValidator
     internal static bool IsValidationException(Exception ex) =>
         ex
             is not InternalErrorException
+                and not ArgumentNullException
+                and not ArgumentOutOfRangeException
                 and (
                     FixAtdlException
                     or ArgumentException

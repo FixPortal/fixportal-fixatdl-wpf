@@ -143,15 +143,15 @@
                     <Grid SnapsToDevicePixels="False" Background="Transparent">
                         <Ellipse HorizontalAlignment="Center" x:Name="circle" VerticalAlignment="Center" Width="15" Height="15" Fill="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Stroke="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}"/>
                         <Ellipse Visibility="Hidden" HorizontalAlignment="Center" x:Name="shadow" VerticalAlignment="Center" Width="13" Height="13" Fill="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}"/>
-                        <Path SnapsToDevicePixels="false" x:Name="arrow" VerticalAlignment="Center" HorizontalAlignment="Center" Stroke="#666" StrokeThickness="2" Data="M1,1 L4,4 7,1" />
+                        <Path SnapsToDevicePixels="false" x:Name="arrow" VerticalAlignment="Center" HorizontalAlignment="Center" Stroke="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}" StrokeThickness="2" Data="M1,1 L4,4 7,1" />
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsChecked" Value="true">
                             <Setter Property="Data" TargetName="arrow" Value="M 1,4  L 4,1  L 7,4"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="true">
-                            <Setter Property="Stroke" TargetName="circle" Value="#666"/>
-                            <Setter Property="Stroke" TargetName="arrow" Value="#222"/>
+                            <Setter Property="Stroke" TargetName="circle" Value="{DynamicResource {x:Static SystemColors.ControlDarkBrushKey}}"/>
+                            <Setter Property="Stroke" TargetName="arrow" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
                             <Setter Property="Visibility" TargetName="shadow" Value="Visible"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -160,10 +160,8 @@
         </Setter>
     </Style>
 
-    <!-- The two state colours this library still owns. Nothing else here hardcodes a colour:
-         chrome resolves through SystemColors so an embedded panel inherits its host's theme
-         instead of painting over it. These two have no system equivalent - Windows has no
-         "required" or "invalid" brush - so they stay, named, in one place. -->
+    <!-- The validation brush is the only state colour this library owns; chrome resolves through
+         SystemColors so an embedded panel inherits its host's theme. -->
     <SolidColorBrush x:Key="ValidationErrorBrush" Color="Red"/>
     <BorderGapMaskConverter x:Key="BorderGapMaskConverter"/>
 
@@ -229,13 +227,6 @@
                         <Trigger Property="IsEnabled" Value="false">
                             <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
                         </Trigger>
-                        <MultiTrigger>
-                            <MultiTrigger.Conditions>
-                                <Condition Property="CollapseButtonVisibility" Value="Collapsed"/>
-                                <Condition Property="HeaderVisibility" Value="Collapsed"/>
-                            </MultiTrigger.Conditions>
-                            <Setter Property="Padding" Value="8,10,8,8"/>
-                        </MultiTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>

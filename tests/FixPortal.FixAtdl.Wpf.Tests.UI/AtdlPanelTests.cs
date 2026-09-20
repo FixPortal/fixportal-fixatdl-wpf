@@ -1,4 +1,6 @@
 using System.Globalization;
+using System.IO;
+using System.Xml;
 using AwesomeAssertions;
 using FixPortal.FixAtdl.Diagnostics.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
@@ -349,12 +351,29 @@ public partial class AtdlPanelTests
     }
 
     [Fact]
+    public void WpfXmlWriter_RejectsDuplicateIdsBeforeWriting()
+    {
+        using var output = XmlWriter.Create(new StringWriter());
+        var controls = new[]
+        {
+            new FixPortal.FixAtdl.Model.Controls.TextField_t("Qty"),
+            new FixPortal.FixAtdl.Model.Controls.TextField_t("Qty"),
+        };
+
+        var create = () => new FixPortal.FixAtdl.Wpf.Rendering.WpfXmlWriter(output, controls);
+
+        create.Should().Throw<ArgumentException>().WithMessage("*Qty*");
+    }
+
+    [Fact]
     public void ClockEdits_KeepBindingAndUseTimeOnlyBoundary()
     {
         StaTestHarness.Run(() =>
         {
             var strategy = TestStrategies.MinimalOneControlStrategy();
-            strategy.StrategyLayout.StrategyPanel.Controls.Add(new FixPortal.FixAtdl.Model.Controls.Clock_t("Clock"));
+            strategy.StrategyLayout.StrategyPanel.Controls.Add(
+                new FixPortal.FixAtdl.Model.Controls.Clock_t("Clock") { LocalMktTz = "America/New_York" }
+            );
             using var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
             var (view, model) = AtdlPanel.Create(strategy, services);
             view.Measure(new System.Windows.Size(800, 600));

@@ -225,6 +225,9 @@ public class WpfXmlWriter
         _attributeInformation[(int)WpfXmlWriterAttribute.AutomationProperties_AutomationId] = new AttributeInformation(
             "AutomationProperties.AutomationId"
         );
+        _attributeInformation[(int)WpfXmlWriterAttribute.AutomationProperties_Name] = new AttributeInformation(
+            "AutomationProperties.Name"
+        );
         _attributeInformation[(int)WpfXmlWriterAttribute.BorderThickness] = new AttributeInformation("BorderThickness");
         _attributeInformation[(int)WpfXmlWriterAttribute.BorderVisibility] = new AttributeInformation(
             "BorderVisibility"

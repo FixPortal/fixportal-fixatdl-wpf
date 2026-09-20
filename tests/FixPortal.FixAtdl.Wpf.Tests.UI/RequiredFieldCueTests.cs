@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Media;
 using AwesomeAssertions;
@@ -54,6 +55,7 @@ public class RequiredFieldCueTests
             // caller ever sees "Quantity *" where it expected "Quantity".
             label.Content.Should().Be("Quantity");
             label.ContentStringFormat.Should().Be("{0} *");
+            new LabelAutomationPeer(label).GetName().Should().Be("Quantity *");
         });
     }
 
@@ -71,6 +73,28 @@ public class RequiredFieldCueTests
 
             label.Content.Should().Be("Quantity");
             label.ContentStringFormat.Should().BeNull();
+        });
+    }
+
+    [Fact]
+    public void Required_checkboxes_and_radio_buttons_carry_the_marker()
+    {
+        StaTestHarness.Run(() =>
+        {
+            var strategy = new Strategy_t();
+            var panel = new StrategyPanel_t(strategy);
+            strategy.StrategyLayout = new StrategyLayout_t { StrategyPanel = panel };
+            panel.Controls.Add(new CheckBox_t("Flag") { ParameterRef = "Flag", Label = "Flag" });
+            panel.Controls.Add(new RadioButton_t("Choice") { ParameterRef = "Choice", Label = "Choice" });
+            strategy.Parameters.Add(new Parameter_t<Boolean_t>("Flag") { Use = Use_t.Required });
+            strategy.Parameters.Add(new Parameter_t<Boolean_t>("Choice") { Use = Use_t.Required });
+
+            using var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
+            var (view, _) = AtdlPanel.Create(strategy, services);
+            Layout(view);
+
+            Descendants(view).OfType<CheckBox>().Single().ContentStringFormat.Should().Be("{0} *");
+            Descendants(view).OfType<RadioButton>().Single().ContentStringFormat.Should().Be("{0} *");
         });
     }
 
