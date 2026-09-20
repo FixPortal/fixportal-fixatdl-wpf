@@ -18,7 +18,7 @@ Install `FixPortal.FixAtdl.Wpf`. It pulls in:
 |---|---|---|
 | `FixPortal.FixAtdl.Wpf` | `net10.0-windows` | Controls, XAML renderer, `AtdlPanel`, `AddFixAtdlWpf`. |
 | `FixPortal.FixAtdl.Wpf.Core` | `net10.0` | `EditViewModel` and friends. Usable without WPF if you only want validation and FIX read-back. |
-| `FixPortal.FixAtdl` | `net10.0` | Parser / model / emitter. Currently pinned at 1.1.2. |
+| `FixPortal.FixAtdl` | `net10.0` | Parser / model / emitter. Currently pinned at 1.1.4. |
 
 Target `net10.0-windows` with `UseWPF`. You also need
 `Microsoft.Extensions.DependencyInjection`.
