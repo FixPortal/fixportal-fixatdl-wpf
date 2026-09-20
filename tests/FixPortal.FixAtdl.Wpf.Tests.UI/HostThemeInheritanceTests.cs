@@ -144,6 +144,37 @@ public class HostThemeInheritanceTests
     }
 
     [Fact]
+    public void ClickSelectTextBox_Uses_a_host_specific_implicit_style_when_present()
+    {
+        StaTestHarness.Run(() =>
+        {
+            var hostStyle = new Style(typeof(ClickSelectTextBox));
+            hostStyle.Setters.Add(new Setter(Control.ForegroundProperty, Brushes.Magenta));
+            var host = new StackPanel();
+            host.Resources.Add(typeof(ClickSelectTextBox), hostStyle);
+            var box = new ClickSelectTextBox();
+            host.Children.Add(box);
+            var window = new Window
+            {
+                Content = host,
+                Width = 200,
+                Height = 100,
+            };
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+                box.Style.Should().BeSameAs(hostStyle);
+                box.Foreground.Should().Be(Brushes.Magenta);
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
     public void The_invalid_state_cue_hands_the_border_back_to_the_host_when_it_clears()
     {
         StaTestHarness.Run(() =>

@@ -20,6 +20,10 @@ internal class CheckBoxRenderer : IControlRenderer<CheckBox_t>
                 if (writer.IsRequired(control) && !control.Label.TrimEnd().EndsWith('*'))
                 {
                     writer.WriteAttribute(WpfXmlWriterAttribute.ContentStringFormat, "{}{0} *");
+                    writer.WriteLiteralAttribute(
+                        WpfXmlWriterAttribute.AutomationProperties_Name,
+                        control.Label.TrimEnd() + " *"
+                    );
                 }
                 writer.WriteLiteralAttribute(WpfXmlWriterAttribute.Content, control.Label);
             }
