@@ -10,8 +10,6 @@ internal class EditableDropDownListRenderer : IControlRenderer<EditableDropDownL
 
     public void Render(WpfXmlWriter writer, EditableDropDownList_t control)
     {
-        string id = WpfControlRenderer.CleanName(control.Id);
-
         WpfControlRenderer.RenderLabelledControl<EditableDropDownList_t>(
             writer,
             control,
@@ -19,39 +17,18 @@ internal class EditableDropDownListRenderer : IControlRenderer<EditableDropDownL
             {
                 using (writer.New(WpfXmlWriterTag.ComboBox))
                 {
-                    writer.WriteAttribute(WpfXmlWriterAttribute.GridColumn, gridCoordinate.Column.ToString());
-                    writer.WriteAttribute(WpfXmlWriterAttribute.GridRow, gridCoordinate.Row.ToString());
-
-                    writer.WriteAttribute(WpfXmlWriterAttribute.Margin, "2,5,2,5");
+                    WpfControlRenderer.WriteStandardControlAttributes(writer, c, gridCoordinate, includeErrorCue: true);
 
                     writer.WriteAttribute(WpfXmlWriterAttribute.IsEditable, "True");
 
-                    if (!string.IsNullOrEmpty(id))
-                    {
-                        writer.WriteAttribute(WpfXmlWriterAttribute.Name, id);
-                    }
-
                     writer.WriteAttribute(WpfXmlWriterAttribute.HorizontalAlignment, "Left");
-
-                    writer.WriteAttribute(
-                        WpfXmlWriterAttribute.DataContext,
-                        string.Format("{{Binding Path=Controls[{0}]}}", writer.ControlIndex(control))
-                    );
-
-                    writer.WriteAttribute(WpfXmlWriterAttribute.ToolTip, "{Binding Path=ToolTip, Mode=OneWay}");
                     // The invalid-state cue is a local value on the control, not an implicit style:
                     // ComboBox and ListBox belong to the host, and a style for them in this panel's
                     // dictionary would shadow the host's own. See ErrorCue.
-                    writer.WriteAttribute(
-                        WpfXmlWriterAttribute.ErrorCue_HasErrors,
-                        "{Binding Path=HasErrors, Mode=OneWay}"
-                    );
                     writer.WriteAttribute(WpfXmlWriterAttribute.ItemsSource, "{Binding Path=Items}");
                     writer.WriteAttribute(WpfXmlWriterAttribute.SelectedValuePath, "EnumId");
                     writer.WriteAttribute(WpfXmlWriterAttribute.DisplayMemberPath, "UiRep");
                     writer.WriteAttribute(WpfXmlWriterAttribute.Text, "{Binding Path=Text, Mode=TwoWay}");
-                    writer.WriteAttribute(WpfXmlWriterAttribute.IsEnabled, "{Binding Path=Enabled, Mode=OneWay}");
-                    writer.WriteAttribute(WpfXmlWriterAttribute.Visibility, "{Binding Path=Visibility, Mode=OneWay}");
                 }
             }
         );

@@ -15,9 +15,6 @@ public class NumericSpinnerControlBase : UserControl
     private bool _textChangeInProgress;
 
     /// <summary>
-    /// Dependency property that provides storage for the InnerIncrement property.
-    /// </summary>
-    /// <summary>
     /// Dependency property that provides storage for the output value of this control.  May be null.
     /// </summary>
     public static readonly DependencyProperty ValueProperty = DependencyProperty.Register(

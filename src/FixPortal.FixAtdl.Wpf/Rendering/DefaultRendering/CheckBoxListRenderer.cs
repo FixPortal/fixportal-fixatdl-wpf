@@ -11,7 +11,6 @@ public class CheckBoxListRenderer : IControlRenderer<CheckBoxList_t>
 
     public void Render(WpfXmlWriter writer, CheckBoxList_t control)
     {
-        string id = WpfControlRenderer.CleanName(control.Id);
         WpfControlRenderer.RenderLabelledControl<CheckBoxList_t>(
             writer,
             control,
@@ -19,22 +18,9 @@ public class CheckBoxListRenderer : IControlRenderer<CheckBoxList_t>
             {
                 using (writer.New(DefaultNamespaceProvider.ControlsNamespaceUri, typeof(CheckBoxList).Name))
                 {
-                    writer.WriteAttribute(WpfXmlWriterAttribute.GridColumn, gridCoordinate.Column.ToString());
-                    writer.WriteAttribute(WpfXmlWriterAttribute.GridRow, gridCoordinate.Row.ToString());
-                    if (!string.IsNullOrEmpty(c.Id))
-                    {
-                        writer.WriteAttribute(WpfXmlWriterAttribute.Name, id);
-                    }
-                    writer.WriteAttribute(WpfXmlWriterAttribute.Margin, "2,5,2,5");
-                    writer.WriteAttribute(
-                        WpfXmlWriterAttribute.DataContext,
-                        string.Format("{{Binding Path=Controls[{0}]}}", writer.ControlIndex(control))
-                    );
-                    writer.WriteAttribute(WpfXmlWriterAttribute.ToolTip, "{Binding Path=ToolTip, Mode=OneWay}");
+                    WpfControlRenderer.WriteStandardControlAttributes(writer, c, gridCoordinate);
                     writer.WriteAttribute(WpfXmlWriterAttribute.Orientation, "{Binding Path=Orientation, Mode=OneWay}");
                     writer.WriteAttribute(WpfXmlWriterAttribute.ItemsSource, "{Binding Path=Items}");
-                    writer.WriteAttribute(WpfXmlWriterAttribute.IsEnabled, "{Binding Path=Enabled, Mode=OneWay}");
-                    writer.WriteAttribute(WpfXmlWriterAttribute.Visibility, "{Binding Path=Visibility, Mode=OneWay}");
                 }
             }
         );

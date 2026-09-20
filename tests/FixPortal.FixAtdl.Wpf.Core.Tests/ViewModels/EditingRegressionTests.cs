@@ -114,6 +114,40 @@ public class EditingRegressionTests
     }
 
     [Fact]
+    public void MultipleNullStateRules_RestoreTheOriginalValueOnce()
+    {
+        var strategy = TestControls.MinimalStrategyWithOneRequiredControl();
+        var qty = strategy.Controls["Qty"];
+        qty.SetValue(12m);
+        var toggle = new CheckBox_t("Toggle");
+        strategy.StrategyLayout.StrategyPanel.Controls.Add(toggle);
+
+        for (var i = 0; i < 2; i++)
+        {
+            qty.StateRules.Add(
+                new StateRule_t
+                {
+                    Value = "{NULL}",
+                    Edit = new Edit_t<Control_t>
+                    {
+                        Field = "Toggle",
+                        Operator = Operator_t.Equal,
+                        Value = "true",
+                    },
+                }
+            );
+        }
+
+        var model = new EditViewModel(strategy);
+
+        model.Controls[1].Value = true;
+        model.Controls[0].Value.Should().BeNull();
+        model.Controls[1].Value = false;
+
+        model.Controls[0].Value.Should().Be(12m);
+    }
+
+    [Fact]
     public void StrategyEdits_BlockReadBackUntilSatisfied()
     {
         var strategy = TestControls.MinimalStrategyWithOneRequiredControl();

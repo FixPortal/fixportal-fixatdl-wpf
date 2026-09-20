@@ -65,6 +65,7 @@ public class WpfControlRenderer : IControlVisitor
     /// <param name="control">CheckBox_t to render.</param>
     public void Visit(CheckBox_t control)
     {
+        ArgumentNullException.ThrowIfNull(control);
         GetRenderer<IControlRenderer<CheckBox_t>>(typeof(CheckBox_t)).Render(_writer, control);
     }
 
@@ -74,6 +75,7 @@ public class WpfControlRenderer : IControlVisitor
     /// <param name="control">CheckBoxList_t to render.</param>
     public void Visit(CheckBoxList_t control)
     {
+        ArgumentNullException.ThrowIfNull(control);
         GetRenderer<IControlRenderer<CheckBoxList_t>>(typeof(CheckBoxList_t)).Render(_writer, control);
     }
 
@@ -83,6 +85,7 @@ public class WpfControlRenderer : IControlVisitor
     /// <param name="control">Clock_t to render.</param>
     public void Visit(Clock_t control)
     {
+        ArgumentNullException.ThrowIfNull(control);
         GetRenderer<IControlRenderer<Clock_t>>(typeof(Clock_t)).Render(_writer, control);
     }
 
@@ -92,6 +95,7 @@ public class WpfControlRenderer : IControlVisitor
     /// <param name="control">DoubleSpinner_t to render.</param>
     public void Visit(DoubleSpinner_t control)
     {
+        ArgumentNullException.ThrowIfNull(control);
         GetRenderer<IControlRenderer<DoubleSpinner_t>>(typeof(DoubleSpinner_t)).Render(_writer, control);
     }
 
@@ -101,6 +105,7 @@ public class WpfControlRenderer : IControlVisitor
     /// <param name="control">DropDownList_t to render.</param>
     public void Visit(DropDownList_t control)
     {
+        ArgumentNullException.ThrowIfNull(control);
         GetRenderer<IControlRenderer<DropDownList_t>>(typeof(DropDownList_t)).Render(_writer, control);
     }
 
@@ -110,6 +115,7 @@ public class WpfControlRenderer : IControlVisitor
     /// <param name="control">EditableDropDownList_t to render.</param>
     public void Visit(EditableDropDownList_t control)
     {
+        ArgumentNullException.ThrowIfNull(control);
         GetRenderer<IControlRenderer<EditableDropDownList_t>>(typeof(EditableDropDownList_t)).Render(_writer, control);
     }
 
@@ -119,6 +125,7 @@ public class WpfControlRenderer : IControlVisitor
     /// <param name="control">HiddenField_t to render.</param>
     public void Visit(HiddenField_t control)
     {
+        ArgumentNullException.ThrowIfNull(control);
         GetRenderer<IControlRenderer<HiddenField_t>>(typeof(HiddenField_t)).Render(_writer, control);
     }
 
@@ -128,6 +135,7 @@ public class WpfControlRenderer : IControlVisitor
     /// <param name="control">Label_t to render.</param>
     public void Visit(Label_t control)
     {
+        ArgumentNullException.ThrowIfNull(control);
         GetRenderer<IControlRenderer<Label_t>>(typeof(Label_t)).Render(_writer, control);
     }
 
@@ -137,6 +145,7 @@ public class WpfControlRenderer : IControlVisitor
     /// <param name="control">MultiSelectList_t to render.</param>
     public void Visit(MultiSelectList_t control)
     {
+        ArgumentNullException.ThrowIfNull(control);
         GetRenderer<IControlRenderer<MultiSelectList_t>>(typeof(MultiSelectList_t)).Render(_writer, control);
     }
 
@@ -146,6 +155,7 @@ public class WpfControlRenderer : IControlVisitor
     /// <param name="control">RadioButton_t to render.</param>
     public void Visit(RadioButton_t control)
     {
+        ArgumentNullException.ThrowIfNull(control);
         GetRenderer<IControlRenderer<RadioButton_t>>(typeof(RadioButton_t)).Render(_writer, control);
     }
 
@@ -155,6 +165,7 @@ public class WpfControlRenderer : IControlVisitor
     /// <param name="control">RadioButtonList_t to render.</param>
     public void Visit(RadioButtonList_t control)
     {
+        ArgumentNullException.ThrowIfNull(control);
         GetRenderer<IControlRenderer<RadioButtonList_t>>(typeof(RadioButtonList_t)).Render(_writer, control);
     }
 
@@ -164,6 +175,7 @@ public class WpfControlRenderer : IControlVisitor
     /// <param name="control">SingleSelectList_t to render.</param>
     public void Visit(SingleSelectList_t control)
     {
+        ArgumentNullException.ThrowIfNull(control);
         GetRenderer<IControlRenderer<SingleSelectList_t>>(typeof(SingleSelectList_t)).Render(_writer, control);
     }
 
@@ -173,6 +185,7 @@ public class WpfControlRenderer : IControlVisitor
     /// <param name="control">SingleSpinner_t to render.</param>
     public void Visit(SingleSpinner_t control)
     {
+        ArgumentNullException.ThrowIfNull(control);
         GetRenderer<IControlRenderer<SingleSpinner_t>>(typeof(SingleSpinner_t)).Render(_writer, control);
     }
 
@@ -182,6 +195,7 @@ public class WpfControlRenderer : IControlVisitor
     /// <param name="control">Slider_t to render.</param>
     public void Visit(Slider_t control)
     {
+        ArgumentNullException.ThrowIfNull(control);
         GetRenderer<IControlRenderer<Slider_t>>(typeof(Slider_t)).Render(_writer, control);
     }
 
@@ -191,6 +205,7 @@ public class WpfControlRenderer : IControlVisitor
     /// <param name="control">TextField_t to render.</param>
     public void Visit(TextField_t control)
     {
+        ArgumentNullException.ThrowIfNull(control);
         GetRenderer<IControlRenderer<TextField_t>>(typeof(TextField_t)).Render(_writer, control);
     }
 
@@ -268,6 +283,33 @@ public class WpfControlRenderer : IControlVisitor
                 controlRenderer(control, StandardGridCoordinates.Control);
             }
         }
+    }
+
+    public static void WriteStandardControlAttributes(
+        WpfXmlWriter writer,
+        Control_t control,
+        GridCoordinate gridCoordinate,
+        bool includeErrorCue = false
+    )
+    {
+        writer.WriteAttribute(WpfXmlWriterAttribute.GridColumn, gridCoordinate.Column.ToString());
+        writer.WriteAttribute(WpfXmlWriterAttribute.GridRow, gridCoordinate.Row.ToString());
+        writer.WriteAttribute(WpfXmlWriterAttribute.Margin, "2,5,2,5");
+        if (!string.IsNullOrEmpty(control.Id))
+        {
+            writer.WriteAttribute(WpfXmlWriterAttribute.Name, CleanName(control.Id));
+        }
+        writer.WriteAttribute(
+            WpfXmlWriterAttribute.DataContext,
+            string.Format("{{Binding Path=Controls[{0}]}}", writer.ControlIndex(control))
+        );
+        writer.WriteAttribute(WpfXmlWriterAttribute.ToolTip, "{Binding Path=ToolTip, Mode=OneWay}");
+        if (includeErrorCue)
+        {
+            writer.WriteAttribute(WpfXmlWriterAttribute.ErrorCue_HasErrors, "{Binding Path=HasErrors, Mode=OneWay}");
+        }
+        writer.WriteAttribute(WpfXmlWriterAttribute.IsEnabled, "{Binding Path=Enabled, Mode=OneWay}");
+        writer.WriteAttribute(WpfXmlWriterAttribute.Visibility, "{Binding Path=Visibility, Mode=OneWay}");
     }
 
     /// <summary>

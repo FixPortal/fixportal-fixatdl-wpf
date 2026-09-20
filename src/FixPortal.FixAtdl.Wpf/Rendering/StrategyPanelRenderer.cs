@@ -17,6 +17,7 @@ namespace FixPortal.FixAtdl.Wpf.Rendering;
 
 public sealed class StrategyPanelRenderer
 {
+    private const int MaxPanelDepth = 64;
     public const string ExceptionContext = "StrategyPanelRenderer";
 
     public static readonly string CollapsedVisibility = nameof(Visibility.Collapsed);
@@ -41,15 +42,12 @@ public sealed class StrategyPanelRenderer
             throw ThrowHelper.New<RenderingException>(ExceptionContext, "No strategy layout was supplied.");
         }
 
-        StrategyPanel_t rootPanel = strategy.StrategyLayout.StrategyPanel;
-
-        if (rootPanel == null)
-        {
-            throw ThrowHelper.New<RenderingException>(
+        StrategyPanel_t rootPanel =
+            strategy.StrategyLayout.StrategyPanel
+            ?? throw ThrowHelper.New<RenderingException>(
                 ExceptionContext,
                 "No strategy panels were found in this strategy."
             );
-        }
 
         var xamlText = new StringBuilder();
 
@@ -74,9 +72,7 @@ public sealed class StrategyPanelRenderer
                 _namespaceProvider
             );
 
-            int depth = 0;
-
-            ProcessPanel(rootPanel, wpfWriter, controlRenderer, -1, true, ref depth);
+            ProcessPanel(rootPanel, wpfWriter, controlRenderer, -1, true, 0);
         }
 
         var view = (FrameworkElement)XamlReader.Parse(xamlText.ToString());
@@ -95,10 +91,16 @@ public sealed class StrategyPanelRenderer
         WpfControlRenderer controlRenderer,
         int rowOrColumn,
         bool parentIsVertical,
-        ref int depth
+        int depth
     )
     {
-        depth++;
+        if (depth >= MaxPanelDepth)
+        {
+            throw ThrowHelper.New<RenderingException>(
+                ExceptionContext,
+                $"Strategy panel nesting exceeds the maximum depth of {MaxPanelDepth}."
+            );
+        }
 
         bool isVertical = panel.Orientation == Orientation_t.Vertical;
 
@@ -125,7 +127,7 @@ public sealed class StrategyPanelRenderer
             using (writer.New(WpfXmlWriterTag.Grid))
             {
                 WriteGridDefinitions(writer, isVertical, containsControls, childCount);
-                ProcessPanelChildrenOrControls(panel, writer, controlRenderer, isVertical, ref depth);
+                ProcessPanelChildrenOrControls(panel, writer, controlRenderer, isVertical, depth + 1);
             }
         }
     }
@@ -201,7 +203,7 @@ public sealed class StrategyPanelRenderer
         WpfXmlWriter writer,
         WpfControlRenderer controlRenderer,
         bool isVertical,
-        ref int depth
+        int depth
     )
     {
         // Note that a StrategyPanel_t can either contain other strategy panels, or controls but NOT BOTH.
@@ -211,7 +213,7 @@ public sealed class StrategyPanelRenderer
 
             foreach (StrategyPanel_t childPanel in panel.StrategyPanels)
             {
-                ProcessPanel(childPanel, writer, controlRenderer, thisRowOrColumn, isVertical, ref depth);
+                ProcessPanel(childPanel, writer, controlRenderer, thisRowOrColumn, isVertical, depth);
 
                 thisRowOrColumn++;
             }
