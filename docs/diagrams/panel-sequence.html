@@ -55,7 +55,7 @@
 
     <svg viewBox="0 0 960 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="panelseq-title panelseq-desc">
       <title id="panelseq-title">Creating and reading back a panel</title>
-      <desc id="panelseq-desc">AtdlPanel.Create asks the renderer to generate XAML, which WPF parses into a FrameworkElement, and builds an EditViewModel; the host then edits, checks HasErrors, and reads the 957 to 960 tag sequence back from the view-model.</desc>
+      <desc id="panelseq-desc">AtdlPanel.Create asks the renderer to generate XAML, which WPF parses into a FrameworkElement, and builds an EditViewModel; the host then edits, checks HasErrors, and reads the 957 to 960 tag sequence back from the view-model, which delegates to the headless core emitter.</desc>
       <defs>
         <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#5b6b85"/></marker>
         <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#0f766e"/></marker>
@@ -131,7 +131,7 @@
       <!-- 10 headline success -->
       <line x1="680" y1="428" x2="96" y2="428" stroke="#0f766e" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
       <rect x="154" y="408" width="76" height="12" rx="2" fill="#f7f8fa"/>
-      <text x="192" y="417" fill="#0f766e" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">tags 957-960</text>
+      <text x="192" y="417" fill="#0f766e" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">tags 957-960 · core emitter</text>
 
       <!-- ===== ACTORS ===== -->
       <rect x="40" y="48" width="112" height="48" rx="6" fill="#f7f8fa"/>
