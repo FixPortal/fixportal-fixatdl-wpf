@@ -1,4 +1,4 @@
-![Architecture overview: FixPortal.FixAtdl.Wpf sits between Fixatdl XML and FIX output, rendering editable strategy forms from FixPortal core models](https://raw.githubusercontent.com/FixPortal/fixportal-fixatdl-wpf/main/docs/images/fixatdl-wpf-hero.png)
+![FixAtdl WPF: editable strategy forms from FixPortal core models](https://raw.githubusercontent.com/FixPortal/fixportal-fixatdl-wpf/main/docs/images/fixatdl-wpf-hero.png)
 
 # FixPortal.FixAtdl.Wpf
 
