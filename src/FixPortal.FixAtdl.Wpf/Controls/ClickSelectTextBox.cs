@@ -17,10 +17,20 @@ public class ClickSelectTextBox : TextBox
         // declares no TextBox style leaves this unset and the control falls back to its theme style
         // exactly as before.
         SetResourceReference(StyleProperty, typeof(TextBox));
+        Loaded += ApplyHostStyle;
 
         AddHandler(PreviewMouseLeftButtonDownEvent, new MouseButtonEventHandler(SelectivelyIgnoreMouseButton), true);
         AddHandler(GotKeyboardFocusEvent, new RoutedEventHandler(SelectAllText), true);
         AddHandler(MouseDoubleClickEvent, new RoutedEventHandler(SelectAllText), true);
+    }
+
+    private void ApplyHostStyle(object sender, RoutedEventArgs e)
+    {
+        Loaded -= ApplyHostStyle;
+        if (TryFindResource(typeof(ClickSelectTextBox)) is Style style)
+        {
+            Style = style;
+        }
     }
 
     private static void SelectivelyIgnoreMouseButton(object sender, MouseButtonEventArgs e)

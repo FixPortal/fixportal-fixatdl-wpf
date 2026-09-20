@@ -63,7 +63,12 @@ public class EditViewModel : ObservableObject
             control.ErrorsChanged += (_, _) => OnPropertyChanged(nameof(HasErrors));
             control.PropertyChanged += (_, args) =>
             {
-                if (args.PropertyName is nameof(ControlViewModel.Value) or nameof(ControlViewModel.IsContentValid))
+                if (
+                    args.PropertyName
+                    is nameof(ControlViewModel.Value)
+                        or nameof(ControlViewModel.IsContentValid)
+                        or nameof(ControlViewModel.HasTornWrite)
+                )
                 {
                     if (_synchronizingRadioGroup)
                     {
@@ -166,6 +171,8 @@ public class EditViewModel : ObservableObject
         }
         _refreshing = true;
         var errors = new List<string>();
+        var rulesCompleted = false;
+        var parameterSweepCompleted = false;
         try
         {
             var passes = 0;
@@ -196,10 +203,12 @@ public class EditViewModel : ObservableObject
             errors.AddRange(
                 _strategy.StrategyEdits.Where(edit => !edit.CurrentState).Select(edit => edit.ErrorMessage)
             );
+            rulesCompleted = true;
         }
         catch (Exception ex) when (ControlViewModel.IsValidationException(ex))
         {
             errors.Add(ex.Message);
+            rulesCompleted = true;
         }
         finally
         {
@@ -226,10 +235,14 @@ public class EditViewModel : ObservableObject
                         errors.Add(ex.Message);
                     }
                 }
+                parameterSweepCompleted = true;
             }
             finally
             {
-                StrategyErrors = errors.ToArray();
+                if (rulesCompleted && parameterSweepCompleted)
+                {
+                    StrategyErrors = errors.ToArray();
+                }
                 _refreshing = false;
                 OnPropertyChanged(nameof(StrategyErrors));
                 OnPropertyChanged(nameof(HasErrors));

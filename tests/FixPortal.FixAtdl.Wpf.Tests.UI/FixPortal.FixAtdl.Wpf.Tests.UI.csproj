@@ -7,13 +7,11 @@
     <UseWPF>true</UseWPF>
     <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
     <IsPackable>false</IsPackable>
-    <!-- The dark-theme checks host the panel in a Window with ThemeMode set. ThemeMode is WPF's
-         Fluent theme switch, still evaluation-only in .NET 10. Suppressed in this test project and
-         in the sample only; the library itself takes no dependency on it. -->
-    <NoWarn>$(NoWarn);WPF0001</NoWarn>
+    <!-- ThemeMode is suppressed at the three test use sites where it is exercised. -->
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Tests must run serially because WPF theme-dictionary resolution is process-global across STA threads. -->
     <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
     <!-- The sample application's own document, linked rather than copied, so these tests fail the
          moment the file a user runs stops parsing. -->

@@ -7,131 +7,134 @@ namespace FixPortal.FixAtdl.Wpf.Rendering;
 public enum WpfXmlWriterAttribute
 {
     /// <summary>AutomationProperties.AutomationId</summary>
-    AutomationProperties_AutomationId,
+    AutomationProperties_AutomationId = 0,
 
     /// <summary>BorderThickness</summary>
-    BorderThickness,
+    BorderThickness = 1,
 
     /// <summary>BorderVisibility</summary>
-    BorderVisibility,
+    BorderVisibility = 2,
 
     /// <summary>CollapseButtonVisibility</summary>
-    CollapseButtonVisibility,
+    CollapseButtonVisibility = 3,
 
     /// <summary>Content</summary>
-    Content,
+    Content = 4,
 
     /// <summary>ContentStringFormat</summary>
-    ContentStringFormat,
+    ContentStringFormat = 41,
 
     /// <summary>DataContext</summary>
-    DataContext,
+    DataContext = 5,
 
     /// <summary>DisplayMemberPath</summary>
-    DisplayMemberPath,
+    DisplayMemberPath = 6,
 
     /// <summary>ErrorCue.HasErrors, the library's own attached property.</summary>
-    ErrorCue_HasErrors,
+    ErrorCue_HasErrors = 42,
 
     /// <summary>GridColumn</summary>
-    GridColumn,
+    GridColumn = 7,
 
     /// <summary>GridRow</summary>
-    GridRow,
+    GridRow = 8,
 
     /// <summary>GroupName</summary>
-    GroupName,
+    GroupName = 9,
 
     /// <summary>Header</summary>
-    Header,
+    Header = 10,
 
     /// <summary>HeaderVisibility</summary>
-    HeaderVisibility,
+    HeaderVisibility = 11,
 
     /// <summary>Height</summary>
-    Height,
+    Height = 12,
 
     /// <summary>HorizontalAlignment</summary>
-    HorizontalAlignment,
+    HorizontalAlignment = 13,
 
     /// <summary>VerticalAlignment</summary>
-    VerticalAlignment,
+    VerticalAlignment = 14,
 
     /// <summary>Increment</summary>
-    Increment,
+    Increment = 15,
 
     /// <summary>InnerIncrement</summary>
-    InnerIncrement,
+    InnerIncrement = 16,
 
     /// <summary>IsChecked</summary>
-    IsChecked,
+    IsChecked = 17,
 
     /// <summary>IsContentValid</summary>
-    IsContentValid,
+    IsContentValid = 18,
 
     /// <summary>IsEditable</summary>
-    IsEditable,
+    IsEditable = 19,
 
     /// <summary>IsEnabled</summary>
-    IsEnabled,
+    IsEnabled = 20,
 
     /// <summary>IsExpanded</summary>
-    IsExpanded,
+    IsExpanded = 21,
 
     /// <summary>ItemContainerStyle</summary>
-    ItemContainerStyle,
+    ItemContainerStyle = 22,
 
     /// <summary>ItemsSource</summary>
-    ItemsSource,
+    ItemsSource = 23,
 
     /// <summary>Margin</summary>
-    Margin,
+    Margin = 24,
 
     /// <summary>Name</summary>
-    Name,
+    Name = 25,
 
     /// <summary>Orientation</summary>
-    Orientation,
+    Orientation = 26,
 
     /// <summary>OuterIncrement</summary>
-    OuterIncrement,
+    OuterIncrement = 27,
 
     /// <summary>Padding</summary>
-    Padding,
+    Padding = 28,
 
     /// <summary>SelectedItem</summary>
-    SelectedItem,
+    SelectedItem = 29,
 
     /// <summary>SelectedValue</summary>
-    SelectedValue,
+    SelectedValue = 30,
 
     /// <summary>SelectedValuePath</summary>
-    SelectedValuePath,
+    SelectedValuePath = 31,
 
     /// <summary>SelectionMode</summary>
-    SelectionMode,
+    SelectionMode = 32,
 
     /// <summary>Target</summary>
-    Target,
+    Target = 33,
 
     /// <summary>Text</summary>
-    Text,
+    Text = 34,
 
     /// <summary>ToolTip</summary>
-    ToolTip,
+    ToolTip = 35,
 
     /// <summary>Time</summary>
-    Time,
+    Time = 36,
 
     /// <summary>Value</summary>
-    Value,
+    Value = 37,
 
     /// <summary>VirtualizingStackPanel.IsVirtualizing</summary>
-    VirtualizingStackPanel_IsVirtualizing,
+    VirtualizingStackPanel_IsVirtualizing = 38,
 
     /// <summary>Visibility</summary>
-    Visibility,
+    Visibility = 39,
 
     /// <summary>Width</summary>
-    Width,
+    Width = 40,
+
+    /// <summary>AutomationProperties.Name</summary>
+    AutomationProperties_Name = 43,
 }

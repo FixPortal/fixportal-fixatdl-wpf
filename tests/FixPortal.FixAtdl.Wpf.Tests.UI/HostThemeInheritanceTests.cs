@@ -3,7 +3,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using AwesomeAssertions;
+using FixPortal.FixAtdl.Model.Controls;
 using FixPortal.FixAtdl.Model.Elements;
+using FixPortal.FixAtdl.Model.Types;
 using FixPortal.FixAtdl.Wpf.Controls;
 using FixPortal.FixAtdl.Xml;
 using Microsoft.Extensions.DependencyInjection;
@@ -169,6 +171,59 @@ public class HostThemeInheritanceTests
 
                 ErrorCue.SetHasErrors(combo, false);
                 combo.BorderBrush.Should().BeSameAs(themed, "clearing the cue must not leave a value behind");
+            }
+            finally
+            {
+                window.Close();
+            }
+        });
+    }
+
+    [Fact]
+    public void Renderer_written_error_bindings_reach_native_controls()
+    {
+        StaTestHarness.Run(() =>
+        {
+            var strategy = new Strategy_t();
+            var panel = new StrategyPanel_t(strategy);
+            strategy.StrategyLayout = new StrategyLayout_t { StrategyPanel = panel };
+
+            var list = new DropDownList_t("List") { ParameterRef = "List" };
+            list.ListItems.Add(new ListItem_t { EnumId = "A", UiRep = "Alpha" });
+            var text = new TextField_t("Text") { ParameterRef = "Text" };
+            panel.Controls.Add(list);
+            panel.Controls.Add(text);
+            var listParameter = new Parameter_t<String_t>("List") { FixTag = 9001 };
+            listParameter.EnumPairs.Add(new EnumPair_t { EnumId = "A", WireValue = "A" });
+            strategy.Parameters.Add(listParameter);
+            strategy.Parameters.Add(new Parameter_t<String_t>("Text") { FixTag = 9002 });
+
+            using var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
+            var (view, model) = AtdlPanel.Create(strategy, services);
+            var invalidList = model.Controls.Single(control => control.Id == "List");
+            var invalidText = model.Controls.Single(control => control.Id == "Text");
+            invalidList.IsContentValid = false;
+            invalidText.IsContentValid = false;
+
+            var window = new Window
+            {
+                Content = view,
+                Width = 700,
+                Height = 900,
+            };
+            try
+            {
+                window.Show();
+                window.UpdateLayout();
+
+                var renderedList = Descendants(view)
+                    .OfType<ComboBox>()
+                    .Single(combo => ReferenceEquals(combo.DataContext, invalidList));
+                var renderedText = Descendants(view)
+                    .OfType<ClickSelectTextBox>()
+                    .Single(box => ReferenceEquals(box.DataContext, invalidText));
+                ErrorCue.GetHasErrors(renderedList).Should().BeTrue();
+                ErrorCue.GetHasErrors(renderedText).Should().BeTrue();
             }
             finally
             {

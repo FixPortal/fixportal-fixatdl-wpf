@@ -345,6 +345,10 @@ public class WpfControlRenderer : IControlVisitor
                 if (writer.IsRequired(control) && !label.TrimEnd().EndsWith('*'))
                 {
                     writer.WriteAttribute(WpfXmlWriterAttribute.ContentStringFormat, "{}{0} *");
+                    writer.WriteLiteralAttribute(
+                        WpfXmlWriterAttribute.AutomationProperties_Name,
+                        label.TrimEnd() + " *"
+                    );
                 }
 
                 writer.WriteLiteralAttribute(WpfXmlWriterAttribute.Content, label);
