@@ -94,8 +94,12 @@ public class RequiredFieldCueTests
             var (view, _) = AtdlPanel.Create(strategy, services);
             Layout(view);
 
-            Descendants(view).OfType<CheckBox>().Single().ContentStringFormat.Should().Be("{0} *");
-            Descendants(view).OfType<RadioButton>().Single().ContentStringFormat.Should().Be("{0} *");
+            var checkBox = Descendants(view).OfType<CheckBox>().Single();
+            var radioButton = Descendants(view).OfType<RadioButton>().Single();
+            checkBox.ContentStringFormat.Should().Be("{0} *");
+            radioButton.ContentStringFormat.Should().Be("{0} *");
+            new CheckBoxAutomationPeer(checkBox).GetName().Should().Be("Flag *");
+            new RadioButtonAutomationPeer(radioButton).GetName().Should().Be("Choice *");
         });
     }
 
