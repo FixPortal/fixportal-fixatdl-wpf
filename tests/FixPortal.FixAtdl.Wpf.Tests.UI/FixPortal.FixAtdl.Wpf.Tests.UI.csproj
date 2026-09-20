@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>FixPortal.FixAtdl.Wpf.Tests.UI</RootNamespace>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+    <IsPackable>false</IsPackable>
+    <!-- ThemeMode is suppressed at the three test use sites where it is exercised. -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Tests must run serially because WPF theme-dictionary resolution is process-global across STA threads. -->
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+    <!-- The sample application's own document, linked rather than copied, so these tests fail the
+         moment the file a user runs stops parsing. -->
+    <Content Include="..\..\samples\FixPortal.FixAtdl.Wpf.Sample\Strategies\sample-strategy.xml"
+             Link="Strategies\sample-strategy.xml"
+             CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.v3.mtp-v2" />
+    <PackageReference Include="NSubstitute" />
+    <PackageReference Include="AwesomeAssertions" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\FixPortal.FixAtdl.Wpf\FixPortal.FixAtdl.Wpf.csproj" />
+  </ItemGroup>
+
+</Project>
