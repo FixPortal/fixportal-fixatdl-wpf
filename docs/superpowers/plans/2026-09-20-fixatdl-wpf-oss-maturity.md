@@ -79,7 +79,7 @@
 ### Task 2: Normalize missing house CI and repository controls
 
 **Files:**
-- Verify GitHub: Secret Scanning and Push Protection settings for this public repository
+- Verify GitHub: Secret Scanning, Push Protection, and Dependabot security-update settings for this public repository
 - Update if required by canonical comparison: `.github/workflows/review-policy-guard.yml`
 - Update if required by canonical comparison: `.github/scripts/assert_gate_coverage.py`
 - Update if required by canonical comparison: `.github/scripts/assert_workflow_hygiene.py`
@@ -92,11 +92,11 @@
 **Interfaces:**
 - `CI Gate` remains the required aggregate status for the mainline.
 - `Review policy intact` remains the exact required job name.
-- Public-repository secret scanning and push protection are enabled without adding a private-repository TruffleHog sweep.
+- Public-repository secret scanning and push protection are enabled without adding a private-repository TruffleHog sweep; Dependabot security updates are enabled alongside the existing weekly update configuration.
 
 - [ ] **Step 1: Verify public-repository secret protection**
 
-  Query GitHub's effective Secret Scanning and Push Protection settings for `FixPortal/fixportal-fixatdl-wpf`. Enable them if the account has authority, or record the exact server-side handoff. Do not copy `C:\Users\chris\.agents\skills\scaffold-ci\assets\secret-sweep.yml`: that canonical TruffleHog asset is explicitly scoped to private repositories, while this repository is public.
+  Query GitHub's effective Secret Scanning, Push Protection, and Dependabot security-update settings for `FixPortal/fixportal-fixatdl-wpf`. Enable missing settings if the account has authority, or record the exact server-side handoff. Do not copy `C:\Users\chris\.agents\skills\scaffold-ci\assets\secret-sweep.yml`: that canonical TruffleHog asset is explicitly scoped to private repositories, while this repository is public.
 
 - [ ] **Step 2: Keep the review policy focused on repository control code**
 
