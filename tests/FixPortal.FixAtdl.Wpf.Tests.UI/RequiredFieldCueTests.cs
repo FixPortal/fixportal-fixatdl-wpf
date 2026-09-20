@@ -8,6 +8,7 @@ using FixPortal.FixAtdl.Model.Controls;
 using FixPortal.FixAtdl.Model.Elements;
 using FixPortal.FixAtdl.Model.Enumerations;
 using FixPortal.FixAtdl.Model.Types;
+using FixPortal.FixAtdl.Wpf.Controls;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FixPortal.FixAtdl.Wpf.Tests.UI;
@@ -95,6 +96,30 @@ public class RequiredFieldCueTests
 
             Descendants(view).OfType<CheckBox>().Single().ContentStringFormat.Should().Be("{0} *");
             Descendants(view).OfType<RadioButton>().Single().ContentStringFormat.Should().Be("{0} *");
+        });
+    }
+
+    [Fact]
+    public void Native_checkboxes_and_radio_buttons_carry_the_error_cue()
+    {
+        StaTestHarness.Run(() =>
+        {
+            var strategy = new Strategy_t();
+            var panel = new StrategyPanel_t(strategy);
+            strategy.StrategyLayout = new StrategyLayout_t { StrategyPanel = panel };
+            panel.Controls.Add(new CheckBox_t("Flag") { ParameterRef = "Flag" });
+            panel.Controls.Add(new RadioButton_t("Choice") { ParameterRef = "Choice" });
+            strategy.Parameters.Add(new Parameter_t<Boolean_t>("Flag"));
+            strategy.Parameters.Add(new Parameter_t<Boolean_t>("Choice"));
+
+            using var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
+            var (view, model) = AtdlPanel.Create(strategy, services);
+            model.Controls[0].IsContentValid = false;
+            model.Controls[1].IsContentValid = false;
+            Layout(view);
+
+            ErrorCue.GetHasErrors(Descendants(view).OfType<CheckBox>().Single()).Should().BeTrue();
+            ErrorCue.GetHasErrors(Descendants(view).OfType<RadioButton>().Single()).Should().BeTrue();
         });
     }
 

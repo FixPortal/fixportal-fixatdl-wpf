@@ -8,8 +8,8 @@
     <IsPackable>false</IsPackable>
     <!-- The sample defines no styles and no colours of its own: what you see is what a host gets.
          The one thing it does control is the host THEME, so the panel can be watched following it.
-         WPF0001 is WPF's Fluent ThemeMode, still evaluation-only in .NET 10 - suppressed here and
-         only here. The library itself takes no dependency on it. -->
+         WPF0001 is WPF's Fluent ThemeMode, still evaluation-only in .NET 10 - suppressed in this
+         sample project. The library itself takes no dependency on it. -->
     <NoWarn>$(NoWarn);WPF0001</NoWarn>
   </PropertyGroup>
 

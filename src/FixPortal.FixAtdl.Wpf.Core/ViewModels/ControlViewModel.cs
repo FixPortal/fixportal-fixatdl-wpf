@@ -130,10 +130,15 @@ public partial class ControlViewModel : ObservableValidator
     partial void OnIsContentValidChanged(bool value) => RunValidation(Value);
 
     private bool _validationWriteStarted;
+    private string? _errorToRestore;
 
     private void RunValidation(object? value)
     {
         _validationWriteStarted = false;
+        var previousError = GetErrors(nameof(Value))
+            .OfType<ValidationResult>()
+            .Select(error => error.ErrorMessage)
+            .FirstOrDefault();
         try
         {
             ValidateProperty(value, nameof(Value));
@@ -143,6 +148,18 @@ public partial class ControlViewModel : ObservableValidator
             if (_validationWriteStarted)
             {
                 HasTornWrite = true;
+                if (previousError is not null)
+                {
+                    _errorToRestore = previousError;
+                    try
+                    {
+                        ValidateProperty(value, nameof(Value));
+                    }
+                    finally
+                    {
+                        _errorToRestore = null;
+                    }
+                }
             }
             throw;
         }
@@ -181,6 +198,10 @@ public partial class ControlViewModel : ObservableValidator
     public static ValidationResult ValidateAgainstAtdlConstraints(object? value, ValidationContext context)
     {
         var model = (ControlViewModel)context.ObjectInstance;
+        if (model._errorToRestore is { } error)
+        {
+            return new ValidationResult(error);
+        }
         if (!model.IsContentValid)
         {
             return new ValidationResult("Enter a valid value.");
