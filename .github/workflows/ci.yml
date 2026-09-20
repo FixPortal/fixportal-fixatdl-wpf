@@ -51,7 +51,8 @@ jobs:
           "PACKAGE_VERSION=$packageVersion" >> $env:GITHUB_ENV
       - run: dotnet restore FixPortal.FixAtdl.Wpf.slnx
       - run: dotnet build FixPortal.FixAtdl.Wpf.slnx -c Release --no-restore "-p:Version=$env:PACKAGE_VERSION"
-      - run: dotnet test --solution FixPortal.FixAtdl.Wpf.slnx -c Release --no-build --report-xunit-trx --results-directory ./TestResults --timeout 5m
+      - id: test
+        run: dotnet test --solution FixPortal.FixAtdl.Wpf.slnx -c Release --no-build --report-xunit-trx --results-directory ./TestResults --timeout 5m
       - name: Collect Core branch coverage
         # Audit 2026-09-15 Section 7 (H1): first coverage measurement on Wpf.Core
         # only, via dotnet-coverage wrapping the unchanged test command (the
@@ -78,7 +79,7 @@ jobs:
           function Test-PackagePayload([string]$packagePath, [string[]]$requiredResources) {
               $zip = [System.IO.Compression.ZipArchive]::new([System.IO.File]::OpenRead($packagePath), 'Read')
               try {
-                  $dllEntries = @($zip.Entries | ForEach-Object FullName | Where-Object { $_ -match '^lib/.+\.dll$' })
+                  $dllEntries = @($zip.Entries | ForEach-Object FullName | Where-Object { $_ -match '^lib/[^/]+/[^/]+\.dll$' })
                   if ($dllEntries.Count -ne 1) { throw "expected exactly one lib/<tfm>/*.dll entry in $packagePath, found $($dllEntries.Count)" }
                   $dllEntry = $dllEntries[0]
                   if ($requiredResources.Count -eq 0) {
@@ -116,7 +117,7 @@ jobs:
           path: artifacts/*.nupkg
           if-no-files-found: error
       - name: Upload test results
-        if: always()
+        if: always() && steps.test.outcome != 'skipped'
         uses: actions/upload-artifact@v7
         with:
           name: test-results
@@ -186,8 +187,8 @@ jobs:
           name: packages
           path: artifacts
       # `dotnet nuget push` reads NUGET_API_KEY when --api-key is absent, so the key
-      # never enters the argument vector where /proc makes it readable to another
-      # step in the same job.
+      # never enters the argument vector, which ps/process listings on the runner
+      # would otherwise expose; environment variables are not shown there.
       - name: Publish validated packages
         env:
           NUGET_API_KEY: ${{ secrets.GITHUB_TOKEN }}
