@@ -4,6 +4,8 @@
   ],
   "version": 1,
   "high": [
+    ".github/canonical-assets.json",
+    ".github/scripts/assert_canonical_assets.py",
     ".claude/review-policy.json",
     ".coderabbit.yaml",
     ".github/workflows/ci.yml",
