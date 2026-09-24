@@ -52,8 +52,30 @@ jobs:
       - name: Collect Core branch coverage
         # Audit 2026-09-15 Section 7 (H1): first coverage measurement on Wpf.Core
         # only, via dotnet-coverage wrapping the unchanged test command (the
-        # fixportal-fixatdl pattern). Coverage failures block CI; no threshold is applied.
+        # fixportal-fixatdl pattern).
         run: dotnet dotnet-coverage collect -f cobertura -o ./TestResults/coverage-core.cobertura.xml "dotnet test --project tests/FixPortal.FixAtdl.Wpf.Core.Tests --configuration Release --no-build --timeout 5m"
+      - name: Enforce Core coverage floors
+        shell: pwsh
+        run: |
+          [xml]$coverage = Get-Content ./TestResults/coverage-core.cobertura.xml
+          $product = $coverage.coverage.packages.package | Where-Object name -eq 'FixPortal.FixAtdl.Wpf.Core'
+          if (-not $product) { throw 'Core product coverage package is missing.' }
+          $lineRate = [double]$product.'line-rate'
+          $branchRate = [double]$product.'branch-rate'
+          if ($lineRate -lt 0.90) { throw "Core line coverage $lineRate is below 0.90." }
+          if ($branchRate -lt 0.85) { throw "Core branch coverage $branchRate is below 0.85." }
+      - name: Collect WPF coverage
+        run: dotnet dotnet-coverage collect -f cobertura -o ./TestResults/coverage-ui.cobertura.xml "dotnet test --project tests/FixPortal.FixAtdl.Wpf.Tests.UI --configuration Release --no-build --timeout 5m"
+      - name: Enforce WPF coverage floors
+        shell: pwsh
+        run: |
+          [xml]$coverage = Get-Content ./TestResults/coverage-ui.cobertura.xml
+          $product = $coverage.coverage.packages.package | Where-Object name -eq 'FixPortal.FixAtdl.Wpf'
+          if (-not $product) { throw 'WPF product coverage package is missing.' }
+          $lineRate = [double]$product.'line-rate'
+          $branchRate = [double]$product.'branch-rate'
+          if ($lineRate -lt 0.90) { throw "WPF line coverage $lineRate is below 0.90." }
+          if ($branchRate -lt 0.75) { throw "WPF branch coverage $branchRate is below 0.75." }
       - run: dotnet pack src/FixPortal.FixAtdl.Wpf.Core -c Release --no-build -o artifacts "-p:Version=$env:PACKAGE_VERSION"
       - run: dotnet pack src/FixPortal.FixAtdl.Wpf -c Release --no-build -o artifacts "-p:Version=$env:PACKAGE_VERSION"
       - name: Validate package contents
