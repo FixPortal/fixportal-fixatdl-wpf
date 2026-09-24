@@ -26,8 +26,11 @@ jobs:
       - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.0.x
-      - name: Restore solution
-        run: dotnet restore FixPortal.FixAtdl.Wpf.slnx
+      # Restore only the project Stryker mutates. The solution also holds the WPF projects
+      # (net10.0-windows), which fail restore on this Linux runner with NETSDK1100; Core and
+      # Core.Tests target plain net10.0.
+      - name: Restore mutation test project
+        run: dotnet restore tests/FixPortal.FixAtdl.Wpf.Core.Tests/FixPortal.FixAtdl.Wpf.Core.Tests.csproj
       - name: Restore local tools
         run: dotnet tool restore
       - name: Run Stryker
