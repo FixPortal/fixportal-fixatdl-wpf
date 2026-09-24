@@ -1,5 +1,6 @@
 using System.IO;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Media;
 using AwesomeAssertions;
@@ -46,7 +47,19 @@ public class SampleStrategyRenderTests
             view.UpdateLayout();
 
             model.Controls.Should().HaveCount(strategy.Controls.Count());
-            Descendants(view).Should().NotBeEmpty();
+            var renderedElements = Descendants(view).OfType<FrameworkElement>().ToArray();
+            renderedElements.Should().NotBeEmpty();
+
+            foreach (var control in model.Controls)
+            {
+                var expectedName = Rendering.WpfControlRenderer.CleanName(control.Id);
+                var element = renderedElements.SingleOrDefault(candidate =>
+                    candidate.Name == expectedName || AutomationProperties.GetAutomationId(candidate) == expectedName
+                );
+
+                element.Should().NotBeNull($"control {control.Id} must have a rendered element");
+                element.DataContext.Should().BeSameAs(control);
+            }
         });
     }
 

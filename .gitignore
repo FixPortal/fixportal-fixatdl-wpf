@@ -415,3 +415,4 @@ FodyWeavers.xsd
 
 # Semgrep Guardian local config / scan cache — per-machine, regenerated on demand
 .semgrep/
+.claude/worktrees/

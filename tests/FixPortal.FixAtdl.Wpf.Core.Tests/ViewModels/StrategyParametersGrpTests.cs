@@ -48,6 +48,23 @@ public class StrategyParametersGrpTests
     }
 
     [Fact]
+    public void ReadBackStrategyParametersGrp_EmitsEveryFilledParameterInDeclarationOrder()
+    {
+        var strategy = TestControls.MinimalStrategyWithOneRequiredControl();
+        strategy.StrategyLayout.StrategyPanel.Controls.Add(new SingleSpinner_t("Price") { ParameterRef = "Price" });
+        strategy.Parameters.Add(new Parameter_t<Int_t>("Price"));
+        var model = new EditViewModel(strategy);
+
+        model.Controls[0].Value = 12m;
+        model.Controls[1].Value = 34m;
+
+        model
+            .ReadBackStrategyParametersGrp()
+            .Should()
+            .Equal((957, "2"), (958, "Qty"), (959, "1"), (960, "12"), (958, "Price"), (959, "1"), (960, "34"));
+    }
+
+    [Fact]
     public void ReadBackStrategyParametersGrp_ThrowsWhenStrategyHasErrors()
     {
         var strategy = TestControls.MinimalStrategyWithOneRequiredControl();
