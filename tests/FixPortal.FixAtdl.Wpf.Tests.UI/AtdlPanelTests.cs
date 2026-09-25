@@ -603,15 +603,30 @@ public partial class AtdlPanelTests
             var strategy = TestStrategies.MinimalOneControlStrategy();
             var panel = strategy.StrategyLayout.StrategyPanel;
             panel.Title = text;
+            var spinner = (FixPortal.FixAtdl.Model.Controls.SingleSpinner_t)panel.Controls[0];
+            spinner.Label = text; // exercises WpfControlRenderer.RenderControlLabel's Content path
             panel.Controls.Add(new FixPortal.FixAtdl.Model.Controls.CheckBox_t("Flag") { Label = text });
+            panel.Controls.Add(
+                new FixPortal.FixAtdl.Model.Controls.RadioButton_t("Choice") { Label = text, RadioGroup = text }
+            );
             using var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
 
             var (view, _) = AtdlPanel.Create(strategy, services);
+            view.Measure(new System.Windows.Size(800, 600));
+            view.Arrange(new System.Windows.Rect(0, 0, 800, 600));
+            view.UpdateLayout();
 
             var frame = view.Should().BeOfType<Controls.StrategyPanelFrame>().Subject;
             frame.Header.Should().Be(text);
             var grid = frame.Content.Should().BeOfType<System.Windows.Controls.Grid>().Subject;
             grid.Children.OfType<System.Windows.Controls.CheckBox>().Single().Content.Should().Be(text);
+            var radioButton = grid.Children.OfType<System.Windows.Controls.RadioButton>().Single();
+            radioButton.Content.Should().Be(text);
+            radioButton.GroupName.Should().EndWith(text);
+            Descendants(view)
+                .OfType<System.Windows.Controls.Label>()
+                .Should()
+                .Contain(label => Equals(label.Content, text));
         });
     }
 
