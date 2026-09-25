@@ -171,6 +171,9 @@ jobs:
       - name: Assert canonical asset copies match the committed manifest
         run: python3 .github/scripts/assert_canonical_assets.py
 
+      - name: Assert release eligibility gate
+        run: python3 .github/scripts/assert_release_eligibility.py
+
   ci-gate:
     name: CI Gate
     if: always()
