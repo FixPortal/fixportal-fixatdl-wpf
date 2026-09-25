@@ -96,12 +96,35 @@ def main():
     if marker not in text:
         sys.exit(f"could not find the publish job in {CI_YML}; the workflow's shape has changed.")
     publish_job = text[text.index(marker) + len(marker) :]  # last job in the file
-    publish_if = extract(r"\n\s*if:\s*(.+)", publish_job, "the publish job's if:")
+
+    # Job-level keys (name, if, needs, runs-on, ...) sit before `steps:` at 4-space
+    # indent; a step's own `if:` is nested under `steps:` at deeper indent with a
+    # leading `- `. Slicing to just before `steps:` stops a step-level `if:` from
+    # being picked up as the job condition -- moving the job's `if:` onto its first
+    # step must fail this check, not silently pass it as equivalent.
+    steps_marker = "\n    steps:\n"
+    if steps_marker not in publish_job:
+        sys.exit(f"could not find the publish job's steps: in {CI_YML}; the workflow's shape has changed.")
+    publish_job_header = publish_job[: publish_job.index(steps_marker)]
+    publish_if = extract(r"\n\s*if:\s*(.+)", publish_job_header, "the publish job's if:")
+
     tag_regex = extract(r"-notmatch\s+'(\^v[^']+\$)'", text, "the tag-format regex")
-    ancestor_cmd = extract(
-        r"Require a tag reachable from main\s*\n\s*run:\s*(git merge-base[^\n]+)",
+
+    ancestor_step_match = re.search(
+        r"Require a tag reachable from main\s*\n(.*?)(?=\n\s*-\s*(?:name|uses|run):|\Z)",
         text,
-        "the ancestry check command",
+        re.DOTALL,
+    )
+    if not ancestor_step_match:
+        sys.exit(f"could not find the ancestry check step in {CI_YML}; the workflow's shape has changed.")
+    ancestor_step_body = ancestor_step_match.group(1)
+    if re.search(r"continue-on-error:\s*true", ancestor_step_body):
+        sys.exit(
+            "the ancestry check step sets continue-on-error: true; a failed ancestry "
+            "check would no longer block publishing."
+        )
+    ancestor_cmd = extract(
+        r"run:\s*(git merge-base[^\n]+)", ancestor_step_body, "the ancestry check command"
     )
 
     with tempfile.TemporaryDirectory() as tmp:
