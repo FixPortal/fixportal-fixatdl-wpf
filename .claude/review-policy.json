@@ -12,6 +12,7 @@
     ".github/workflows/review-policy-guard.yml",
     ".github/scripts/assert_gate_coverage.py",
     ".github/scripts/assert_workflow_hygiene.py",
+    ".github/scripts/assert_release_eligibility.py",
     ".github/dependabot.yml",
     "nuget.config",
     "global.json",
