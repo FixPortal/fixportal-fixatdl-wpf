@@ -16,7 +16,9 @@
     ".github/dependabot.yml",
     "nuget.config",
     "global.json",
-    "Directory.Build.props"
+    "Directory.Build.props",
+    ".github/workflows/review-tier.yml",
+    ".config/dotnet-tools.json"
   ],
   "low": [
     "docs/**"
