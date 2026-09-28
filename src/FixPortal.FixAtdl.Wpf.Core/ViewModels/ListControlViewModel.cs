@@ -50,10 +50,8 @@ public class ListControlViewModel : ControlViewModel
             {
                 return;
             }
-            if (CurrentState is not { } currentState)
-            {
-                return;
-            }
+            var currentState =
+                CurrentState ?? throw new InvalidOperationException("This list control has no enum state to update.");
             var state = currentState.Copy();
             state.ClearAll();
             if (value is not null)
@@ -82,10 +80,8 @@ public class ListControlViewModel : ControlViewModel
             {
                 return;
             }
-            if (CurrentState is not { } currentState)
-            {
-                return;
-            }
+            var currentState =
+                CurrentState ?? throw new InvalidOperationException("This list control has no enum state to update.");
             var item = Items.FirstOrDefault(item => item.UiRep == value);
             var state = currentState.Copy();
             state.ClearAll();
@@ -105,10 +101,8 @@ public class ListControlViewModel : ControlViewModel
 
     internal void SetItemSelected(string enumId, bool selected)
     {
-        if (CurrentState is not { } currentState)
-        {
-            return;
-        }
+        var currentState =
+            CurrentState ?? throw new InvalidOperationException("This list control has no enum state to update.");
         var state = currentState.Copy();
         if (selected && UnderlyingControl is not (CheckBoxList_t or MultiSelectList_t))
         {

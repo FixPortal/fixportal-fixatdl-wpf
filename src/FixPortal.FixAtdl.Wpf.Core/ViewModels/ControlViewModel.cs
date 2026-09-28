@@ -189,7 +189,15 @@ public partial class ControlViewModel : ObservableValidator
         else
         {
             UnderlyingControl.SetValue(value);
-            Value = Snapshot(UnderlyingControl.GetCurrentValue());
+            try
+            {
+                Value = Snapshot(UnderlyingControl.GetCurrentValue());
+            }
+            catch (Exception ex) when (!IsValidationException(ex))
+            {
+                HasTornWrite = true;
+                throw;
+            }
         }
     }
 

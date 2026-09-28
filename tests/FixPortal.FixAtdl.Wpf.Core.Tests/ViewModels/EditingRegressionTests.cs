@@ -148,6 +148,43 @@ public class EditingRegressionTests
     }
 
     [Fact]
+    public void NullStateRule_DoesNotRestoreAValueClearedAfterItsFirstActivation()
+    {
+        var strategy = TestControls.MinimalStrategyWithOneRequiredControl();
+        strategy.Controls["Qty"].SetValue(12m);
+        var toggle = new CheckBox_t("Toggle");
+        strategy.StrategyLayout.StrategyPanel.Controls.Add(toggle);
+        strategy
+            .Controls["Qty"]
+            .StateRules.Add(
+                new StateRule_t
+                {
+                    Value = "{NULL}",
+                    Edit = new Edit_t<Control_t>
+                    {
+                        Field = "Toggle",
+                        Operator = Operator_t.Equal,
+                        Value = "true",
+                    },
+                }
+            );
+        var model = new EditViewModel(strategy);
+        var quantity = model.Controls[0];
+        var trigger = model.Controls[1];
+
+        trigger.Value = true;
+        trigger.Value = false;
+        quantity.Value = null;
+        trigger.Value = true;
+        trigger.Value = false;
+
+        quantity.Value.Should().BeNull();
+        model.HasErrors.Should().BeTrue();
+        var read = () => model.ReadBackFixValues();
+        read.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
     public void StrategyEdits_BlockReadBackUntilSatisfied()
     {
         var strategy = TestControls.MinimalStrategyWithOneRequiredControl();
