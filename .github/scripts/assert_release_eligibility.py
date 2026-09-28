@@ -28,6 +28,21 @@ class GateShapeError(Exception):
     pass
 
 
+SUBPROCESS_TIMEOUT = 60
+
+
+def safe_env(extra=None):
+    """os.environ minus GIT_* variables, plus any overrides.
+
+    A caller-exported GIT_DIR/GIT_WORK_TREE would point child git processes --
+    including any git run inside the extracted workflow body -- at the real
+    repository instead of the temporary one this checker builds."""
+    env = {key: value for key, value in os.environ.items() if not key.startswith("GIT_")}
+    if extra:
+        env.update(extra)
+    return env
+
+
 def extract(pattern, text, what, flags=0):
     match = re.search(pattern, text, flags)
     if not match:
@@ -67,7 +82,7 @@ def named_job(text, name):
 def named_step(job, name):
     matches = list(
         re.finditer(
-            rf"^      - name: {re.escape(name)}\s*\n(.*?)(?=^      - (?:name:|uses:|run:|id:)|\Z)",
+            rf"^      - name: {re.escape(name)}\s*\n(.*?)(?=^      - |\Z)",
             job,
             re.MULTILINE | re.DOTALL,
         )
@@ -89,7 +104,7 @@ def tag_step_ok(step_body, repo, ref_type, ref_name):
     with tempfile.TemporaryDirectory() as tmp:
         env_path = Path(tmp) / "github_env"
         env_path.touch()
-        env = {**os.environ, "REF_TYPE": ref_type, "REF_NAME": ref_name, "GITHUB_ENV": str(env_path)}
+        env = safe_env({"REF_TYPE": ref_type, "REF_NAME": ref_name, "GITHUB_ENV": str(env_path)})
         try:
             result = subprocess.run(
                 ["pwsh", "-NoProfile", "-NonInteractive", "-Command", script],
@@ -97,6 +112,7 @@ def tag_step_ok(step_body, repo, ref_type, ref_name):
                 env=env,
                 capture_output=True,
                 text=True,
+                timeout=SUBPROCESS_TIMEOUT,
             )
         except OSError as error:
             raise GateShapeError(f"could not run the extracted PowerShell release step: {error}") from error
@@ -109,12 +125,14 @@ def ancestor_ok(ancestor_cmd, repo, sha):
     # Run the actual workflow command with the scenario's tag commit and detached HEAD.
     run_git(repo, "checkout", "--detach", sha)
     resolved = ancestor_cmd.replace("${GITHUB_SHA}", sha).replace("$GITHUB_SHA", sha)
-    result = subprocess.run(["bash", "-euc", resolved], cwd=repo, env=os.environ)
+    result = subprocess.run(["bash", "-euc", resolved], cwd=repo, env=safe_env(), timeout=SUBPROCESS_TIMEOUT)
     return result.returncode == 0
 
 
 def run_git(repo, *args):
-    return subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True, text=True)
+    return subprocess.run(
+        ["git", *args], cwd=repo, env=safe_env(), check=True, capture_output=True, text=True, timeout=SUBPROCESS_TIMEOUT
+    )
 
 
 def make_repo(tmp):
@@ -210,7 +228,7 @@ def main():
 if __name__ == "__main__":
     try:
         exit_code = main()
-    except (GateShapeError, ValueError, KeyError) as error:
+    except (GateShapeError, ValueError, KeyError, subprocess.TimeoutExpired) as error:
         print(f"::error::{error}")
         exit_code = 2
     sys.exit(exit_code)
