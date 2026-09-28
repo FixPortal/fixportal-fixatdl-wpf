@@ -287,11 +287,10 @@ public class EditViewModel : ObservableObject
 
             if (active)
             {
-                if (rule.Value != "{NULL}" || control.Value is not null)
-                {
-                    _previousValue = ControlViewModel.Snapshot(control.Value);
-                }
+                var before = ControlViewModel.Snapshot(control.Value);
                 control.ApplyStateValue(rule.Value);
+                var after = ControlViewModel.Snapshot(control.Value);
+                _previousValue = Equals(before, after) ? null : before;
             }
             else if (_active == true && rule.Value == "{NULL}" && _previousValue is not null)
             {

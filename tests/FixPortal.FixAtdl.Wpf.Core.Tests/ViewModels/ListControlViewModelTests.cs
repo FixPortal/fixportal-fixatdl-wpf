@@ -87,4 +87,16 @@ public class ListControlViewModelTests
         viewModel.SelectedValue.Should().BeNull();
         viewModel.Text.Should().BeNull();
     }
+
+    [Fact]
+    public void EmptySlider_RejectsSelectionWrites()
+    {
+        var viewModel = new ListControlViewModel(new Slider_t("Empty"));
+
+        var selected = () => viewModel.SelectedValue = "A";
+        var text = () => viewModel.Text = "Alpha";
+
+        selected.Should().Throw<InvalidOperationException>();
+        text.Should().Throw<InvalidOperationException>();
+    }
 }

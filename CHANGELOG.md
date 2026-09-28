@@ -10,6 +10,16 @@ sees. Both packages version together.
 
 ## [Unreleased]
 
+### Fixed
+
+- Clock fields keep the colon adjacent to the minutes when rendered at the
+  fixed width used by the default renderer.
+- `{NULL}` state rules no longer restore a stale value after the user clears
+  the field, including when multiple null rules target one list control.
+- Internal failures during state-rule writes now block FIX-value read-back.
+- List-control setters report an invalid item-less slider instead of silently
+  ignoring the write.
+
 ### Added
 
 - A runnable sample: `samples/FixPortal.FixAtdl.Wpf.Sample` renders a synthetic

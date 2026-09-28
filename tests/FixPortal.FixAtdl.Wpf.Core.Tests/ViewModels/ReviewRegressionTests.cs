@@ -119,6 +119,8 @@ public class ReviewRegressionTests
                 }
             );
         var model = new EditViewModel(strategy);
+        model.Controls.Single(control => control.UnderlyingControl.Id == "Qty").Value = 1m;
+        model.HasErrors.Should().BeFalse();
         breakIt();
 
         var edit = () => model.Controls.Single(control => control.UnderlyingControl.Id == "Toggle").Value = true;

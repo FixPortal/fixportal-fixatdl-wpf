@@ -90,10 +90,12 @@ public class TimePickerWrapTests
     {
         StaTestHarness.Run(() =>
         {
-            var picker = new FixPortal.FixAtdl.Wpf.Controls.TimePicker();
+            var picker = new FixPortal.FixAtdl.Wpf.Controls.TimePicker { Width = 75 };
             var grid = (Grid)picker.FindName("rootGrid");
 
-            grid.ColumnDefinitions[0].Width.Should().Be(new GridLength(0));
+            picker.Measure(new Size(75, 30));
+            picker.Arrange(new Rect(0, 0, 75, 30));
+            grid.ColumnDefinitions[2].ActualWidth.Should().BeLessThan(10);
         });
     }
 
