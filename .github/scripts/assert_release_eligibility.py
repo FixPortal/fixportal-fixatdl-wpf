@@ -216,9 +216,12 @@ def main():
     publish_if = extract(r"\n\s*if:\s*(.+)", publish_job_header, "the publish job's if:")
     # ci-gate is what stops a tag publishing over a red build-and-test or gate-coverage;
     # nothing else checks publish's needs:, so a needs: [build-and-test] edit would pass
-    # every gate. Flow style (`needs: [a, b]`) and a bare scalar both parse; a block-style
-    # list is a shape change and fails closed above.
-    publish_needs = extract(r"\n[ \t]*needs:[ \t]*(.+)", publish_job_header, "the publish job's needs:")
+    # every gate. The match is anchored to the job's four-space top level: an unanchored
+    # search is satisfied by a `needs:` key nested in the job's env: block, which GitHub
+    # reads as an environment variable while the job itself needs nothing. Flow style
+    # (`needs: [a, b]`) and a bare scalar both parse; a block-style list is a shape change
+    # and fails closed above.
+    publish_needs = extract(r"\n    needs:[ \t]*(.+)", publish_job_header, "the publish job's needs:")
     needed = [job.strip() for job in publish_needs.strip().strip("[]").split(",") if job.strip()]
     if "ci-gate" not in needed:
         raise GateShapeError(f"the publish job must need ci-gate; found needs: {publish_needs.strip()}.")
