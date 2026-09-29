@@ -95,7 +95,7 @@ public class TimePickerWrapTests
 
             picker.Measure(new Size(75, 30));
             picker.Arrange(new Rect(0, 0, 75, 30));
-            grid.ColumnDefinitions[2].ActualWidth.Should().BeLessThan(10);
+            grid.ColumnDefinitions[0].ActualWidth.Should().Be(0);
         });
     }
 
