@@ -155,6 +155,89 @@ public class ReviewRegressionTests
     }
 
     [Fact]
+    public void TornWriteWithoutAPreviousError_RecordsAnErrorOnTheField()
+    {
+        // The torn-write latch blocked submission through HasErrors, but with no prior
+        // validation error the field itself showed nothing. The latch now records an error.
+        var (strategy, breakIt) = BrokenOnDemand();
+        var model = new EditViewModel(strategy);
+        var broken = model.Controls.Single(control => control.UnderlyingControl.Id == "Broken");
+        model.Controls.Single(control => control.UnderlyingControl.Id == "Qty").Value = 1m;
+        model.HasErrors.Should().BeFalse();
+
+        breakIt();
+        var edit = () => broken.Value = "abc";
+
+        edit.Should().Throw<InternalErrorException>();
+        broken
+            .GetErrors(nameof(ControlViewModel.Value))
+            .Should()
+            .NotBeEmpty("a torn control must show an error on the field, not block silently");
+    }
+
+    [Fact]
+    public void TornWriteNotification_FiresAfterTheErrorStoreIsRestored()
+    {
+        // HasTornWrite notifying from inside the catch let the radio-group sync revalidate the
+        // mid-exception control; the nested validation threw before the previous error was
+        // restored, dropping it. The notification now goes out from the finally, and the nested
+        // throw replaces the original without losing the recorded error.
+        var strategy = TestControls.MinimalStrategyWithOneRequiredControl();
+        strategy.Controls["Qty"].SetValue(12m);
+        var failing = false;
+        var parameter = Substitute.For<IParameter>();
+        parameter.Name.Returns("Side");
+        parameter
+            .SetValueFromControl(Arg.Any<Control_t>())
+            .Returns(_ =>
+                failing
+                    ? throw new InternalErrorException("Broken parameter invariant")
+                    : new ValidationResult(ValidationResult.ResultType.Invalid, "already invalid")
+            );
+        strategy.Parameters.Add(parameter);
+        strategy.StrategyLayout.StrategyPanel.Controls.Add(
+            new RadioButton_t("Buy") { ParameterRef = "Side", RadioGroup = "Side" }
+        );
+        var model = new EditViewModel(strategy);
+        var buy = model.Controls.Single(control => control.UnderlyingControl.Id == "Buy");
+        buy.GetErrors(nameof(ControlViewModel.Value)).Should().NotBeEmpty();
+
+        failing = true;
+        var edit = () => buy.Value = true;
+
+        edit.Should().Throw<InternalErrorException>();
+        buy.GetErrors(nameof(ControlViewModel.Value))
+            .Should()
+            .NotBeEmpty("the restore completes before the notification re-enters the edit graph");
+    }
+
+    [Fact]
+    public void InternalFailureInTheParameterSweep_ReportsErrorsUntilARefreshCompletes()
+    {
+        // A sweep escaping with a non-validation exception left StrategyErrors stale and nothing
+        // latched, so HasErrors could read clean over an unknown error state.
+        var strategy = TestControls.MinimalStrategyWithOneRequiredControl();
+        strategy.Controls["Qty"].SetValue(12m);
+        Exception? thrown = null;
+        var orphan = Substitute.For<IParameter>();
+        orphan.Name.Returns("Orphan");
+        orphan.WireValue.Returns(_ => thrown is null ? "ok" : throw thrown);
+        strategy.Parameters.Add(orphan);
+        var model = new EditViewModel(strategy);
+        var qty = model.Controls.Single(control => control.UnderlyingControl.Id == "Qty");
+        model.HasErrors.Should().BeFalse();
+
+        thrown = new InternalErrorException("Broken parameter invariant");
+        var poison = () => qty.Value = 1m;
+        poison.Should().Throw<InternalErrorException>();
+        model.HasErrors.Should().BeTrue("the sweep escaped, so the strategy's error state is unknown");
+
+        thrown = null;
+        qty.Value = 2m;
+        model.HasErrors.Should().BeFalse("a refresh whose sweep completes knows the state again");
+    }
+
+    [Fact]
     public void InternalFailureInTheParameterSweep_DoesNotLatchTheRefreshGuard()
     {
         // RefreshRules' finally reads every control-less parameter's WireValue BEFORE clearing

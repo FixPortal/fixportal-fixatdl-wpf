@@ -128,6 +128,9 @@ public partial class ControlViewModel : ObservableValidator
 
     partial void OnIsContentValidChanged(bool value) => RunValidation(Value);
 
+    private const string TornWriteErrorMessage =
+        "The value could not be applied; reload the strategy before submitting.";
+
     private bool _validationWriteStarted;
     private string? _errorToRestore;
 
@@ -138,6 +141,7 @@ public partial class ControlViewModel : ObservableValidator
             .OfType<ValidationResult>()
             .Select(error => error.ErrorMessage)
             .FirstOrDefault();
+        var tornWriteFlipped = false;
         try
         {
             ValidateProperty(value, nameof(Value));
@@ -146,25 +150,63 @@ public partial class ControlViewModel : ObservableValidator
         {
             if (_validationWriteStarted)
             {
-                HasTornWrite = true;
-                if (previousError is not null)
+                // Silent assignment: notifying here re-enters the edit graph (a radio-group sync
+                // or a rule can revalidate this very control), and a subscriber's throw would
+                // then skip the error-store restore below entirely. The notification goes out
+                // from the finally, after the restore has finished.
+                tornWriteFlipped = !_hasTornWrite;
+                _hasTornWrite = true;
+            }
+            // The restore runs whenever there is a prior error, whether or not this validation
+            // started a control write -- a revalidation (radio-group sync, IsContentValid) can
+            // fail without one, and the field would otherwise keep the error styling with its
+            // message list emptied. The latch above stays conditioned on the write: nothing is
+            // torn when no write happened.
+            if (previousError is not null)
+            {
+                _errorToRestore = previousError;
+                try
                 {
-                    _errorToRestore = previousError;
-                    try
-                    {
-                        ValidateProperty(value, nameof(Value));
-                    }
-                    finally
-                    {
-                        _errorToRestore = null;
-                    }
+                    ValidateProperty(value, nameof(Value));
                 }
+                finally
+                {
+                    _errorToRestore = null;
+                }
+            }
+            else if (_validationWriteStarted)
+            {
+                // A torn control blocks read-back through the latch alone; without a recorded
+                // error the field itself showed nothing.
+                RecordTornWriteError();
             }
             throw;
         }
         finally
         {
             _validationWriteStarted = false;
+            if (tornWriteFlipped)
+            {
+                OnPropertyChanged(nameof(HasTornWrite));
+            }
+        }
+    }
+
+    /// <summary>Attaches the torn-write message to <see cref="Value"/> unless an error is already recorded.</summary>
+    private void RecordTornWriteError()
+    {
+        if (GetErrors(nameof(Value)).OfType<ValidationResult>().Any())
+        {
+            return;
+        }
+        _errorToRestore = TornWriteErrorMessage;
+        try
+        {
+            ValidateProperty(_value, nameof(Value));
+        }
+        finally
+        {
+            _errorToRestore = null;
         }
     }
 
@@ -195,7 +237,13 @@ public partial class ControlViewModel : ObservableValidator
             }
             catch (Exception ex) when (!IsValidationException(ex))
             {
-                HasTornWrite = true;
+                if (!_hasTornWrite)
+                {
+                    // Record before notifying: the notification re-enters the edit graph, and a
+                    // subscriber's throw would otherwise skip the recording.
+                    RecordTornWriteError();
+                    HasTornWrite = true;
+                }
                 throw;
             }
         }
