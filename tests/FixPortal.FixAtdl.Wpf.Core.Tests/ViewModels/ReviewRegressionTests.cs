@@ -180,8 +180,9 @@ public class ReviewRegressionTests
     {
         // HasTornWrite notifying from inside the catch let the radio-group sync revalidate the
         // mid-exception control; the nested validation threw before the previous error was
-        // restored, dropping it. The notification now goes out from the finally, and the nested
-        // throw replaces the original without losing the recorded error.
+        // restored, dropping it. The notification now goes out from the finally: the restore has
+        // already completed, and the nested revalidation sees the latch and records the
+        // torn-write error without throwing, so the original exception is what propagates.
         var strategy = TestControls.MinimalStrategyWithOneRequiredControl();
         strategy.Controls["Qty"].SetValue(12m);
         var failing = false;
@@ -209,6 +210,82 @@ public class ReviewRegressionTests
         buy.GetErrors(nameof(ControlViewModel.Value))
             .Should()
             .NotBeEmpty("the restore completes before the notification re-enters the edit graph");
+    }
+
+    [Fact]
+    public void SuccessfulRevalidationAfterARestoredError_RetiresTheErrorCount()
+    {
+        // CommunityToolkit.Mvvm 8.4.2's ValidateProperty clears the cached errors before running
+        // the validators and adjusts the error total only after they return. A throwing validator
+        // therefore left the list empty with the total unchanged, and the restore re-incremented
+        // it: one phantom count the toolkit has no public API to repair, so a later clean
+        // validation left HasErrors stuck at true over an empty field, blocking submission.
+        var mode = 0; // 0 = invalid, 1 = throw, 2 = valid
+        var parameter = Substitute.For<IParameter>();
+        parameter.Name.Returns("Input");
+        parameter
+            .SetValueFromControl(Arg.Any<Control_t>())
+            .Returns(_ =>
+                mode switch
+                {
+                    0 => new ValidationResult(ValidationResult.ResultType.Invalid, "already invalid"),
+                    1 => throw new InternalErrorException("Broken parameter invariant"),
+                    _ => ValidationResult.ValidResult,
+                }
+            );
+        var model = new ControlViewModel(new TextField_t("Input"), parameter);
+        model.HasErrors.Should().BeTrue();
+
+        // IsContentValid is the public no-write revalidation trigger: the parameter throws
+        // without the control being written, so no latch -- only the restore path runs.
+        mode = 1;
+        model.IsContentValid = false; // records "Enter a valid value."
+        var revalidate = () => model.IsContentValid = true;
+        revalidate.Should().Throw<InternalErrorException>();
+        model.GetErrors(nameof(ControlViewModel.Value)).Should().NotBeEmpty("the previous error is restored");
+
+        mode = 2;
+        model.IsContentValid = false;
+        model.IsContentValid = true;
+        model.GetErrors(nameof(ControlViewModel.Value)).Should().BeEmpty();
+        model.HasErrors.Should().BeFalse("the error total must retire with the field error");
+    }
+
+    [Fact]
+    public void SuccessfulEditAfterATornWrite_KeepsTheTornWriteErrorOnTheField()
+    {
+        // The latch is one-way: the model stays inconsistent until the strategy is rebuilt. A
+        // later edit whose parameter call succeeds must not clear the field's torn-write error --
+        // submission stays blocked and the field has to keep saying why.
+        var strategy = TestControls.MinimalStrategyWithOneRequiredControl();
+        strategy.StrategyLayout.StrategyPanel.Controls.Add(new TextField_t("Broken") { ParameterRef = "Broken" });
+        var failing = false;
+        var parameter = Substitute.For<IParameter>();
+        parameter.Name.Returns("Broken");
+        parameter
+            .SetValueFromControl(Arg.Any<Control_t>())
+            .Returns(_ =>
+                failing ? throw new InternalErrorException("Broken parameter invariant") : ValidationResult.ValidResult
+            );
+        strategy.Parameters.Add(parameter);
+        var model = new EditViewModel(strategy);
+        var broken = model.Controls.Single(control => control.UnderlyingControl.Id == "Broken");
+        model.Controls.Single(control => control.UnderlyingControl.Id == "Qty").Value = 1m;
+        model.HasErrors.Should().BeFalse();
+
+        failing = true;
+        var edit = () => broken.Value = "abc";
+        edit.Should().Throw<InternalErrorException>();
+        broken.GetErrors(nameof(ControlViewModel.Value)).Should().NotBeEmpty();
+
+        failing = false;
+        var recover = () => broken.Value = "def";
+        recover.Should().NotThrow();
+        broken
+            .GetErrors(nameof(ControlViewModel.Value))
+            .Should()
+            .Contain(error => error.ErrorMessage != null && error.ErrorMessage.Contains("reload the strategy"));
+        model.HasErrors.Should().BeTrue("the latch is one-way until the strategy is rebuilt");
     }
 
     [Fact]

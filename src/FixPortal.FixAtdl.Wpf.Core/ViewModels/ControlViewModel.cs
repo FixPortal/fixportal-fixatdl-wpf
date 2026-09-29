@@ -1,6 +1,7 @@
 // Portions derived from Atdl4net (c) 2010-2011 Steve Wilkinson, MIT - see NOTICE.
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
+using System.Runtime.ExceptionServices;
 using CommunityToolkit.Mvvm.ComponentModel;
 using FixPortal.FixAtdl.Diagnostics.Exceptions;
 using FixPortal.FixAtdl.Fix;
@@ -34,6 +35,9 @@ public partial class ControlViewModel : ObservableValidator
         }
         _value = Snapshot(control.GetCurrentValue());
         ValidateAllProperties();
+        // The validator stashes non-validation exceptions instead of throwing; surface one
+        // raised during construction here, exactly as a throw out of validation would.
+        _validationException?.Throw();
     }
 
     public Control_t UnderlyingControl { get; }
@@ -133,10 +137,12 @@ public partial class ControlViewModel : ObservableValidator
 
     private bool _validationWriteStarted;
     private string? _errorToRestore;
+    private ExceptionDispatchInfo? _validationException;
 
     private void RunValidation(object? value)
     {
         _validationWriteStarted = false;
+        _validationException = null;
         var previousError = GetErrors(nameof(Value))
             .OfType<ValidationResult>()
             .Select(error => error.ErrorMessage)
@@ -145,6 +151,9 @@ public partial class ControlViewModel : ObservableValidator
         try
         {
             ValidateProperty(value, nameof(Value));
+            // The validator stashes a non-validation exception instead of throwing, so the
+            // toolkit's error bookkeeping completes consistently; rethrow it now that it has.
+            _validationException?.Throw();
         }
         catch
         {
@@ -257,6 +266,14 @@ public partial class ControlViewModel : ObservableValidator
         {
             return new ValidationResult(error);
         }
+        // The latch is one-way: once a write is torn the model stays inconsistent until the
+        // strategy is rebuilt, so every later validation -- including one whose parameter call
+        // would now succeed -- keeps the torn-write error on the field. Returning here also
+        // stops further writes into a control whose parameter already disagreed once.
+        if (model._hasTornWrite)
+        {
+            return new ValidationResult(TornWriteErrorMessage);
+        }
         if (!model.IsContentValid)
         {
             return new ValidationResult("Enter a valid value.");
@@ -291,6 +308,17 @@ public partial class ControlViewModel : ObservableValidator
         catch (Exception ex) when (IsValidationException(ex))
         {
             return new ValidationResult(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            // CommunityToolkit.Mvvm 8.4.2's ValidateProperty clears the property's cached errors
+            // before running this validator and adjusts the total only after it returns, so a
+            // throw escaping from here leaves the list empty with the total unchanged -- a count
+            // no public API repairs (the restore then re-increments it, and HasErrors can stick
+            // at true over an empty field). Stash the exception and report success so the
+            // bookkeeping completes consistently; RunValidation rethrows immediately afterwards.
+            model._validationException = ExceptionDispatchInfo.Capture(ex);
+            return ValidationResult.Success!;
         }
     }
 
