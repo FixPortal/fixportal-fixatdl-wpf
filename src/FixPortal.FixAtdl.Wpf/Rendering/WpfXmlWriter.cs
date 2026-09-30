@@ -42,7 +42,7 @@ public class WpfXmlWriter
     }
 
     /// <summary>
-    /// Helper class to simplify writing xHTML when dealing with tags that open and eventually close (e.g., &lt;table&gt;).
+    /// Helper class to simplify writing XAML elements that open and eventually close.
     /// </summary>
     public class WpfEnclosingTagHelper : IDisposable
     {

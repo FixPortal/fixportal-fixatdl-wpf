@@ -126,7 +126,7 @@ public class NumericSpinnerControlBase : UserControl
             {
                 Value = null;
 
-                UpdateIsContentValid(true);
+                IsContentValid = true;
             }
             else
             {
@@ -141,13 +141,13 @@ public class NumericSpinnerControlBase : UserControl
                 {
                     Value = decimalValue;
 
-                    UpdateIsContentValid(true);
+                    IsContentValid = true;
                 }
                 else
                 {
                     Value = null;
 
-                    UpdateIsContentValid(false);
+                    IsContentValid = false;
                 }
             }
         }
@@ -155,11 +155,6 @@ public class NumericSpinnerControlBase : UserControl
         {
             _textChangeInProgress = false;
         }
-    }
-
-    private void UpdateIsContentValid(bool value)
-    {
-        IsContentValid = value;
     }
 
     protected void ChangeValue(decimal increment, bool subtract = false)

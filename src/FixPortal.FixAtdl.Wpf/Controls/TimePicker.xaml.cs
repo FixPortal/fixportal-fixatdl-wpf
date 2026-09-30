@@ -43,9 +43,6 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
     /// </summary>
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="TimePicker"/> control.
-    /// </summary>
     public TimePicker()
     {
         InitializeComponent();
