@@ -1,0 +1,66 @@
+# Thin, formatter-only .editorconfig for new .NET projects scaffolded via scaffold-dotnet.
+#
+# Analyzer rules and severities belong to the FixPortal.CodeStyle NuGet package's global
+# AnalyzerConfig. CSharpier reads the C# layout inputs here. This file also carries the documented
+# compatibility preferences whose Roslyn fixers are not activated from a packaged global
+# config alone. A bare whitespace/layout key (indent_size,
+# charset, end_of_line, max_line_length) carries no diagnostic ID at all — CSharpier,
+# dotnet format, and the IDE read it only from a
+# real .editorconfig on disk, so no NuGet package can deliver it. Compatibility preferences
+# repeat package-owned values only; they do not make this file a second rule source.
+#
+# This is a filtered subset of the FULL house style at ~/.claude/resources/.editorconfig
+# (which predates FixPortal.CodeStyle and is not a stub — see the scaffold-dotnet skill's
+# Resource Files section). When the full file's non-severity keys change, mirror the change
+# here; when its severity-suffixed keys change, that goes into the package instead.
+
+root = true
+
+#### Baseline (applies to every file type) ####
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 4
+tab_width = 4
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+#### Project / config files (2-space convention) ####
+[*.{csproj,fsproj,vbproj,proj,props,targets}]
+indent_size = 2
+
+[*.{json,yml,yaml,xml,config}]
+indent_size = 2
+
+[*.md]
+# markdown line breaks are two trailing spaces — don't trim them
+trim_trailing_whitespace = false
+
+#### C# files ####
+[*.cs]
+end_of_line = crlf
+indent_size = 4
+indent_style = space
+tab_width = 4
+# CSharpier reads max_line_length as its PRINT WIDTH -- this key is not documentation, it is
+# the formatter setting. CSharpier's own default is 100. On a new scaffold either value is
+# fine because nothing is formatted yet. Copying this file into an EXISTING repo formatted at
+# a different width re-wraps every C# file (819 of them in fixportal-simulator-backend).
+# Run `dotnet csharpier check .` with this value in place first. If it fails: prefer adopting
+# 120 and reformatting deliberately -- this width is canonical, and a per-repo width makes
+# every later scaffold-dotnet sync negotiate with that repo. Pin the tree's own width only
+# when the reformat cannot be afforded yet, and comment why. Whenever the reformat happens --
+# now, or later on the pinned path -- keep it in its own standalone commit and its own PR, and
+# validate it with a build and a full test run. `csharpier check` only confirms the formatting
+# is applied; it is not evidence that behaviour is unchanged. See the scaffold-dotnet skill
+# for the scoping.
+max_line_length = 120
+
+#### C# Formatting Rules ####
+
+# Roslyn formatter compatibility. The package owns these rules and severities, but
+# dotnet format 10.0.204 needs the preferences in a hierarchical .editorconfig to
+# activate the IDE0011 and IDE0049 fixers.
+csharp_prefer_braces = true:error
+dotnet_style_predefined_type_for_locals_parameters_members = true:error
+dotnet_style_predefined_type_for_member_access = true:error

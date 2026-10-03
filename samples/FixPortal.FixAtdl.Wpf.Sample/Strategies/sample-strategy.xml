@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  A synthetic FIXatdl 1.1 strategy written for this sample. It is not a real broker's
+  specification and describes no real venue, product or client: its only job is to exercise a
+  wide spread of the control types this library renders, so the sample window shows what the
+  package actually does.
+-->
+<Strategies xmlns="http://www.fixprotocol.org/FIXatdl-1-1/Core"
+            xmlns:val="http://www.fixprotocol.org/FIXatdl-1-1/Validation"
+            xmlns:lay="http://www.fixprotocol.org/FIXatdl-1-1/Layout"
+            xmlns:flow="http://www.fixprotocol.org/FIXatdl-1-1/Flow"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            strategyIdentifierTag="5001">
+
+  <Strategy providerID="DEMO" name="Participate" uiRep="Participate" wireValue="PARTICIPATE" version="1">
+
+    <Parameter name="StartTime" xsi:type="UTCTimestamp_t" fixTag="6100" use="optional" />
+    <Parameter name="EndTime" xsi:type="UTCTimestamp_t" fixTag="6101" use="optional" />
+    <!-- Percentage_t: the control works in percent, the wire carries the fraction. These bounds of
+         0.01 and 0.50 are parameter (wire) values, so they appear in the form as 1 and 50 - and the
+         control's own initValue below is in the control's units, 20, not 0.20. -->
+    <Parameter name="ParticipationRate" xsi:type="Percentage_t" fixTag="6102" use="required" precision="2" minValue="0.01" maxValue="0.50" />
+    <Parameter name="MaxParticipation" xsi:type="Int_t" fixTag="6103" use="optional" minValue="1" maxValue="100" />
+    <Parameter name="LimitPrice" xsi:type="Price_t" fixTag="6104" use="optional" precision="4" />
+    <Parameter name="MinFillQty" xsi:type="Qty_t" fixTag="6105" use="optional" />
+    <Parameter name="Notes" xsi:type="String_t" fixTag="6106" use="optional" />
+
+    <Parameter name="Urgency" xsi:type="Char_t" fixTag="6107" use="required">
+      <EnumPair enumID="u_low" wireValue="1" />
+      <EnumPair enumID="u_medium" wireValue="2" />
+      <EnumPair enumID="u_high" wireValue="3" />
+    </Parameter>
+
+    <Parameter name="PriceStyle" xsi:type="Char_t" fixTag="6108" use="optional">
+      <EnumPair enumID="p_limit" wireValue="L" />
+      <EnumPair enumID="p_market" wireValue="M" />
+    </Parameter>
+
+    <Parameter name="AllowCrossing" xsi:type="Boolean_t" fixTag="6109" use="optional" trueWireValue="Y" falseWireValue="N" />
+
+    <Parameter name="Venues" xsi:type="MultipleStringValue_t" fixTag="6110" use="optional">
+      <EnumPair enumID="v_lit" wireValue="LIT" />
+      <EnumPair enumID="v_dark" wireValue="DARK" />
+      <EnumPair enumID="v_auction" wireValue="AUCTION" />
+    </Parameter>
+
+    <Parameter name="Constraints" xsi:type="MultipleStringValue_t" fixTag="6111" use="optional">
+      <EnumPair enumID="c_nocross" wireValue="NOCROSS" />
+      <EnumPair enumID="c_noodd" wireValue="NOODD" />
+    </Parameter>
+
+    <Parameter name="Aggression" xsi:type="Int_t" fixTag="6112" use="optional">
+      <EnumPair enumID="a_passive" wireValue="1" />
+      <EnumPair enumID="a_neutral" wireValue="2" />
+      <EnumPair enumID="a_aggressive" wireValue="3" />
+    </Parameter>
+
+    <lay:StrategyLayout>
+      <lay:StrategyPanel border="None" collapsible="false" orientation="VERTICAL">
+
+        <lay:StrategyPanel title="Schedule" border="Line" collapsible="false" orientation="VERTICAL">
+          <lay:Control xsi:type="lay:Clock_t" ID="c_start" parameterRef="StartTime" label="Start" localMktTz="America/New_York" />
+          <lay:Control xsi:type="lay:Clock_t" ID="c_end" parameterRef="EndTime" label="End" localMktTz="America/New_York" />
+        </lay:StrategyPanel>
+
+        <lay:StrategyPanel title="Participation" border="Line" collapsible="false" orientation="VERTICAL">
+          <lay:Control xsi:type="lay:TextField_t" ID="c_rate" parameterRef="ParticipationRate" label="Rate (% of volume, 1-50)" initValue="20" />
+          <lay:Control xsi:type="lay:SingleSpinner_t" ID="c_maxpct" parameterRef="MaxParticipation" label="Max % volume" increment="1" initValue="30" />
+          <!-- DoubleSpinner_t renders TWO pairs of arrows on purpose: the inner pair steps by
+               innerIncrement, the outer pair by outerIncrement. -->
+          <lay:Control xsi:type="lay:DoubleSpinner_t" ID="c_limit" parameterRef="LimitPrice" label="Limit price (arrows step 0.01 / 0.10)" innerIncrement="0.01" outerIncrement="0.10" initValue="24.50" />
+          <lay:Control xsi:type="lay:TextField_t" ID="c_minfill" parameterRef="MinFillQty" label="Min fill quantity" />
+        </lay:StrategyPanel>
+
+        <lay:StrategyPanel title="Routing" border="Line" collapsible="false" orientation="VERTICAL">
+          <lay:Control xsi:type="lay:DropDownList_t" ID="c_urgency" parameterRef="Urgency" label="Urgency" initValue="u_medium">
+            <lay:ListItem uiRep="Low" enumID="u_low" />
+            <lay:ListItem uiRep="Medium" enumID="u_medium" />
+            <lay:ListItem uiRep="High" enumID="u_high" />
+          </lay:Control>
+          <lay:Control xsi:type="lay:RadioButtonList_t" ID="c_pricestyle" parameterRef="PriceStyle" label="Price style" orientation="HORIZONTAL">
+            <lay:ListItem uiRep="Limit" enumID="p_limit" />
+            <lay:ListItem uiRep="Market" enumID="p_market" />
+          </lay:Control>
+          <lay:Control xsi:type="lay:MultiSelectList_t" ID="c_venues" parameterRef="Venues" label="Venues">
+            <lay:ListItem uiRep="Lit" enumID="v_lit" />
+            <lay:ListItem uiRep="Dark" enumID="v_dark" />
+            <lay:ListItem uiRep="Auction" enumID="v_auction" />
+          </lay:Control>
+          <lay:Control xsi:type="lay:CheckBoxList_t" ID="c_constraints" parameterRef="Constraints" label="Constraints">
+            <lay:ListItem uiRep="No crossing" enumID="c_nocross" />
+            <lay:ListItem uiRep="No odd lots" enumID="c_noodd" />
+          </lay:Control>
+          <lay:Control xsi:type="lay:CheckBox_t" ID="c_allowcross" parameterRef="AllowCrossing" label="Allow crossing" />
+        </lay:StrategyPanel>
+
+        <lay:StrategyPanel title="Aggression" border="Line" collapsible="false" orientation="VERTICAL">
+          <lay:Control xsi:type="lay:Slider_t" ID="c_aggression" parameterRef="Aggression" label="Aggression">
+            <lay:ListItem uiRep="Passive" enumID="a_passive" />
+            <lay:ListItem uiRep="Neutral" enumID="a_neutral" />
+            <lay:ListItem uiRep="Aggressive" enumID="a_aggressive" />
+          </lay:Control>
+          <lay:Control xsi:type="lay:TextField_t" ID="c_notes" parameterRef="Notes" label="Notes" />
+        </lay:StrategyPanel>
+
+      </lay:StrategyPanel>
+    </lay:StrategyLayout>
+  </Strategy>
+</Strategies>

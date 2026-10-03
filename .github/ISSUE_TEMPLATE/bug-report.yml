@@ -1,0 +1,46 @@
+name: Bug report
+description: Report a reproducible defect in the WPF adapter or its documentation.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please search existing issues first. Do not include credentials, proprietary strategy documents, or client data.
+  - type: input
+    id: version
+    attributes:
+      label: Package version
+      description: Which FixPortal.FixAtdl.Wpf version is affected?
+      placeholder: 1.0.3
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Include Windows version, .NET SDK, and WPF host details.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Provide the smallest safe strategy/document and exact steps.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual behaviour
+      description: What did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs or screenshots
+      description: Redact secrets and proprietary data before attaching anything.
+    validations:
+      required: false

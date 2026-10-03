@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Creating and reading back a panel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper:   #f7f8fa;
+      --color-ink:     #1f2937;
+      --color-muted:   #5b6b85;
+      --color-accent:  #0f766e;
+      --font-sans:     'Geist', system-ui, sans-serif;
+      --font-serif:    'Instrument Serif', serif;
+      --font-mono:     'Geist Mono', ui-monospace, monospace;
+    }
+      body {
+      font-family: var(--font-sans);
+      background: var(--color-paper);
+      color: var(--color-ink);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      }
+    .frame { max-width: 1600px; width: 100%; }
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      margin-bottom: 0.5rem;
+    }
+    h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      color: var(--color-ink);
+      margin-bottom: 1.5rem;
+    }
+    svg { width: 100%; min-width: 1200px; display: block; }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">Sequence · FixPortal.FixAtdl.Wpf</p>
+    <h1>Creating and reading back a panel</h1>
+
+    <svg viewBox="0 0 960 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="panelseq-title panelseq-desc">
+      <title id="panelseq-title">Creating and reading back a panel</title>
+      <desc id="panelseq-desc">AtdlPanel.Create asks the renderer to generate XAML, which WPF parses into a FrameworkElement, and builds an EditViewModel; the host then edits, checks HasErrors, and reads the 957 to 960 tag sequence back from the view-model, which delegates to the headless core emitter.</desc>
+      <defs>
+        <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#5b6b85"/></marker>
+        <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#0f766e"/></marker>
+        <marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2563eb"/></marker>
+      </defs>
+
+      <rect width="100%" height="100%" fill="#f7f8fa"/>
+
+      <!-- ===== WPF LIBRARY BOUNDARY ===== -->
+      <rect x="204" y="32" width="388" height="76" rx="8" fill="rgba(16,185,129,0.05)" stroke="#047857" stroke-width="1.2" stroke-dasharray="5,4"/>
+      <rect x="216" y="24" width="112" height="16" rx="2" fill="#f7f8fa"/>
+      <text x="272" y="35" fill="#047857" font-size="8" font-weight="600" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">WPF LIBRARY</text>
+
+      <!-- ===== LIFELINES ===== -->
+      <line x1="96" y1="96" x2="96" y2="470" stroke="rgba(31,41,55,0.20)" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="288" y1="96" x2="288" y2="470" stroke="rgba(31,41,55,0.20)" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="488" y1="96" x2="488" y2="470" stroke="rgba(31,41,55,0.20)" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="688" y1="96" x2="688" y2="470" stroke="rgba(31,41,55,0.20)" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="872" y1="96" x2="872" y2="470" stroke="rgba(31,41,55,0.20)" stroke-width="1" stroke-dasharray="3,3"/>
+
+      <!-- ===== ACTIVATION BARS ===== -->
+      <rect x="284" y="140" width="8" height="160" fill="rgba(31,41,55,0.06)" stroke="#5b6b85" stroke-width="0.8"/>
+      <rect x="484" y="172" width="8" height="64" fill="rgba(31,41,55,0.06)" stroke="#5b6b85" stroke-width="0.8"/>
+      <rect x="868" y="204" width="8" height="32" fill="rgba(31,41,55,0.06)" stroke="#5b6b85" stroke-width="0.8"/>
+      <rect x="684" y="396" width="8" height="32" fill="rgba(31,41,55,0.06)" stroke="#5b6b85" stroke-width="0.8"/>
+
+      <!-- ===== MESSAGES ===== -->
+      <!-- 1 -->
+      <line x1="96" y1="140" x2="280" y2="140" stroke="#5b6b85" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <rect x="128" y="120" width="128" height="12" rx="2" fill="#f7f8fa"/>
+      <text x="192" y="129" fill="#6b7280" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">Create(strategy, sp)</text>
+
+      <!-- 2 -->
+      <line x1="296" y1="172" x2="480" y2="172" stroke="#5b6b85" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <rect x="336" y="152" width="104" height="12" rx="2" fill="#f7f8fa"/>
+      <text x="388" y="161" fill="#6b7280" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">Render(strategy)</text>
+
+      <!-- 3 -->
+      <line x1="496" y1="204" x2="864" y2="204" stroke="#5b6b85" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <rect x="716" y="184" width="128" height="12" rx="2" fill="#f7f8fa"/>
+      <text x="780" y="193" fill="#6b7280" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">XamlReader.Parse</text>
+
+      <!-- 4 return -->
+      <line x1="864" y1="236" x2="496" y2="236" stroke="#5b6b85" stroke-width="1" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+      <rect x="716" y="216" width="128" height="12" rx="2" fill="#f7f8fa"/>
+      <text x="780" y="225" fill="#6b7280" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">FrameworkElement</text>
+
+      <!-- 5 -->
+      <line x1="296" y1="268" x2="680" y2="268" stroke="#5b6b85" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <rect x="520" y="248" width="136" height="12" rx="2" fill="#f7f8fa"/>
+      <text x="588" y="257" fill="#6b7280" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">new EditViewModel</text>
+
+      <!-- 6 return -->
+      <line x1="280" y1="300" x2="96" y2="300" stroke="#5b6b85" stroke-width="1" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+      <rect x="140" y="280" width="104" height="12" rx="2" fill="#f7f8fa"/>
+      <text x="192" y="289" fill="#6b7280" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">(view, editor)</text>
+
+      <!-- 7 -->
+      <line x1="96" y1="332" x2="680" y2="332" stroke="#5b6b85" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <rect x="336" y="312" width="104" height="12" rx="2" fill="#f7f8fa"/>
+      <text x="388" y="321" fill="#6b7280" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">user edits value</text>
+
+      <!-- 8 return -->
+      <line x1="680" y1="364" x2="96" y2="364" stroke="#5b6b85" stroke-width="1" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+      <rect x="140" y="344" width="104" height="12" rx="2" fill="#f7f8fa"/>
+      <text x="192" y="353" fill="#6b7280" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">HasErrors: false</text>
+
+      <!-- 9 -->
+      <line x1="96" y1="396" x2="680" y2="396" stroke="#5b6b85" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <rect x="302" y="376" width="172" height="12" rx="2" fill="#f7f8fa"/>
+      <text x="388" y="385" fill="#6b7280" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">ReadBackStrategyParametersGrp()</text>
+
+      <!-- 10 headline success -->
+      <line x1="680" y1="428" x2="96" y2="428" stroke="#0f766e" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
+      <rect x="154" y="408" width="76" height="12" rx="2" fill="#f7f8fa"/>
+      <text x="192" y="417" fill="#0f766e" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">tags 957-960 · core emitter</text>
+
+      <!-- ===== ACTORS ===== -->
+      <rect x="40" y="48" width="112" height="48" rx="6" fill="#f7f8fa"/>
+      <rect x="40" y="48" width="112" height="48" rx="6" fill="rgba(245,158,11,0.16)" stroke="#b45309" stroke-width="1"/>
+      <text x="96" y="72" fill="#92400e" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Your app</text>
+      <text x="96" y="86" fill="#b45309" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">STA thread</text>
+
+      <rect x="216" y="48" width="144" height="48" rx="6" fill="#f7f8fa"/>
+      <rect x="216" y="48" width="144" height="48" rx="6" fill="rgba(16,185,129,0.14)" stroke="#047857" stroke-width="1"/>
+      <text x="288" y="72" fill="#065f46" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">AtdlPanel</text>
+      <text x="288" y="86" fill="#047857" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">FixAtdl.Wpf</text>
+
+      <rect x="392" y="48" width="192" height="48" rx="6" fill="#f7f8fa"/>
+      <rect x="392" y="48" width="192" height="48" rx="6" fill="rgba(16,185,129,0.14)" stroke="#047857" stroke-width="1"/>
+      <text x="488" y="72" fill="#065f46" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">StrategyPanelRenderer</text>
+      <text x="488" y="86" fill="#047857" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">FixAtdl.Wpf</text>
+
+      <rect x="608" y="48" width="160" height="48" rx="6" fill="#f7f8fa"/>
+      <rect x="608" y="48" width="160" height="48" rx="6" fill="rgba(37,99,235,0.12)" stroke="#2563eb" stroke-width="1"/>
+      <text x="688" y="72" fill="#1d4ed8" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">EditViewModel</text>
+      <text x="688" y="86" fill="#2563eb" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">FixAtdl.Wpf.Core</text>
+
+      <rect x="804" y="48" width="136" height="48" rx="6" fill="#f7f8fa"/>
+      <rect x="804" y="48" width="136" height="48" rx="6" fill="rgba(124,58,237,0.12)" stroke="#7c3aed" stroke-width="1"/>
+      <text x="872" y="72" fill="#6d28d9" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">WPF platform</text>
+      <text x="872" y="86" fill="#7c3aed" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">XamlReader</text>
+
+      <!-- ===== LEGEND ===== -->
+      <line x1="40" y1="516" x2="920" y2="516" stroke="rgba(31,41,55,0.10)" stroke-width="0.8"/>
+      <text x="40" y="536" fill="#5b6b85" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.14em">LEGEND</text>
+
+      <line x1="124" y1="532" x2="156" y2="532" stroke="#5b6b85" stroke-width="1.2"/>
+      <text x="164" y="536" fill="#5b6b85" font-size="8" font-family="'Geist Mono', monospace">CALL</text>
+
+      <line x1="228" y1="532" x2="260" y2="532" stroke="#5b6b85" stroke-width="1" stroke-dasharray="5,4"/>
+      <text x="268" y="536" fill="#5b6b85" font-size="8" font-family="'Geist Mono', monospace">RETURN</text>
+
+      <line x1="348" y1="532" x2="380" y2="532" stroke="#0f766e" stroke-width="1.2"/>
+      <text x="388" y="536" fill="#5b6b85" font-size="8" font-family="'Geist Mono', monospace">THE OUTPUT YOU CAME FOR</text>
+
+      <rect x="596" y="527" width="8" height="10" fill="rgba(31,41,55,0.06)" stroke="#5b6b85" stroke-width="0.8"/>
+      <text x="612" y="536" fill="#5b6b85" font-size="8" font-family="'Geist Mono', monospace">HOLDS CONTROL</text>
+
+      <rect x="720" y="527" width="12" height="10" rx="2" fill="rgba(31,41,55,0.03)" stroke="rgba(31,41,55,0.30)" stroke-width="1"/>
+      <text x="740" y="536" fill="#5b6b85" font-size="8" font-family="'Geist Mono', monospace">PLATFORM</text>
+
+      <rect x="820" y="524" width="12" height="12" rx="2" fill="rgba(16,185,129,0.14)" stroke="#047857" stroke-width="1"/>
+      <text x="840" y="536" fill="#5b6b85" font-size="8" font-family="'Geist Mono', monospace">WPF LIBRARY</text>
+    </svg>
+  </div>
+</body>
+</html>
