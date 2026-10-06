@@ -18,7 +18,7 @@ Install `FixPortal.FixAtdl.Wpf`. It pulls in:
 |---|---|---|
 | `FixPortal.FixAtdl.Wpf` | `net10.0-windows` | Controls, XAML renderer, `AtdlPanel`, `AddFixAtdlWpf`. |
 | `FixPortal.FixAtdl.Wpf.Core` | `net10.0` | `EditViewModel` and friends. Usable without WPF if you only want validation and FIX read-back. |
-| `FixPortal.FixAtdl` | `net10.0` | Parser / model / emitter. Currently pinned at 1.1.6. |
+| `FixPortal.FixAtdl` | `net10.0` | Parser / model / emitter. The pinned version is in `Directory.Packages.props`; each release's CHANGELOG entry records it. |
 
 Target `net10.0-windows` with `UseWPF`. You also need
 `Microsoft.Extensions.DependencyInjection`.
@@ -145,7 +145,6 @@ A strategy with no layout or no root panel throws
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| `dotnet restore` cannot find `FixPortal.CodeStyle` | Check NuGet.org availability and your local NuGet connectivity; no FixPortal token is required | See [CONTRIBUTING.md](https://github.com/FixPortal/fixportal-fixatdl-wpf/blob/main/CONTRIBUTING.md) |
 | `NotSupportedException`: no renderer for control type `X` (id `Y`) | Broker XML uses a type outside the 15 registered renderers | Guard or remap upstream, or add a custom `IControlRenderer` |
 | `RenderingException`: no strategy layout / no panels | Strategy XML has no `StrategyLayout`/`StrategyPanel` | Reject the document before `Create` |
 | Two editors interfere | An editor owns mutable strategy state | Separate `Strategy_t` instance per open editor |

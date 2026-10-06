@@ -1,4 +1,4 @@
-# Thin, formatter-only .editorconfig for new .NET projects scaffolded via scaffold-dotnet.
+# Thin, formatter-only .editorconfig.
 #
 # Analyzer rules and severities belong to the FixPortal.CodeStyle NuGet package's global
 # AnalyzerConfig. CSharpier reads the C# layout inputs here. This file also carries the documented
@@ -9,10 +9,8 @@
 # real .editorconfig on disk, so no NuGet package can deliver it. Compatibility preferences
 # repeat package-owned values only; they do not make this file a second rule source.
 #
-# This is a filtered subset of the FULL house style at ~/.claude/resources/.editorconfig
-# (which predates FixPortal.CodeStyle and is not a stub — see the scaffold-dotnet skill's
-# Resource Files section). When the full file's non-severity keys change, mirror the change
-# here; when its severity-suffixed keys change, that goes into the package instead.
+# It is a filtered subset of FixPortal's internal house style; analyzer severities live in
+# the FixPortal.CodeStyle package instead.
 
 root = true
 
