@@ -14,6 +14,10 @@ retired with the pre-release history.
 
 ## [Unreleased]
 
+### Changed
+
+- Depends on `FixPortal.FixAtdl` 1.2.0 (was 1.1.6).
+
 ## [1.0.5] - 2026-10-03
 
 ### Fixed

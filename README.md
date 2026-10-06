@@ -31,8 +31,9 @@ dotnet run --project samples/FixPortal.FixAtdl.Wpf.Sample
 - [API reference](https://github.com/FixPortal/fixportal-fixatdl-wpf/blob/main/docs/api.md) — `AtdlPanel`, `EditViewModel`, custom renderers.
 - [Core usage](https://github.com/FixPortal/fixportal-fixatdl/blob/main/docs/usage.md) — loading XML and the headless model.
 
-The latest NuGet.org release is 1.0.3. Both packages version together from
-the git tag; non-tag packs default to 1.0.0.
+Both packages version together from the git tag; non-tag packs default to
+1.0.0. See the [changelog](https://github.com/FixPortal/fixportal-fixatdl-wpf/blob/main/CHANGELOG.md)
+for the current release.
 
 ## Use in a WPF application
 
@@ -152,7 +153,6 @@ naming the control type and id.
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| `dotnet restore` fails to find `FixPortal.CodeStyle` | Check NuGet.org availability and your local NuGet connectivity; no FixPortal token is required | See [CONTRIBUTING.md](https://github.com/FixPortal/fixportal-fixatdl-wpf/blob/main/CONTRIBUTING.md) |
 | `NotSupportedException`: no renderer for control type `X` (id `Y`) | Broker XML uses a control type outside the 15 registered renderers | Guard or remap upstream, or add a custom `IControlRenderer` (above) |
 | Two editors interfere with each other | An editor owns mutable strategy state | Use a separate strategy instance per open editor |
 | Immutable values stay disabled on amendment | `isAmendment: true` enforces `mutableOnCxlRpl="false"` | Expected: load the existing order first, then create the panel with `isAmendment: true` |
@@ -175,5 +175,7 @@ for its trust boundaries and vulnerability reporting.
 
 The control and layout code derives from Steve Wilkinson's MIT-licensed
 Atdl4net WPF implementation (2010–2011). FixPortal modifications are
-Apache-2.0 licensed. [NOTICE](NOTICE) preserves upstream attribution and
-the MIT terms; [LICENSE](LICENSE) contains the Apache-2.0 terms.
+Apache-2.0 licensed. [NOTICE](https://github.com/FixPortal/fixportal-fixatdl-wpf/blob/main/NOTICE)
+preserves upstream attribution and the MIT terms;
+[LICENSE](https://github.com/FixPortal/fixportal-fixatdl-wpf/blob/main/LICENSE) contains the
+Apache-2.0 terms.

@@ -47,6 +47,11 @@ rewriting files — run `dotnet csharpier format .` before pushing.
 
 ## Pull requests
 
-- Branch from `main`, open a PR, and let CI (build, test, CSharpier,
-  actionlint) go green before asking for review.
+- Branch from `main`, open a PR, and let CI go green before asking for
+  review. The required checks are `CI Gate` (build, test, CSharpier,
+  actionlint) and `Review policy intact`.
+- Some files under `.github/` are shared CI assets synced from FixPortal's
+  internal tooling (listed in `.github/canonical-assets.json`); CI rejects
+  local edits to them. If one needs changing, say so in an issue or PR
+  description and a maintainer will make the change upstream.
 - PRs are merged rebase-only; keep commits clean and individually meaningful.
