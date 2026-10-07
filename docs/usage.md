@@ -70,12 +70,16 @@ immutable selected member is locked as a group.
 
 ## Validation
 
-`EditViewModel.HasErrors` is true when any control has errors or
-`StrategyErrors` is nonempty. `ControlViewModel` implements
-`INotifyDataErrorInfo` (`ObservableValidator`); bind with
-`ValidatesOnNotifyDataError=true` if you host a control outside the
-generated panel. `StrategyErrors` holds strategy-level `StrategyEdit`
-failures and non-converging state rules.
+`EditViewModel.HasErrors` is true when any control has errors,
+`StrategyErrors` is nonempty, or a refresh did not finish. A state rule
+or parameter sweep that throws something other than a validation failure
+(a comparison the core cannot order raises `InvalidOperationException`)
+leaves `StrategyErrors` as it was and still blocks both read-back methods.
+The exception reaches the caller. The next refresh that finishes clears
+the block. `ControlViewModel` implements `INotifyDataErrorInfo`
+(`ObservableValidator`); bind with `ValidatesOnNotifyDataError=true` if
+you host a control outside the generated panel. `StrategyErrors` holds
+strategy-level `StrategyEdit` failures and non-converging state rules.
 
 Partial clock and spinner text sets `IsContentValid` false until the
 value is complete; that surfaces as a field error rather than a thrown
@@ -132,6 +136,14 @@ may redefine it.
 A required parameter is marked with `*` on its label rather than by colour,
 so the requirement survives a colour-blind trader and a theme change alike.
 A venue document whose own `label` already ends in `*` gets no second one.
+
+Text fields, and the editable part of a spinner or clock, render as
+`ClickSelectTextBox`, which derives from `TextBox`. WPF matches an implicit
+style on the exact type, so the control looks up the host's `TextBox` style
+itself. A host style keyed on `ClickSelectTextBox` must use
+`BasedOn="{StaticResource {x:Type TextBox}}"`. Without that, the style
+replaces the text-box theme: under Fluent dark the field, and the spinner
+and clock that bind to it, fall back to a white surface with black text.
 
 ## Custom renderers
 

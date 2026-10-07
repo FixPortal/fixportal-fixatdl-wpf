@@ -17,7 +17,7 @@ public class EditViewModel : ObservableObject
     private bool _refreshing;
     private bool _refreshPending;
     private bool _synchronizingRadioGroup;
-    private bool _parameterSweepFailed;
+    private bool _refreshIncomplete;
 
     public EditViewModel(Strategy_t strategy)
         : this(strategy, false) { }
@@ -92,7 +92,7 @@ public class EditViewModel : ObservableObject
     public bool HasErrors =>
         Controls.Any(control => control.HasErrors || control.HasTornWrite)
         || StrategyErrors.Count > 0
-        || _parameterSweepFailed;
+        || _refreshIncomplete;
 
     /// <summary>Returns validated parameter wire values. Check HasErrors before submitting.</summary>
     public IReadOnlyDictionary<int, string> ReadBackFixValues()
@@ -248,16 +248,20 @@ public class EditViewModel : ObservableObject
                 {
                     StrategyErrors = errors.ToArray();
                 }
-                // A sweep escaping with a non-validation exception leaves StrategyErrors stale,
-                // so the strategy's error state is unknown and HasErrors must not read clean.
-                // Not a latch: the next refresh whose sweep completes knows the state again.
-                _parameterSweepFailed = !parameterSweepCompleted;
+                // A rules pass or parameter sweep that escapes with a non-validation exception
+                // leaves StrategyErrors stale, so the strategy's error state is unknown and
+                // HasErrors must not read clean. Not a latch: the next refresh that finishes
+                // both passes knows the state again.
+                _refreshIncomplete = RefreshDidNotFinish(rulesCompleted, parameterSweepCompleted);
                 _refreshing = false;
                 OnPropertyChanged(nameof(StrategyErrors));
                 OnPropertyChanged(nameof(HasErrors));
             }
         }
     }
+
+    private static bool RefreshDidNotFinish(bool rulesCompleted, bool parameterSweepCompleted) =>
+        !(rulesCompleted && parameterSweepCompleted);
 
     private static IParameter? ResolveParameter(Strategy_t strategy, Control_t control) =>
         control.ParameterRef is { } parameterRef && strategy.Parameters.Contains(parameterRef)

@@ -315,6 +315,45 @@ public class ReviewRegressionTests
     }
 
     [Fact]
+    public void StateRuleComparisonFailure_BlocksReadBackUntilARefreshCompletes()
+    {
+        // A state rule whose operands cannot be ordered throws InvalidOperationException from the
+        // core. That exception is not a validation failure, and the refresh flag only watched the
+        // parameter sweep, so HasErrors read clean and both read-back methods emitted FIX values.
+        var strategy = TestControls.MinimalStrategyWithOneRequiredControl();
+        strategy.Parameters["Qty"].Use = Use_t.Optional;
+        var toggle = new CheckBox_t("Toggle");
+        strategy.StrategyLayout.StrategyPanel.Controls.Add(toggle);
+        strategy
+            .Controls["Qty"]
+            .StateRules.Add(
+                new StateRule_t
+                {
+                    Edit = new Edit_t<Control_t>
+                    {
+                        Field = "Qty",
+                        Field2 = "Toggle",
+                        Operator = Operator_t.GreaterThan,
+                    },
+                }
+            );
+        var model = new EditViewModel(strategy);
+        var quantity = model.Controls.Single(control => control.UnderlyingControl.Id == "Qty");
+        model.HasErrors.Should().BeFalse("an unset quantity makes the comparison indeterminate, not a failure");
+
+        var edit = () => quantity.Value = 12m;
+        edit.Should().Throw<InvalidOperationException>();
+        model.HasErrors.Should().BeTrue("the rules pass did not finish, so the strategy's error state is unknown");
+        var direct = () => model.ReadBackFixValues();
+        var group = () => model.ReadBackStrategyParametersGrp();
+        direct.Should().Throw<InvalidOperationException>();
+        group.Should().Throw<InvalidOperationException>();
+
+        quantity.Value = null;
+        model.HasErrors.Should().BeFalse("a later refresh that finishes knows the state again");
+    }
+
+    [Fact]
     public void InternalFailureInTheParameterSweep_DoesNotLatchTheRefreshGuard()
     {
         // RefreshRules' finally reads every control-less parameter's WireValue BEFORE clearing

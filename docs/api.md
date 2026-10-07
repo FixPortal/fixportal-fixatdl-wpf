@@ -31,7 +31,7 @@ Usable without the WPF package (`new EditViewModel(strategy)`).
 
 | Type | What it is |
 |---|---|
-| `EditViewModel` | Coordinates editing, state rules, strategy validation and FIX read-back. `Controls`, `StrategyErrors`, `HasErrors`. Duplicate empty control IDs or duplicate FIX tags throw `ArgumentException`. |
+| `EditViewModel` | Coordinates editing, state rules, strategy validation and FIX read-back. `Controls`, `StrategyErrors`, `HasErrors` (also true when a refresh did not finish). Duplicate empty control IDs or duplicate FIX tags throw `ArgumentException`. |
 | `EditViewModel.ReadBackFixValues()` | Validated `fixTag → wireValue`. Throws if `HasErrors`. |
 | `EditViewModel.ReadBackStrategyParametersGrp()` | Tags 957–960 via core `StrategyParametersGrpEmitter`. Throws if `HasErrors`. |
 | `ControlViewModel` | `Value`, `Enabled`, `Visible`, `Visibility` (`"Visible"`/`"Collapsed"`), `IsReadOnly`, `IsRequiredParameter`, `IsContentValid`, `Id`, `FixTag`, `ToolTip`, `UnderlyingControl`, `NumericMinimum`/`NumericMaximum`. Implements `INotifyDataErrorInfo`. |
