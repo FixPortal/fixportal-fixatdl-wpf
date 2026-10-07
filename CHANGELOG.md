@@ -15,9 +15,21 @@ history.
 
 ## [Unreleased]
 
+## [1.0.6] - 2026-10-07
+
 ### Changed
 
 - Depends on `FixPortal.FixAtdl` 1.2.0 (was 1.1.6).
+
+### Fixed
+
+- The package README on the NuGet gallery now carries absolute links to
+  NOTICE and LICENSE and no longer names 1.0.3 as the latest release; the
+  1.0.5 package shipped the older text.
+- Documentation states the true failure order in `AtdlPanel.Create`: empty or
+  duplicate control IDs throw from the renderer, duplicate FIX tags from the
+  `EditViewModel` constructor after the XAML is parsed.
+- The changelog no longer claims 1.0.0 and 1.0.1 are installable.
 
 ## [1.0.5] - 2026-10-03
 
@@ -218,5 +230,6 @@ history.
 First public release. WPF rendering and view-model layers for FIXatdl 1.1
 strategy panels, over `FixPortal.FixAtdl`.
 
-[Unreleased]: https://github.com/FixPortal/fixportal-fixatdl-wpf/compare/v1.0.5...HEAD
+[Unreleased]: https://github.com/FixPortal/fixportal-fixatdl-wpf/compare/v1.0.6...HEAD
+[1.0.6]: https://github.com/FixPortal/fixportal-fixatdl-wpf/compare/v1.0.5...v1.0.6
 [1.0.5]: https://github.com/FixPortal/fixportal-fixatdl-wpf/releases/tag/v1.0.5
