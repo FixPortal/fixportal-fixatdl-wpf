@@ -155,12 +155,17 @@ def run_version_step(step_body, repo, ref_type, ref_name):
         except OSError as error:
             raise GateShapeError(f"could not run the extracted PowerShell release step: {error}") from error
         output = env_path.read_text(encoding="utf-8", errors="replace")
-    # GitHub's runner keeps the LAST write to GITHUB_ENV, so a first-match read would
-    # validate a value the build never sees. At most one write, or fail closed.
-    versions = re.findall(r"^PACKAGE_VERSION=(.+)$", output, re.MULTILINE)
+    return result.returncode, read_package_version(output)
+
+
+def read_package_version(output):
+    """The version a GITHUB_ENV file hands later steps, or None when it sets none.
+    GitHub's runner keeps the LAST write, so a first-match read would validate a value the
+    build never sees. At most one write, or fail closed."""
+    versions = re.findall(r"^PACKAGE_VERSION=(.*)$", output, re.MULTILINE)
     if len(versions) > 1:
         raise GateShapeError(f"the version step wrote PACKAGE_VERSION {len(versions)} times; expected at most one.")
-    return result.returncode, versions[0] if versions else None
+    return versions[0] if versions else None
 
 
 def ancestor_ok(ancestor_cmd, repo, sha):
@@ -223,10 +228,10 @@ def parse_publish_header(publish_job_header):
     """Return (if expression, needs ids) from the publish job's header. Both keys must
     appear exactly once at the job's four-space level: a nested `if:` (an env: entry) or a
     second `needs:` line would be read differently by GitHub than by a first-match regex."""
-    ifs = re.findall(r"\n    if:[ \t]*(.+)", publish_job_header)
+    ifs = re.findall(r"^    if:[ \t]*(.+)", publish_job_header, re.MULTILINE)
     if len(ifs) != 1:
         raise GateShapeError(f"expected exactly one job-level if: on the publish job; found {len(ifs)}.")
-    needs = re.findall(r"\n    needs:[ \t]*(.*)", publish_job_header)
+    needs = re.findall(r"^    needs:[ \t]*(.*)", publish_job_header, re.MULTILINE)
     if len(needs) != 1:
         raise GateShapeError(f"expected exactly one job-level needs: on the publish job; found {len(needs)}.")
     # ci-gate is what stops a tag publishing over a red build-and-test or gate-coverage;
@@ -262,6 +267,10 @@ def self_check():
         base.replace("ci-gate]", "ci-gate] # why"),
         base.replace("ci-gate]", "'ci-gate']"),
         base.replace("[build-and-test, ci-gate]", "ci-gate"),
+        # named_job's capture starts AFTER `publish:\n`, so a key on the job's first line has
+        # no preceding newline. GitHub accepts `if:` as the first key.
+        "    if: github.event_name == 'push'\n    needs: [build-and-test, ci-gate]\n    runs-on: x",
+        "    needs: [build-and-test, ci-gate]\n    if: github.event_name == 'push'\n    runs-on: x",
     ):
         parse_publish_header(case)
     expect_rejected(
@@ -276,6 +285,11 @@ def self_check():
     )
     check_env_writes('"PACKAGE_VERSION=$v" >> $env:GITHUB_ENV')
     expect_rejected(check_env_writes, ["", '"A=1" >> $env:GITHUB_ENV\n"B=2" >> $env:GITHUB_ENV'])
+    if read_package_version("PACKAGE_VERSION=1.2.3\n") != "1.2.3" or read_package_version("OTHER=1\n") is not None:
+        raise AssertionError("self-check: read_package_version misread a single write or an absent one")
+    # An empty assignment is still a write: a valid value followed by `PACKAGE_VERSION=`
+    # hands later steps an empty version, so it must count, and two writes fail closed.
+    expect_rejected(read_package_version, ["PACKAGE_VERSION=1.2.3\nPACKAGE_VERSION=\n"])
 
 
 def main():
