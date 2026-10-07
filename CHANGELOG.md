@@ -8,9 +8,10 @@ Dates are the release-tag date, in UTC. Entries are consumer-facing: build, CI
 and test-infrastructure commits are omitted unless they change what a consumer
 sees. Both packages version together.
 
-The repository history starts at the 1.0.5 release. Earlier versions remain
-installable from NuGet.org; their notes are kept below, but their tags were
-retired with the pre-release history.
+The repository history starts at the 1.0.5 release. NuGet.org lists 1.0.2
+onward; 1.0.0 and 1.0.1 are not available there. Notes for the earlier
+versions are kept below, but their tags were retired with the pre-release
+history.
 
 ## [Unreleased]
 

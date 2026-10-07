@@ -5,9 +5,9 @@ using Microsoft.Extensions.DependencyInjection;
 namespace FixPortal.FixAtdl.Wpf;
 
 /// <summary>
-/// Composition-root entry point for this library. EMS's App.xaml.cs calls
-/// <see cref="AddFixAtdlWpf"/> once to register the strategy-panel renderer and every default
-/// control renderer; the exact method name/signature is depended on by later EMS integration.
+/// Composition-root entry point for this library. The host application's composition
+/// root calls <see cref="AddFixAtdlWpf"/> once to register the strategy-panel renderer and every default
+/// control renderer; the exact method name/signature is part of the public surface hosts depend on.
 /// </summary>
 public static class ServiceCollectionExtensions
 {

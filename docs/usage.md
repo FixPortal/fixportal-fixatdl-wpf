@@ -81,9 +81,11 @@ Partial clock and spinner text sets `IsContentValid` false until the
 value is complete; that surfaces as a field error rather than a thrown
 exception.
 
-Duplicate empty control IDs or duplicate FIX tags throw
-`ArgumentException` from the `EditViewModel` constructor, before any
-XAML is parsed.
+`AtdlPanel.Create` renders first and builds the view model second.
+Empty or duplicate control IDs throw `ArgumentException` from the
+renderer while the XAML is being written. Duplicate FIX tags throw
+`ArgumentException` from the `EditViewModel` constructor, after the XAML
+has been parsed. (Constructing an `EditViewModel` directly rejects both.)
 
 ## State rules
 
