@@ -155,8 +155,12 @@ def run_version_step(step_body, repo, ref_type, ref_name):
         except OSError as error:
             raise GateShapeError(f"could not run the extracted PowerShell release step: {error}") from error
         output = env_path.read_text(encoding="utf-8", errors="replace")
-    version = re.search(r"^PACKAGE_VERSION=(.+)$", output, re.MULTILINE)
-    return result.returncode, version.group(1) if version else None
+    # GitHub's runner keeps the LAST write to GITHUB_ENV, so a first-match read would
+    # validate a value the build never sees. At most one write, or fail closed.
+    versions = re.findall(r"^PACKAGE_VERSION=(.+)$", output, re.MULTILINE)
+    if len(versions) > 1:
+        raise GateShapeError(f"the version step wrote PACKAGE_VERSION {len(versions)} times; expected at most one.")
+    return result.returncode, versions[0] if versions else None
 
 
 def ancestor_ok(ancestor_cmd, repo, sha):
@@ -195,7 +199,87 @@ def make_repo(tmp):
     return repo, main_sha, side_sha
 
 
+def strip_comment(value):
+    """Drop a trailing YAML comment. Naive by design, as in assert_gate_coverage.py: a
+    '#' inside a quoted scalar is not a shape a job id admits, and fails the id check."""
+    return value.split("#", 1)[0]
+
+
+JOB_ID = r"[A-Za-z_][A-Za-z0-9_-]*"
+
+
+def parse_need_ids(value):
+    """Adapted from assert_gate_coverage.py: drop the comment, strip quotes, and refuse
+    anything that is not a job id, so what is counted is what GitHub reads."""
+    value = strip_comment(value).strip()
+    values = value[1:-1].split(",") if value.startswith("[") and value.endswith("]") else [value]
+    ids = [item.strip().strip("'\"") for item in values if item.strip()]
+    if not ids or any(not re.fullmatch(JOB_ID, item) for item in ids):
+        raise GateShapeError(f"unsupported needs value in the publish job: {value!r}.")
+    return ids
+
+
+def parse_publish_header(publish_job_header):
+    """Return (if expression, needs ids) from the publish job's header. Both keys must
+    appear exactly once at the job's four-space level: a nested `if:` (an env: entry) or a
+    second `needs:` line would be read differently by GitHub than by a first-match regex."""
+    ifs = re.findall(r"\n    if:[ \t]*(.+)", publish_job_header)
+    if len(ifs) != 1:
+        raise GateShapeError(f"expected exactly one job-level if: on the publish job; found {len(ifs)}.")
+    needs = re.findall(r"\n    needs:[ \t]*(.*)", publish_job_header)
+    if len(needs) != 1:
+        raise GateShapeError(f"expected exactly one job-level needs: on the publish job; found {len(needs)}.")
+    # ci-gate is what stops a tag publishing over a red build-and-test or gate-coverage;
+    # nothing else checks publish's needs:. Flow style and a bare scalar both parse; a
+    # block-style list is a shape change and fails closed.
+    needed = parse_need_ids(needs[0])
+    if "ci-gate" not in needed:
+        raise GateShapeError(f"the publish job must need ci-gate; found needs: {needs[0].strip()}.")
+    return ifs[0], needed
+
+
+def check_env_writes(build_job):
+    """The version step must be the only GITHUB_ENV writer in build-and-test."""
+    writes = re.findall(r"GITHUB_ENV", build_job, re.IGNORECASE)
+    if len(writes) != 1:
+        raise GateShapeError(f"expected exactly one GITHUB_ENV write in build-and-test; found {len(writes)}.")
+
+
+def expect_rejected(parse, cases):
+    for case in cases:
+        try:
+            parse(case)
+        except GateShapeError:
+            continue
+        raise AssertionError(f"self-check: {parse.__name__} accepted {case!r}")
+
+
+def self_check():
+    """Fixtures proving the parsers reject what GitHub would read differently."""
+    base = "\n    name: P\n    if: github.event_name == 'push'\n    needs: [build-and-test, ci-gate]\n    runs-on: x"
+    for case in (
+        base,
+        base.replace("ci-gate]", "ci-gate] # why"),
+        base.replace("ci-gate]", "'ci-gate']"),
+        base.replace("[build-and-test, ci-gate]", "ci-gate"),
+    ):
+        parse_publish_header(case)
+    expect_rejected(
+        parse_publish_header,
+        [
+            base.replace("ci-gate]", "] #, ci-gate"),
+            base + "\n    needs: [build-and-test]",
+            base.replace("ci-gate", "ci-gate, bad id"),
+            base.replace("    if:", "    env:\n      if:"),
+            base + "\n    if: true",
+        ],
+    )
+    check_env_writes('"PACKAGE_VERSION=$v" >> $env:GITHUB_ENV')
+    expect_rejected(check_env_writes, ["", '"A=1" >> $env:GITHUB_ENV\n"B=2" >> $env:GITHUB_ENV'])
+
+
 def main():
+    self_check()
     if not CI_YML.is_file():
         print(f"::error::{CI_YML} does not exist; nothing to assert.")
         return 2
@@ -213,20 +297,11 @@ def main():
     if steps_marker not in publish_job:
         raise GateShapeError(f"could not find the publish job's steps: in {CI_YML}; the workflow's shape has changed.")
     publish_job_header = publish_job[: publish_job.index(steps_marker)]
-    publish_if = extract(r"\n\s*if:\s*(.+)", publish_job_header, "the publish job's if:")
-    # ci-gate is what stops a tag publishing over a red build-and-test or gate-coverage;
-    # nothing else checks publish's needs:, so a needs: [build-and-test] edit would pass
-    # every gate. The match is anchored to the job's four-space top level: an unanchored
-    # search is satisfied by a `needs:` key nested in the job's env: block, which GitHub
-    # reads as an environment variable while the job itself needs nothing. Flow style
-    # (`needs: [a, b]`) and a bare scalar both parse; a block-style list is a shape change
-    # and fails closed above.
-    publish_needs = extract(r"\n    needs:[ \t]*(.+)", publish_job_header, "the publish job's needs:")
-    needed = [job.strip() for job in publish_needs.strip().strip("[]").split(",") if job.strip()]
-    if "ci-gate" not in needed:
-        raise GateShapeError(f"the publish job must need ci-gate; found needs: {publish_needs.strip()}.")
+    publish_if, _ = parse_publish_header(publish_job_header)
 
-    package_step = named_step(named_job(text, "build-and-test"), "Select package version")
+    build_job = named_job(text, "build-and-test")
+    check_env_writes(build_job)
+    package_step = named_step(build_job, "Select package version")
     ancestry_step = named_step(publish_job, "Require a tag reachable from main")
 
     if re.search(r"^        if:", ancestry_step, re.MULTILINE):
@@ -251,6 +326,9 @@ def main():
         scenarios = [
             ("push", "refs/tags/v1.2.3", main_sha, "v1.2.3", True, True),
             ("push", "refs/tags/v1.2", main_sha, "v1.2", False, False),  # malformed version
+            ("push", "refs/tags/v1.2.3-beta", main_sha, "v1.2.3-beta", False, False),  # pre-release suffix
+            ("push", "refs/tags/v1.2.3.4", main_sha, "v1.2.3.4", False, False),  # four components
+            ("push", "refs/tags/v01.2.3", main_sha, "v01.2.3", False, False),  # leading zero
             ("push", "refs/tags/v1.0.0", side_sha, "v1.0.0", True, False),  # not on main
             ("push", "refs/heads/main", main_sha, "", None, False),  # plain push, no tag
             ("pull_request", "refs/tags/v1.2.3", main_sha, "v1.2.3", None, False),  # wrong event
