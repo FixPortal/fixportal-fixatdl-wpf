@@ -15,6 +15,8 @@ history.
 
 ## [Unreleased]
 
+## [1.0.7] - 2026-10-07
+
 ### Fixed
 
 - A state rule or strategy-edit pass that throws a non-validation exception,
@@ -248,6 +250,7 @@ history.
 First public release. WPF rendering and view-model layers for FIXatdl 1.1
 strategy panels, over `FixPortal.FixAtdl`.
 
-[Unreleased]: https://github.com/FixPortal/fixportal-fixatdl-wpf/compare/v1.0.6...HEAD
+[Unreleased]: https://github.com/FixPortal/fixportal-fixatdl-wpf/compare/v1.0.7...HEAD
+[1.0.7]: https://github.com/FixPortal/fixportal-fixatdl-wpf/compare/v1.0.6...v1.0.7
 [1.0.6]: https://github.com/FixPortal/fixportal-fixatdl-wpf/compare/v1.0.5...v1.0.6
 [1.0.5]: https://github.com/FixPortal/fixportal-fixatdl-wpf/releases/tag/v1.0.5
