@@ -15,6 +15,24 @@ history.
 
 ## [Unreleased]
 
+### Fixed
+
+- A state rule or strategy-edit pass that throws a non-validation exception,
+  such as `InvalidOperationException` when the core cannot order two operands,
+  leaves `HasErrors` true. `ReadBackFixValues` and
+  `ReadBackStrategyParametersGrp` both refuse until a later refresh finishes.
+  Previously only a failed parameter sweep did this, so a failed rules pass
+  still emitted FIX values.
+- An unset `NumericSlider` no longer takes its minimum on a mouse or key
+  release. That release also fired when the press started elsewhere, and it
+  put back a value a `{NULL}` rule had just cleared. The slider now commits
+  on the press, or on an unmodified navigation key, and stores the declared
+  minimum. A minimum near `decimal.MaxValue`, or one with more than 15
+  significant digits, no longer overflows or loses digits on that commit.
+- A host style keyed on `ClickSelectTextBox` has to use
+  `BasedOn="{StaticResource {x:Type TextBox}}"`. Without it, the style
+  replaces the text-box theme and the field loses the host's dark surfaces.
+
 ## [1.0.6] - 2026-10-07
 
 ### Changed

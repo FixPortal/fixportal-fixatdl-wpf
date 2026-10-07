@@ -53,12 +53,20 @@ public sealed class NumericSlider : UserControl
                 Value = (decimal)args.NewValue;
             }
         };
-        _slider.AddHandler(MouseLeftButtonUpEvent, new MouseButtonEventHandler((_, _) => CommitEmptyValue()), true);
+        // Tunneling, so an unset slider takes Minimum before RepeatButton or a key moves the
+        // thumb. A release is not a gesture: it also fires when the press began elsewhere,
+        // which re-committed a slider a {NULL} rule had just cleared.
+        _slider.AddHandler(PreviewMouseLeftButtonDownEvent, new MouseButtonEventHandler((_, _) => CommitEmptyValue()));
         _slider.AddHandler(
-            KeyUpEvent,
+            PreviewKeyDownEvent,
             new KeyEventHandler(
                 (_, args) =>
                 {
+                    // The device that delivered the key. A modified navigation key does not move the slider.
+                    if (args.KeyboardDevice.Modifiers != ModifierKeys.None)
+                    {
+                        return;
+                    }
                     if (
                         args.Key
                         is Key.Left
@@ -74,8 +82,7 @@ public sealed class NumericSlider : UserControl
                         CommitEmptyValue();
                     }
                 }
-            ),
-            true
+            )
         );
         Synchronize();
     }
@@ -111,7 +118,9 @@ public sealed class NumericSlider : UserControl
     {
         if (!_updating && Value is null)
         {
-            Value = (decimal)_slider.Value;
+            // The slider's double cannot represent every decimal. Casting it overflows within
+            // about 4.4e12 of decimal.MaxValue and drops digits past 15 significant figures.
+            Value = Minimum;
         }
     }
 

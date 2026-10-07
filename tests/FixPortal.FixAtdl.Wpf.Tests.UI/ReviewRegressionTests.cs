@@ -219,6 +219,43 @@ public partial class AtdlPanelTests
     [InlineData(true)]
     public void NumericSlider_EmptyMinimumCanBeCommitted(bool mouse)
     {
+        // An unset slider commits on the press or an unmodified navigation key, before the
+        // slider moves, so the value taken is the declared minimum.
+        StaTestHarness.Run(() =>
+        {
+            var slider = new Controls.NumericSlider { Minimum = 10, Maximum = 20 };
+            var native = Descendants(slider).OfType<System.Windows.Controls.Slider>().Single();
+            slider.Value.Should().BeNull();
+            if (mouse)
+            {
+                native.RaiseEvent(
+                    new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, MouseButton.Left)
+                    {
+                        RoutedEvent = UIElement.PreviewMouseLeftButtonDownEvent,
+                    }
+                );
+            }
+            else
+            {
+                using var source = new System.Windows.Interop.HwndSource(0, 0, 0, 0, 0, "test", IntPtr.Zero);
+                native.RaiseEvent(
+                    new KeyEventArgs(Keyboard.PrimaryDevice, source, 0, Key.Home)
+                    {
+                        RoutedEvent = Keyboard.PreviewKeyDownEvent,
+                    }
+                );
+            }
+            slider.Value.Should().Be(10);
+        });
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void NumericSlider_BareReleaseLeavesAnUnsetValue(bool mouse)
+    {
+        // A release that did not begin on the slider, including the release after a {NULL} rule
+        // clears it, must not invent the minimum.
         StaTestHarness.Run(() =>
         {
             var slider = new Controls.NumericSlider { Minimum = 10, Maximum = 20 };
@@ -235,13 +272,57 @@ public partial class AtdlPanelTests
             }
             else
             {
-                System.Windows.Controls.Slider.MinimizeValue.Execute(null, native);
                 using var source = new System.Windows.Interop.HwndSource(0, 0, 0, 0, 0, "test", IntPtr.Zero);
                 native.RaiseEvent(
                     new KeyEventArgs(Keyboard.PrimaryDevice, source, 0, Key.Home) { RoutedEvent = Keyboard.KeyUpEvent }
                 );
             }
-            slider.Value.Should().Be(10);
+            slider.Value.Should().BeNull();
+        });
+    }
+
+    [Theory]
+    [InlineData(ModifierKeys.Control)]
+    [InlineData(ModifierKeys.Shift)]
+    public void NumericSlider_ModifiedNavigationKeyDoesNotCommit(ModifierKeys modifiers)
+    {
+        // Ctrl or Shift plus a navigation key does not move the slider, so it must not commit either.
+        StaTestHarness.Run(() =>
+        {
+            var slider = new Controls.NumericSlider { Minimum = 10, Maximum = 20 };
+            var native = Descendants(slider).OfType<System.Windows.Controls.Slider>().Single();
+            using var source = new System.Windows.Interop.HwndSource(0, 0, 0, 0, 0, "test", IntPtr.Zero);
+            native.RaiseEvent(
+                new KeyEventArgs(new HeldModifierKeyboard(modifiers), source, 0, Key.Home)
+                {
+                    RoutedEvent = Keyboard.PreviewKeyDownEvent,
+                }
+            );
+            slider.Value.Should().BeNull();
+        });
+    }
+
+    [Theory]
+    [InlineData("79228162514264337593543950335")]
+    [InlineData("9007199254740993")]
+    public void NumericSlider_CommitsDeclaredMinimumExactly(string minimumText)
+    {
+        // The commit must store the declared decimal. Casting the slider's double overflows near
+        // decimal.MaxValue and drops digits past the 15 that a double can keep.
+        StaTestHarness.Run(() =>
+        {
+            var minimum = decimal.Parse(minimumText, CultureInfo.InvariantCulture);
+            var slider = new Controls.NumericSlider { Minimum = minimum, Maximum = minimum };
+            var native = Descendants(slider).OfType<System.Windows.Controls.Slider>().Single();
+            var commit = () =>
+                native.RaiseEvent(
+                    new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, MouseButton.Left)
+                    {
+                        RoutedEvent = UIElement.PreviewMouseLeftButtonDownEvent,
+                    }
+                );
+            commit.Should().NotThrow();
+            slider.Value.Should().Be(minimum);
         });
     }
 
@@ -457,5 +538,29 @@ public partial class AtdlPanelTests
         view.Measure(new Size(800, 600));
         view.Arrange(new Rect(0, 0, 800, 600));
         view.UpdateLayout();
+    }
+
+    /// <summary>
+    /// Reports the given modifiers as held. <see cref="Keyboard.Modifiers"/> reads the real primary
+    /// device, which a test cannot press, so the slider reads the device that delivered the key.
+    /// </summary>
+    private sealed class HeldModifierKeyboard : KeyboardDevice
+    {
+        private readonly ModifierKeys _held;
+
+        public HeldModifierKeyboard(ModifierKeys held)
+            : base(InputManager.Current) => _held = held;
+
+        protected override KeyStates GetKeyStatesFromSystem(Key key)
+        {
+            var keyModifier = key switch
+            {
+                Key.LeftCtrl or Key.RightCtrl => ModifierKeys.Control,
+                Key.LeftShift or Key.RightShift => ModifierKeys.Shift,
+                Key.LeftAlt or Key.RightAlt => ModifierKeys.Alt,
+                _ => ModifierKeys.None,
+            };
+            return (_held & keyModifier) != 0 ? KeyStates.Down : KeyStates.None;
+        }
     }
 }
