@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageVersion Include="FixPortal.CodeStyle" Version="0.1.12" />
+    <PackageVersion Include="FixPortal.CodeStyle" Version="0.1.13" />
     <PackageVersion Include="FixPortal.FixAtdl" Version="1.2.0" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.12" />
