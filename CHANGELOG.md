@@ -15,6 +15,15 @@ history.
 
 ## [Unreleased]
 
+### Changed
+
+- Depends on `FixPortal.FixAtdl` 1.4.0 (was 1.2.0).
+
+### Fixed
+
+- Moving a `NumericSlider` to a declared bound preserves that decimal exactly,
+  including `decimal.MinValue` and `decimal.MaxValue`, without overflowing.
+
 ## [1.0.7] - 2026-10-07
 
 ### Fixed
