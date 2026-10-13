@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace FixPortal.FixAtdl.Wpf.Tests.UI;
 
 /// <summary>
-/// Host-composition failure modes (audit 2026-10-11 E9/G3, G2) and venue tooltip text (B8).
+/// Host-composition failure modes (missing renderer, missing AddFixAtdlWpf), the panel-nesting boundary, and venue tooltip text.
 /// </summary>
 public class RendererCompositionTests
 {
@@ -46,15 +46,7 @@ public class RendererCompositionTests
         StaTestHarness.Run(() =>
         {
             using var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
-            var strategy = TestStrategies.MinimalOneControlStrategy();
-            var panel = strategy.StrategyLayout.StrategyPanel;
-            panel.Controls.Clear();
-            for (var i = 0; i < children; i++)
-            {
-                var child = new FixPortal.FixAtdl.Model.Elements.StrategyPanel_t(strategy);
-                panel.StrategyPanels.Add(child);
-                panel = child;
-            }
+            var strategy = TestStrategies.NestedPanelsStrategy(children);
 
             var renderer = services.GetRequiredService<Rendering.StrategyPanelRenderer>();
             var render = () => renderer.Render(strategy, services);

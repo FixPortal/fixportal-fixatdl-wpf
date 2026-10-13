@@ -35,6 +35,25 @@ internal static class TestStrategies
     }
 
     /// <summary>
+    /// The minimal strategy with its single control removed and <paramref name="depth"/> panels nested
+    /// one inside the next beneath the root panel.
+    /// </summary>
+    public static Strategy_t NestedPanelsStrategy(int depth)
+    {
+        var strategy = MinimalOneControlStrategy();
+        var panel = strategy.StrategyLayout.StrategyPanel;
+        panel.Controls.Clear();
+        for (var i = 0; i < depth; i++)
+        {
+            var child = new StrategyPanel_t(strategy);
+            panel.StrategyPanels.Add(child);
+            panel = child;
+        }
+
+        return strategy;
+    }
+
+    /// <summary>
     /// A strategy carrying a <see cref="DoubleSpinner_t"/> with distinct inner/outer increments and a
     /// <see cref="Label_t"/> with text - the two control types whose emitted markup no render test
     /// parsed (audit F11), wired through the real StrategyPanel_t.
