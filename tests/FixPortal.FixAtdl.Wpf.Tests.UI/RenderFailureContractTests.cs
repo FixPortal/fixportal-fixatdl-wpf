@@ -120,16 +120,7 @@ public class RenderFailureContractTests
         StaTestHarness.Run(() =>
         {
             using var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
-            var strategy = TestStrategies.MinimalOneControlStrategy();
-            var panel = strategy.StrategyLayout.StrategyPanel;
-            panel.Controls.Clear();
-
-            for (var i = 0; i < 65; i++)
-            {
-                var child = new FixPortal.FixAtdl.Model.Elements.StrategyPanel_t(strategy);
-                panel.StrategyPanels.Add(child);
-                panel = child;
-            }
+            var strategy = TestStrategies.NestedPanelsStrategy(65);
 
             var renderer = services.GetRequiredService<Rendering.StrategyPanelRenderer>();
             var render = () => renderer.Render(strategy, services);
