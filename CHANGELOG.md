@@ -23,6 +23,7 @@ history.
 
 - Moving a `NumericSlider` to a declared bound preserves that decimal exactly,
   including `decimal.MinValue` and `decimal.MaxValue`, without overflowing.
+  Home and End can select either endpoint when both bounds round to one native value.
 
 ## [1.0.7] - 2026-10-07
 

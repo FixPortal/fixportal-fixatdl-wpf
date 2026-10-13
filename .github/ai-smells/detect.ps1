@@ -95,7 +95,8 @@ function Get-SemgrepRuleFiles([string] $SkillRoot, [string] $RulePath) {
 
 function Get-CatchSpans([string] $Text, [int] $StartLine, [string] $Language) {
     # Keep offsets and newlines while removing comments and string literals from scope matching.
-    $literals = '(?s)"{3}.*?"{3}|''{3}.*?''{3}|@"(?:""|[^"])*"|"(?:\\.|[^"\\])*"|''(?:\\.|[^''\\])*''|`(?:\\.|[^`\\])*`|/\*.*?\*/|//[^\r\n]*|\#[^\r\n]*'
+    $literals = '(?s)"{3}.*?"{3}|''{3}.*?''{3}|@"(?:""|[^"])*"|"(?:\\.|[^"\\])*"|''(?:\\.|[^''\\])*''|`(?:\\.|[^`\\])*`'
+    $literals += if ($Language -eq 'python') { '|\#[^\r\n]*' } else { '|/\*.*?\*/|//[^\r\n]*' }
     $code = [regex]::Replace($Text, $literals, [Text.RegularExpressions.MatchEvaluator]{ param($m) $m.Value -replace '[^\r\n]', ' ' })
     if ($Language -eq 'python') {
         $lines = @($code -split "`r?`n")

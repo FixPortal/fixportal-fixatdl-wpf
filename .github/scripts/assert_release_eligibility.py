@@ -274,8 +274,35 @@ def check_env_writes(build_job):
     code = re.sub(r'''("(?:`.|\\.|[^"`\\])*"|'(?:''|[^'])*')|\#[^\n]*''',
                   lambda match: match.group(1)[1:-1] if match.group(1)
                   and re.fullmatch('"' + env_file + '"', match.group(1), re.IGNORECASE) else '', code)
-    writes = re.findall(r'(?:>>?\s*' + env_file + r'|\b(?:Add-Content|Set-Content|Out-File|Tee-Object)\b[^\n;]*?' + env_file + r')',
-                        code, re.IGNORECASE)
+    writes = re.findall(r'>>?\s*' + env_file, code, re.IGNORECASE)
+    if re.search(r'\b(?:Add-Content|Set-Content|Out-File|Tee-Object)\b', code, re.IGNORECASE):
+        # Static binding handles positional destinations and switches without executing workflow commands.
+        parser = r'''
+$ErrorActionPreference = 'Stop'
+$tokens = $null; $errors = $null
+$ast = [System.Management.Automation.Language.Parser]::ParseInput([Console]::In.ReadToEnd(), [ref]$tokens, [ref]$errors)
+if ($errors.Count) { throw 'Could not parse environment writer commands.' }
+$count = 0
+foreach ($command in $ast.FindAll({ param($n) $n -is [System.Management.Automation.Language.CommandAst] }, $true)) {
+    if ($command.GetCommandName() -notin 'Add-Content', 'Set-Content', 'Out-File', 'Tee-Object') { continue }
+    $binding = [System.Management.Automation.Language.StaticParameterBinder]::BindCommand($command)
+    if ($binding.BindingExceptions.Count) { throw 'Could not bind environment writer parameters.' }
+    foreach ($name in 'Path', 'LiteralPath', 'FilePath') {
+        $parameter = $binding.BoundParameters[$name]
+        if ($null -eq $parameter) { continue }
+        $references = @($parameter.Value.FindAll({ param($n)
+            $n -is [System.Management.Automation.Language.VariableExpressionAst] -and $n.VariablePath.UserPath -in 'env:GITHUB_ENV', 'GITHUB_ENV'
+        }, $true))
+        if ($references.Count) { $count++ }
+    }
+}
+$count
+'''
+        result = subprocess.run(['pwsh', '-NoProfile', '-NonInteractive', '-Command', parser],
+                                input='\n'.join(bodies), capture_output=True, text=True, timeout=SUBPROCESS_TIMEOUT)
+        if result.returncode or not result.stdout.strip().isdigit():
+            raise GateShapeError('could not statically bind GITHUB_ENV writer destinations: ' + result.stderr.strip())
+        writes.extend(['named writer'] * int(result.stdout.strip()))
     if len(writes) != 1:
         raise GateShapeError(f"expected exactly one GITHUB_ENV write in build-and-test; found {len(writes)}.")
 

@@ -2,15 +2,15 @@
   "schema": 1,
   "canonical": {
     "repository": "FixPortal/fixportal-agents-skills",
-    "commit": "c741deca9c57a4e464f9eb65c6bf3abe70e2e104",
+    "commit": "68200d7ea82b651fffa63e1b5e01043e4439d06f",
     "syncedAt": "2026-10-13"
   },
   "assets": [
     {
       "path": ".github/ai-smells/detect.ps1",
-      "sha256": "69f58a2b32865d927f1c5b6e2f0c7756c01bf6f1d5197353b11da392e3fef588",
+      "sha256": "95a4543bb9bd11bd321ec9bc5923ad0e3ed2d730ba83fa34418a867d2efe69cc",
       "verbatim": true,
-      "commit": "c741deca9c57a4e464f9eb65c6bf3abe70e2e104",
+      "commit": "68200d7ea82b651fffa63e1b5e01043e4439d06f",
       "syncedAt": "2026-10-13"
     },
     {
@@ -106,9 +106,9 @@
     },
     {
       "path": ".github/ai-smells/detectors/scripts/size_outliers.py",
-      "sha256": "efed0825dbd614e8051695f9aa61a4a12d1586795c74964c7afa6fbbb7200940",
+      "sha256": "31cf20c602666a06781382f7815f08df2bcd13b59aef1f99d0d9b7815b37f7de",
       "verbatim": true,
-      "commit": "3c39dd47a58fe7d7be311c2a55feceb891987452",
+      "commit": "68200d7ea82b651fffa63e1b5e01043e4439d06f",
       "syncedAt": "2026-10-13"
     },
     {
