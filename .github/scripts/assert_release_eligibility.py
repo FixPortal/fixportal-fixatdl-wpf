@@ -14,6 +14,7 @@ simulated; this never calls the GitHub API or a registry.
 Exit codes: 0 clean, 1 a scenario disagreed with its expected eligibility, 2 the
 checker could not run (ci.yml missing, or its shape does not match what this parses).
 """
+import json
 import os
 import re
 import subprocess
@@ -245,7 +246,36 @@ def parse_publish_header(publish_job_header):
 
 def check_env_writes(build_job):
     """The version step must be the only GITHUB_ENV writer in build-and-test."""
-    writes = re.findall(r"GITHUB_ENV", build_job, re.IGNORECASE)
+    bodies = []
+    lines = build_job.splitlines()
+    for i, line in enumerate(lines):
+        match = re.match(r"^( {6}- | {8})run:\s*(.*)", line)
+        if not match:
+            continue
+        value = match.group(2)
+        if value.startswith(('|', '>')):
+            body = []
+            for following in lines[i + 1:]:
+                if following.strip() and not following.startswith('          '):
+                    break
+                body.append(following[10:])
+            bodies.append('\n'.join(body))
+        else:
+            value = value.strip()
+            if value.startswith(("'", '"')):
+                if value[0] != value[-1]:
+                    raise GateShapeError('unsupported quoted run: scalar in build-and-test.')
+                value = value[1:-1].replace("''", "'") if value[0] == "'" else json.loads(value)
+            bodies.append(value)
+    # Strip shell comments outside quoted strings; a YAML comment or step name is never a writer.
+    code = '\n'.join(bodies)
+    # shortcut: direct paths and named writers only; use shell ASTs if workflows adopt aliases or indirect paths.
+    env_file = r'\$(?:env:GITHUB_ENV\b|\{(?:env:)?GITHUB_ENV\}|GITHUB_ENV\b)'
+    code = re.sub(r'''("(?:`.|\\.|[^"`\\])*"|'(?:''|[^'])*')|\#[^\n]*''',
+                  lambda match: match.group(1)[1:-1] if match.group(1)
+                  and re.fullmatch('"' + env_file + '"', match.group(1), re.IGNORECASE) else '', code)
+    writes = re.findall(r'(?:>>?\s*' + env_file + r'|\b(?:Add-Content|Set-Content|Out-File|Tee-Object)\b[^\n;]*?' + env_file + r')',
+                        code, re.IGNORECASE)
     if len(writes) != 1:
         raise GateShapeError(f"expected exactly one GITHUB_ENV write in build-and-test; found {len(writes)}.")
 
@@ -283,8 +313,8 @@ def self_check():
             base + "\n    if: true",
         ],
     )
-    check_env_writes('"PACKAGE_VERSION=$v" >> $env:GITHUB_ENV')
-    expect_rejected(check_env_writes, ["", '"A=1" >> $env:GITHUB_ENV\n"B=2" >> $env:GITHUB_ENV'])
+    check_env_writes('      - run: |\n          "PACKAGE_VERSION=$v" >> $env:GITHUB_ENV\n')
+    expect_rejected(check_env_writes, ["", '      - run: |\n          "A=1" >> $env:GITHUB_ENV\n          "B=2" >> $env:GITHUB_ENV\n'])
     if read_package_version("PACKAGE_VERSION=1.2.3\n") != "1.2.3" or read_package_version("OTHER=1\n") is not None:
         raise AssertionError("self-check: read_package_version misread a single write or an absent one")
     # An empty assignment is still a write: a valid value followed by `PACKAGE_VERSION=`

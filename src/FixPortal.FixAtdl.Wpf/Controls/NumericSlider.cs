@@ -50,7 +50,13 @@ public sealed class NumericSlider : UserControl
         {
             if (!_updating)
             {
-                Value = (decimal)args.NewValue;
+                // Rounded double endpoints may lie outside decimal's range.
+                Value = args.NewValue switch
+                {
+                    var value when value <= _slider.Minimum => Minimum,
+                    var value when value >= _slider.Maximum => Math.Max(Minimum, Maximum),
+                    var value => Math.Clamp((decimal)value, Minimum, Math.Max(Minimum, Maximum)),
+                };
             }
         };
         // Tunneling, so an unset slider takes Minimum before RepeatButton or a key moves the
