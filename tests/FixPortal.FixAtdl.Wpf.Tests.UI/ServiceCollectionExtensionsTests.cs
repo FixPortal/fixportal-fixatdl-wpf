@@ -7,20 +7,8 @@ namespace FixPortal.FixAtdl.Wpf.Tests.UI;
 
 public class ServiceCollectionExtensionsTests
 {
-    [Fact]
-    public void AddFixAtdlWpf_RegistersStrategyPanelRenderer()
-    {
-        StaTestHarness.Run(() =>
-        {
-            var services = new ServiceCollection();
-
-            services.AddFixAtdlWpf();
-            var provider = services.BuildServiceProvider();
-
-            provider.GetService<StrategyPanelRenderer>().Should().NotBeNull();
-        });
-    }
-
+    // The StrategyPanelRenderer registration is covered by every AtdlPanel.Create test and by
+    // RendererCompositionTests.CreateWithoutAddFixAtdlWpf_ThrowsInvalidOperationException.
     [Fact]
     public void AddFixAtdlWpf_RegistersAllDefaultControlRenderers()
     {

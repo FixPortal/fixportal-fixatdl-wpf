@@ -2,11 +2,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using FixPortal.FixAtdl.Diagnostics.Exceptions;
 using FixPortal.FixAtdl.Model.Controls;
 using FixPortal.FixAtdl.Model.Controls.Support;
 using FixPortal.FixAtdl.Model.Elements;
 using FixPortal.FixAtdl.Model.Enumerations;
 using FixPortal.FixAtdl.Utility;
+using ThrowHelper = FixPortal.FixAtdl.Diagnostics.ThrowHelper;
 
 namespace FixPortal.FixAtdl.Wpf.Rendering;
 
@@ -56,7 +58,12 @@ public class WpfControlRenderer : IControlVisitor
     private T GetRenderer<T>(Type controlType)
         where T : class, IControlRenderer
     {
-        return (T)_renderersByControlType[controlType];
+        return _renderersByControlType.TryGetValue(controlType, out var renderer)
+            ? (T)renderer
+            : throw ThrowHelper.New<RenderingException>(
+                nameof(WpfControlRenderer),
+                $"No renderer is registered for control type {controlType.Name}."
+            );
     }
 
     /// <summary>
