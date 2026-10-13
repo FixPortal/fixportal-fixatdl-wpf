@@ -63,33 +63,7 @@ public sealed class NumericSlider : UserControl
         // thumb. A release is not a gesture: it also fires when the press began elsewhere,
         // which re-committed a slider a {NULL} rule had just cleared.
         _slider.AddHandler(PreviewMouseLeftButtonDownEvent, new MouseButtonEventHandler((_, _) => CommitEmptyValue()));
-        _slider.AddHandler(
-            PreviewKeyDownEvent,
-            new KeyEventHandler(
-                (_, args) =>
-                {
-                    // The device that delivered the key. A modified navigation key does not move the slider.
-                    if (args.KeyboardDevice.Modifiers != ModifierKeys.None)
-                    {
-                        return;
-                    }
-                    if (
-                        args.Key
-                        is Key.Left
-                            or Key.Right
-                            or Key.Up
-                            or Key.Down
-                            or Key.Home
-                            or Key.End
-                            or Key.PageUp
-                            or Key.PageDown
-                    )
-                    {
-                        CommitEmptyValue();
-                    }
-                }
-            )
-        );
+        _slider.AddHandler(PreviewKeyDownEvent, new KeyEventHandler(OnPreviewKeyDown));
         Synchronize();
     }
 
@@ -119,6 +93,26 @@ public sealed class NumericSlider : UserControl
 
     private static void Synchronize(DependencyObject source, DependencyPropertyChangedEventArgs args) =>
         ((NumericSlider)source).Synchronize();
+
+    private void OnPreviewKeyDown(object sender, KeyEventArgs args)
+    {
+        // The device that delivered the key. A modified navigation key does not move the slider.
+        if (args.KeyboardDevice.Modifiers != ModifierKeys.None)
+        {
+            return;
+        }
+        // Home/End select decimals directly even when both endpoints round to one native value.
+        if (args.Key is Key.Home or Key.End)
+        {
+            Value = args.Key == Key.Home ? Minimum : Math.Max(Minimum, Maximum);
+            args.Handled = true;
+            return;
+        }
+        if (args.Key is Key.Left or Key.Right or Key.Up or Key.Down or Key.PageUp or Key.PageDown)
+        {
+            CommitEmptyValue();
+        }
+    }
 
     private void CommitEmptyValue()
     {

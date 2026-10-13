@@ -93,6 +93,10 @@ class ReviewRegressions(unittest.TestCase):
         self.assertEqual(result['status'], 'not assessed', 'CX1: skipped source must not look assessed')
         self.assertIn('probe.ps1', result['reason'])
 
+    def test_python_suffix_case_does_not_disable_function_measurement(self):
+        result = self.detector('size_outliers.py', {'large.PY': 'def big():\n' + '    work()\n' * 130})
+        self.assertEqual(len(result['hits']), 1)
+
     def test_CX6_comments_and_step_names_are_not_environment_writes(self):
         job = '''
       # GITHUB_ENV is set below
@@ -125,6 +129,28 @@ class ReviewRegressions(unittest.TestCase):
         for writer in ('"X=1" >> ${env:GITHUB_ENV}', 'Add-Content -LiteralPath "${env:GITHUB_ENV}" -Value "X=1"'):
             with self.subTest(writer=writer), self.assertRaises(release.GateShapeError):
                 release.check_env_writes('      - run: |\n          "PACKAGE_VERSION=$v" >> $env:GITHUB_ENV\n          ' + writer + '\n')
+
+    def test_environment_value_argument_is_not_a_writer_destination(self):
+        release.check_env_writes('''
+      - run: |
+          "PACKAGE_VERSION=$v" >> $env:GITHUB_ENV
+          Set-Content -Path ./output.txt -Value $env:GITHUB_ENV
+''')
+
+    def test_positional_writer_destinations_after_options_are_counted(self):
+        for writer in ('"X=1" | Out-File -Append $env:GITHUB_ENV',
+                       '"X=1" | Out-File -Encoding utf8 $env:GITHUB_ENV',
+                       'Add-Content -Encoding utf8 $env:GITHUB_ENV "X=1"'):
+            with self.subTest(writer=writer), self.assertRaises(release.GateShapeError):
+                release.check_env_writes('      - run: |\n          "PACKAGE_VERSION=$v" >> $env:GITHUB_ENV\n          ' + writer + '\n')
+
+    def test_array_writer_destination_includes_environment_file(self):
+        with self.assertRaises(release.GateShapeError):
+            release.check_env_writes('''
+      - run: |
+          "PACKAGE_VERSION=$v" >> $env:GITHUB_ENV
+          Add-Content -Path $env:GITHUB_ENV,./output.txt -Value "X=1"
+''')
 
 
 if __name__ == '__main__':

@@ -66,7 +66,7 @@ def main():
         lines = source.splitlines()
         if len(lines) > FILE_MAX:
             hits.append({"file": rel, "line": 1, "endLine": len(lines), "text": f"file is {len(lines)} lines"})
-        if rel.endswith(".py"):
+        if rel.lower().endswith(".py"):
             hits += python_hits(rel, source)
             continue
         i = 0

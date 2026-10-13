@@ -107,6 +107,10 @@ Describe 'Review detector contracts' {
         $spans[0].End | Should -Be 12
     }
 
+    It 'C# preprocessor directives are not Python comments' {
+        @(Get-CatchSpans "try {}`ncatch {`n#if DEBUG`n#endif`n}" 1 'csharp').Count | Should -Be 0
+    }
+
     It 'CX3 Python except spans end before finally and ignore comments' {
         $text = "try:`n    work()`nexcept ValueError:`n    # except ignored`n    pass`nfinally:`n    work()"
         $spans = @(Get-CatchSpans $text 1 'python')
