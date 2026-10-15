@@ -32,3 +32,16 @@ credentials.
 ## Review workflow
 
 PRs merge rebase-only. See `.claude/review-policy.json` for risk tiering.
+
+## Release eligibility and local guard controls
+
+The publish job in `.github/workflows/ci.yml` peels `GITHUB_SHA` to a commit and
+asserts reachability from `origin/main` with `git merge-base --is-ancestor`
+before publishing. `.github/scripts/assert_release_eligibility.py` verifies
+the workflow's release wiring. Together these are this repository's local
+release-eligibility implementation; preserve the fail-closed publish boundary
+and its existing regression coverage when normalizing workflow syntax.
+
+The review-policy guard deliberately protects that release-wiring checker as
+a HIGH control. Its adapted content is recorded in
+`.github/canonical-assets.json`; keep this protection when syncing the guard.
