@@ -1,0 +1,7 @@
+# Test audit B2: hostile names and actual WPF label targets
+
+Three real WPF UI cases now render hostile IDs with nonempty literal content and required labels. Checkbox labels are Content, so those cases pin literal Content and automation names; a labelled spinner exercises actual Label.Target resolution after layout/dispatcher idle. Expected encoded names use independent UTF-16 byte encoding, with real FindName, DataContext and distinct control assertions.
+
+Canonical Windows Sandbox proof423c5630ee8d42bd8119d312c7a6a73c passed. The actual original Windows-targeted assembly's three selected cases passed, zero skips. A checkbox-content encoding mutant and a raw label-selector mutant each produced three actual failed TRX rows, with recognized assertion/XAML diagnostics, zero skips. The wrapper validated exact identities/counts/outcomes. Its outer Verify counters are zero by design and are not the inner test counts. Validated nonce/schema/SHA, preflight and owned shutdown all passed; no Sandbox remains running.
+
+All three variants compiled0warnings/errors in an owned guest; production source and final binary were restored to the green hashes. Only26.9MB of test payload plus the existing209.3MB minimal runtime closure were staged; no SDK/profile/cache was mounted. Two earlier attempts stopped before tests because directDLL selects native xUnit console rather than MTP. They are excluded; generated entrypoint/package evidence established native -method/-result-trx arguments. No host tests or Pester executed. Full required Windows CI remains the merge gate.
