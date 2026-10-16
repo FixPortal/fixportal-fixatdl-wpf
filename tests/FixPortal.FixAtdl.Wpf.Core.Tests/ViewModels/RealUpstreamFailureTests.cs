@@ -40,7 +40,7 @@ public class RealUpstreamFailureTests
             .Be("The value could not be applied; reload the strategy before submitting.");
         var direct = () => model.ReadBackFixValues();
         var group = () => model.ReadBackStrategyParametersGrp();
-        direct.Should().Throw<InvalidOperationException>();
-        group.Should().Throw<InvalidOperationException>();
+        direct.Should().Throw<InvalidOperationException>().WithMessage("*validation errors*FIX values*");
+        group.Should().Throw<InvalidOperationException>().WithMessage("*validation errors*FIX values*");
     }
 }
