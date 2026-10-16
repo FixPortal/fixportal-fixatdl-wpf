@@ -406,6 +406,19 @@ def main():
         ]
 
         failed = False
+        # Branch builds execute this producer even when publishing is ineligible.
+        # A tag-shaped branch name must still keep the default build version.
+        for branch_name in ("main", "v9.8.7"):
+            exit_code, version = run_version_step(package_step, repo, "branch", branch_name)
+            if exit_code != 0 or version != "1.0.0":
+                print(
+                    f"::error::non-tag build ref={branch_name!r}: version step exited {exit_code}, "
+                    f"PACKAGE_VERSION={version!r}, expected '1.0.0'"
+                )
+                failed = True
+            else:
+                print(f"OK non-tag build ref={branch_name!r}: PACKAGE_VERSION={version}")
+
         for event_name, ref, sha, tag_name, step_expected, expected in scenarios:
             if_ok = eval_if(publish_if, event_name, ref)
             # The tag-format and ancestry gates only apply once the job's own `if:`
