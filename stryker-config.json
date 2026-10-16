@@ -13,7 +13,7 @@
     "concurrency": 4,
     "thresholds": {
       "high": 80,
-      "low": 70,
+      "low": 73,
       "break": 73
     },
     "mutate": [
