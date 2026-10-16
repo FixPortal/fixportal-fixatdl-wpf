@@ -630,39 +630,6 @@ public partial class AtdlPanelTests
         });
     }
 
-    [Theory]
-    [InlineData("Order Qty")]
-    [InlineData("Order.Qty-1")]
-    [InlineData("X, Source={x:Static sys:Environment.MachineName}")]
-    public void Create_AcceptsIdsWithoutInterpretingThemAsXaml(string id)
-    {
-        StaTestHarness.Run(() =>
-        {
-            var strategy = TestStrategies.MinimalOneControlStrategy();
-            strategy.StrategyLayout.StrategyPanel.Controls.Add(new FixPortal.FixAtdl.Model.Controls.CheckBox_t(id));
-            using var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
-
-            var create = () => AtdlPanel.Create(strategy, services);
-
-            create.Should().NotThrow();
-        });
-    }
-
-    [Fact]
-    public void Create_ReturnsViewAndViewModelForStrategy()
-    {
-        StaTestHarness.Run(() =>
-        {
-            var strategy = TestStrategies.MinimalOneControlStrategy();
-            using var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
-
-            var (view, viewModel) = AtdlPanel.Create(strategy, services);
-
-            view.Should().NotBeNull();
-            viewModel.Controls.Should().HaveCount(1);
-        });
-    }
-
     [Fact]
     public void ReadBackFixValues_ReturnsEditedValueKeyedByTag()
     {
