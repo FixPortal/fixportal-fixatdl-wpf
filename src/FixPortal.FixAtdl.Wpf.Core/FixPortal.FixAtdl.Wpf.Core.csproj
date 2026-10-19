@@ -10,6 +10,7 @@
   <ItemGroup>
     <PackageReference Include="FixPortal.FixAtdl" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
   </ItemGroup>
 
 </Project>
