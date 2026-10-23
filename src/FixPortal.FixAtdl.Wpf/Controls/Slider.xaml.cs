@@ -1,9 +1,6 @@
 // Portions derived from Atdl4net (c) 2010-2011 Steve Wilkinson, MIT - see NOTICE.
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -17,9 +14,9 @@ namespace FixPortal.FixAtdl.Wpf.Controls;
 /// <remarks>This control is implemented using a standard WPF Slider and a series of TextBlocks, positioned
 /// using the measuring algorithm in the private UpdateListItems method.  An alternative implementation using
 /// WPF UniformGrid was tried, but the custom algorithm was found to give better layout results.</remarks>
-public partial class Slider : UserControl, INotifyPropertyChanged
+public partial class Slider : INotifyPropertyChanged
 {
-    private bool _selectedIndexChangeInProgress = false;
+    private bool _selectedIndexChangeInProgress;
     public static readonly DependencyProperty ItemsSourceProperty = DependencyProperty.Register(
         "ItemsSource",
         typeof(IList<ListItemViewModel>),

@@ -62,3 +62,12 @@ max_line_length = 120
 csharp_prefer_braces = true:error
 dotnet_style_predefined_type_for_locals_parameters_members = true:error
 dotnet_style_predefined_type_for_member_access = true:error
+# The enum members mirror XAML attached-property names (AutomationProperties.Name and so on) and the
+# type is public API of the published package, so the underscore names cannot be renamed here.
+[src/FixPortal.FixAtdl.Wpf/Rendering/WpfXmlWriterAttribute.cs]
+resharper_inconsistent_naming_highlighting = none
+
+# x:Name values are looked up by string (FindName, ElementName bindings in host templates and the UI
+# tests), so the camelCase names are part of the control contract and are not renamed.
+[src/FixPortal.FixAtdl.Wpf/Controls/*.xaml]
+resharper_inconsistent_naming_highlighting = none

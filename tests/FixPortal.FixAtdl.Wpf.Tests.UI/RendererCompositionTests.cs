@@ -17,6 +17,7 @@ public class RendererCompositionTests
             using var services = new ServiceCollection().BuildServiceProvider();
             var renderer = new Rendering.StrategyPanelRenderer([]);
 
+            // ReSharper disable once AccessToDisposedClosure - the lambda runs to completion inside this test, before services is disposed
             var render = () => renderer.Render(TestStrategies.MinimalOneControlStrategy(), services);
 
             render.Should().Throw<RenderingException>().WithMessage("*SingleSpinner_t*");
@@ -30,6 +31,7 @@ public class RendererCompositionTests
         {
             using var services = new ServiceCollection().BuildServiceProvider();
 
+            // ReSharper disable once AccessToDisposedClosure - the lambda runs to completion inside this test, before services is disposed
             var create = () => AtdlPanel.Create(TestStrategies.MinimalOneControlStrategy(), services);
 
             create.Should().Throw<InvalidOperationException>().WithMessage("*StrategyPanelRenderer*");
@@ -49,6 +51,7 @@ public class RendererCompositionTests
             var strategy = TestStrategies.NestedPanelsStrategy(children);
 
             var renderer = services.GetRequiredService<Rendering.StrategyPanelRenderer>();
+            // ReSharper disable once AccessToDisposedClosure - the lambda runs to completion inside this test, before services is disposed
             var render = () => renderer.Render(strategy, services);
 
             if (accepted)
@@ -79,7 +82,8 @@ public class RendererCompositionTests
             view.Arrange(new System.Windows.Rect(0, 0, 800, 600));
             view.UpdateLayout();
 
-            var element = (System.Windows.FrameworkElement)view.FindName(Rendering.WpfControlRenderer.CleanName("Qty"));
+            var element = (System.Windows.FrameworkElement)
+                view.FindName(Rendering.WpfControlRenderer.CleanName("Qty"))!;
             element.ToolTip.Should().Be(toolTip);
         });
     }

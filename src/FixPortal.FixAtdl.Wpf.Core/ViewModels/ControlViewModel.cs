@@ -130,7 +130,11 @@ public partial class ControlViewModel : ObservableValidator
     [ObservableProperty]
     private bool _isContentValid = true;
 
-    partial void OnIsContentValidChanged(bool value) => RunValidation(Value);
+    partial void OnIsContentValidChanged(bool value)
+    {
+        _ = value;
+        RunValidation(Value);
+    }
 
     private const string TornWriteErrorMessage =
         "The value could not be applied; reload the strategy before submitting.";
@@ -143,10 +147,7 @@ public partial class ControlViewModel : ObservableValidator
     {
         _validationWriteStarted = false;
         _validationException = null;
-        var previousError = GetErrors(nameof(Value))
-            .OfType<ValidationResult>()
-            .Select(error => error.ErrorMessage)
-            .FirstOrDefault();
+        var previousError = GetErrors(nameof(Value)).Select(error => error.ErrorMessage).FirstOrDefault();
         var tornWriteFlipped = false;
         try
         {
@@ -204,7 +205,7 @@ public partial class ControlViewModel : ObservableValidator
     /// <summary>Attaches the torn-write message to <see cref="Value"/> unless an error is already recorded.</summary>
     private void RecordTornWriteError()
     {
-        if (GetErrors(nameof(Value)).OfType<ValidationResult>().Any())
+        if (GetErrors(nameof(Value)).Any())
         {
             return;
         }
@@ -234,7 +235,7 @@ public partial class ControlViewModel : ObservableValidator
         )
         {
             var state = new EnumState(list.ListItems.EnumIds);
-            state.LoadInitValue(value, list is FixPortal.FixAtdl.Model.Controls.EditableDropDownList_t);
+            state.LoadInitValue(value, list is EditableDropDownList_t);
             Value = state;
         }
         else

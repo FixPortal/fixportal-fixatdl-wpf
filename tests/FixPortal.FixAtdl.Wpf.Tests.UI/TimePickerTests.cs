@@ -33,8 +33,8 @@ public partial class AtdlPanelTests
             var (view, model) = AtdlPanel.Create(strategy, services);
             Layout(view);
             var picker = Descendants(view).OfType<Controls.TimePicker>().Single();
-            var input = (TextBox)picker.FindName(cleared);
-            var sibling = (TextBox)picker.FindName(retained);
+            var input = (TextBox)picker.FindName(cleared)!;
+            var sibling = (TextBox)picker.FindName(retained)!;
             input.SetCurrentValue(TextBox.TextProperty, "");
             sibling.Text.Should().Be(retainedText);
             picker.IsContentValid.Should().BeFalse();
@@ -50,7 +50,7 @@ public partial class AtdlPanelTests
             model.HasErrors.Should().BeFalse();
             picker.Hours.Should().BeEmpty();
             picker.Minutes.Should().BeEmpty();
-            ((RepeatButton)picker.FindName("upButton")).RaiseEvent(
+            ((RepeatButton)picker.FindName("upButton")!).RaiseEvent(
                 new System.Windows.RoutedEventArgs(ButtonBase.ClickEvent)
             );
             picker.Hours.Should().Be("01");

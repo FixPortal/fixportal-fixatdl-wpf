@@ -39,7 +39,7 @@ public class ControlViewModelTests
     [Fact]
     public void ControlWithNoReferencedParameter_NeverErrors()
     {
-        var control = new FixPortal.FixAtdl.Model.Controls.TextField_t("Note");
+        var control = new Model.Controls.TextField_t("Note");
         var viewModel = new ControlViewModel(control) { Value = "anything" };
 
         viewModel.HasErrors.Should().BeFalse();
@@ -51,7 +51,7 @@ public class ControlViewModelTests
         // Regression test: ConvertForControl previously force-converted every non-null/decimal/string
         // value (including bool) via Convert.ToDecimal before handing it to Control_t.SetValue, which
         // BinaryControlBase (CheckBox_t's base) rejects — throwing instead of failing validation cleanly.
-        var control = new FixPortal.FixAtdl.Model.Controls.CheckBox_t("Confirm");
+        var control = new Model.Controls.CheckBox_t("Confirm");
         var viewModel = new ControlViewModel(control) { Value = true };
 
         viewModel.Value.Should().Be(true);

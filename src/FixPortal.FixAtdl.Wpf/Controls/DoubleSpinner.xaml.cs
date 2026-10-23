@@ -7,7 +7,7 @@ namespace FixPortal.FixAtdl.Wpf.Controls;
 /// <summary>
 /// Represents a DoubleSpinner control for WPF.
 /// </summary>
-public partial class DoubleSpinner : NumericSpinnerControlBase
+public partial class DoubleSpinner
 {
     private const decimal DefaultInnerIncrement = 1;
     private const decimal DefaultOuterIncrement = 0.01m;
@@ -66,7 +66,7 @@ public partial class DoubleSpinner : NumericSpinnerControlBase
 
     private void OuterIncrementValue() => ChangeValue(OuterIncrement);
 
-    private void ValueKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    private void ValueKeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key == Key.Down)
         {

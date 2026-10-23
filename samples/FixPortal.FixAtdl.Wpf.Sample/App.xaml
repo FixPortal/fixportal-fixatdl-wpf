@@ -1,3 +1,4 @@
+<!-- ReSharper disable once ObsoleteElementError - ThemeMode is evaluation-only API; the sample opts in knowingly -->
 <Application x:Class="FixPortal.FixAtdl.Wpf.Sample.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"

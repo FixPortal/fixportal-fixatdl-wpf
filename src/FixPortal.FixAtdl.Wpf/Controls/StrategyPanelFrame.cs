@@ -35,19 +35,19 @@ public class StrategyPanelFrame : Expander
 
     public Visibility BorderVisibility
     {
-        get => (Visibility)base.GetValue(BorderVisibilityProperty);
-        set => base.SetValue(BorderVisibilityProperty, value);
+        get => (Visibility)GetValue(BorderVisibilityProperty);
+        set => SetValue(BorderVisibilityProperty, value);
     }
 
     public Visibility CollapseButtonVisibility
     {
-        get => (Visibility)base.GetValue(CollapseButtonVisibilityProperty);
-        set => base.SetValue(CollapseButtonVisibilityProperty, value);
+        get => (Visibility)GetValue(CollapseButtonVisibilityProperty);
+        set => SetValue(CollapseButtonVisibilityProperty, value);
     }
 
     public Visibility HeaderVisibility
     {
-        get => (Visibility)base.GetValue(HeaderVisibilityProperty);
-        set => base.SetValue(HeaderVisibilityProperty, value);
+        get => (Visibility)GetValue(HeaderVisibilityProperty);
+        set => SetValue(HeaderVisibilityProperty, value);
     }
 }

@@ -45,7 +45,7 @@ public class StateRuleVisibilityTests
             using var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
             var (view, model) = AtdlPanel.Create(strategy, services);
             Layout(view);
-            var element = (FrameworkElement)view.FindName(Rendering.WpfControlRenderer.CleanName("Hidden"));
+            var element = (FrameworkElement)view.FindName(Rendering.WpfControlRenderer.CleanName("Hidden"))!;
 
             element.Visibility.Should().Be(Visibility.Visible, "the rule is inactive before the toggle fires");
 

@@ -1,6 +1,5 @@
 // Portions derived from Atdl4net (c) 2010-2011 Steve Wilkinson, MIT - see NOTICE.
 using CommunityToolkit.Mvvm.ComponentModel;
-using FixPortal.FixAtdl.Diagnostics.Exceptions;
 using FixPortal.FixAtdl.Fix;
 using FixPortal.FixAtdl.Model.Controls;
 using FixPortal.FixAtdl.Model.Controls.Support;
@@ -38,7 +37,7 @@ public class EditViewModel : ObservableObject
 
         var duplicateTag = strategy
             .Parameters.Where(parameter => parameter.FixTag is not null)
-            .GroupBy(parameter => parameter.FixTag)
+            .GroupBy(parameter => checked((int)parameter.FixTag!.Value))
             .FirstOrDefault(group => group.Count() > 1);
         if (duplicateTag is not null)
         {

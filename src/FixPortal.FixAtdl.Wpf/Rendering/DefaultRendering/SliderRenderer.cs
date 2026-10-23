@@ -1,5 +1,4 @@
 // Portions derived from Atdl4net (c) 2010-2011 Steve Wilkinson, MIT - see NOTICE.
-using System;
 using FixPortal.FixAtdl.Model.Controls;
 using FixPortal.FixAtdl.Wpf.Controls;
 
@@ -11,7 +10,7 @@ internal class SliderRenderer : IControlRenderer<Slider_t>
 
     public void Render(WpfXmlWriter writer, Slider_t control)
     {
-        WpfControlRenderer.RenderLabelledControl<Slider_t>(
+        WpfControlRenderer.RenderLabelledControl(
             writer,
             control,
             (c, gridCoordinate) =>

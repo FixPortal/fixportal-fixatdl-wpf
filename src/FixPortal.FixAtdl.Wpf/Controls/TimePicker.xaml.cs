@@ -1,8 +1,6 @@
 // Portions derived from Atdl4net (c) 2010-2011 Steve Wilkinson, MIT - see NOTICE.
-using System;
 using System.ComponentModel;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace FixPortal.FixAtdl.Wpf.Controls;
@@ -10,7 +8,7 @@ namespace FixPortal.FixAtdl.Wpf.Controls;
 /// <summary>
 /// Represents the time picker control which is used to support the FIXatdl Clock_t control type.
 /// </summary>
-public partial class TimePicker : UserControl, INotifyPropertyChanged
+public partial class TimePicker : INotifyPropertyChanged
 {
     private bool _minutesHasFocus;
     private bool _updatingTime;
@@ -25,7 +23,7 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
         "Time",
         typeof(DateTime?),
         typeof(TimePicker),
-        new PropertyMetadata(new PropertyChangedCallback(OnTimeChanged))
+        new PropertyMetadata(OnTimeChanged)
     );
 
     /// <summary>
@@ -164,7 +162,7 @@ public partial class TimePicker : UserControl, INotifyPropertyChanged
         }
     }
 
-    private void MinutesKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    private void MinutesKeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key == Key.Down)
         {

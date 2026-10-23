@@ -1,5 +1,4 @@
 // Portions derived from Atdl4net (c) 2010-2011 Steve Wilkinson, MIT - see NOTICE.
-using System;
 using FixPortal.FixAtdl.Model.Controls;
 using FixPortal.FixAtdl.Wpf.Controls;
 
@@ -11,7 +10,7 @@ public class CheckBoxListRenderer : IControlRenderer<CheckBoxList_t>
 
     public void Render(WpfXmlWriter writer, CheckBoxList_t control)
     {
-        WpfControlRenderer.RenderLabelledControl<CheckBoxList_t>(
+        WpfControlRenderer.RenderLabelledControl(
             writer,
             control,
             (c, gridCoordinate) =>

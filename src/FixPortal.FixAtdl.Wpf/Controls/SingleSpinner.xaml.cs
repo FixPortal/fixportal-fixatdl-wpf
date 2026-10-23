@@ -7,7 +7,7 @@ namespace FixPortal.FixAtdl.Wpf.Controls;
 /// <summary>
 /// Represents a SingleSpinner control for WPF.
 /// </summary>
-public partial class SingleSpinner : NumericSpinnerControlBase
+public partial class SingleSpinner
 {
     private const decimal DefaultIncrement = 1;
 
@@ -52,7 +52,7 @@ public partial class SingleSpinner : NumericSpinnerControlBase
         DecrementValue();
     }
 
-    private void ValueKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    private void ValueKeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key == Key.Down)
         {

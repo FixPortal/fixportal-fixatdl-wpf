@@ -25,12 +25,7 @@ public partial class AtdlPanelTests
         StaTestHarness.Run(() =>
         {
             var strategy = TestStrategies.MinimalOneControlStrategy();
-            var parameter = new FixPortal.FixAtdl.Model.Elements.Parameter_t<FixPortal.FixAtdl.Model.Types.Float_t>(
-                "Limit"
-            )
-            {
-                FixTag = 9001,
-            };
+            var parameter = new Model.Elements.Parameter_t<Model.Types.Float_t>("Limit") { FixTag = 9001 };
             parameter.Value.MinValue = (decimal?)minimum;
             parameter.Value.MaxValue = (decimal?)maximum;
             strategy.Parameters.Add(parameter);
@@ -93,28 +88,17 @@ public partial class AtdlPanelTests
                     Increment = (decimal?)increment,
                 }
             );
-            FixPortal.FixAtdl.Model.Elements.Support.IParameter parameter;
+            Model.Elements.Support.IParameter parameter;
             if (percentage)
             {
-                var percent =
-                    new FixPortal.FixAtdl.Model.Elements.Parameter_t<FixPortal.FixAtdl.Model.Types.Percentage_t>(
-                        "Limit"
-                    )
-                    {
-                        FixTag = 9001,
-                    };
+                var percent = new Model.Elements.Parameter_t<Model.Types.Percentage_t>("Limit") { FixTag = 9001 };
                 percent.Value.MinValue = 0.1m;
                 percent.Value.MaxValue = 0.2m;
                 parameter = percent;
             }
             else
             {
-                var number = new FixPortal.FixAtdl.Model.Elements.Parameter_t<FixPortal.FixAtdl.Model.Types.Float_t>(
-                    "Limit"
-                )
-                {
-                    FixTag = 9001,
-                };
+                var number = new Model.Elements.Parameter_t<Model.Types.Float_t>("Limit") { FixTag = 9001 };
                 number.Value.MinValue = 10m;
                 number.Value.MaxValue = 20m;
                 parameter = number;
@@ -152,10 +136,10 @@ public partial class AtdlPanelTests
 
     [Theory]
     [InlineData(null)]
-    [InlineData(FixPortal.FixAtdl.Model.Enumerations.IncrementPolicy_t.Tick)]
-    [InlineData(FixPortal.FixAtdl.Model.Enumerations.IncrementPolicy_t.LotSize)]
+    [InlineData(Model.Enumerations.IncrementPolicy_t.Tick)]
+    [InlineData(Model.Enumerations.IncrementPolicy_t.LotSize)]
     public void Spinner_UsesConfiguredIncrementAndRejectsValuesBeyondParameterBounds(
-        FixPortal.FixAtdl.Model.Enumerations.IncrementPolicy_t? policy
+        Model.Enumerations.IncrementPolicy_t? policy
     )
     {
         StaTestHarness.Run(() =>
@@ -165,8 +149,7 @@ public partial class AtdlPanelTests
             control.Increment = 0.25m;
             control.IncrementPolicy = policy;
             control.SetValue(1m);
-            var parameter = (FixPortal.FixAtdl.Model.Elements.Parameter_t<FixPortal.FixAtdl.Model.Types.Float_t>)
-                strategy.Parameters["Qty"];
+            var parameter = (Model.Elements.Parameter_t<Model.Types.Float_t>)strategy.Parameters["Qty"];
             parameter.Value.MinValue = 1m;
             parameter.Value.MaxValue = 1.25m;
             using var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
@@ -175,8 +158,8 @@ public partial class AtdlPanelTests
             view.Arrange(new System.Windows.Rect(0, 0, 800, 600));
             view.UpdateLayout();
             var spinner = Descendants(view).OfType<Controls.SingleSpinner>().Single();
-            var up = (System.Windows.Controls.Primitives.RepeatButton)spinner.FindName("upButton");
-            var down = (System.Windows.Controls.Primitives.RepeatButton)spinner.FindName("downButton");
+            var up = (System.Windows.Controls.Primitives.RepeatButton)spinner.FindName("upButton")!;
+            var down = (System.Windows.Controls.Primitives.RepeatButton)spinner.FindName("downButton")!;
             up.RaiseEvent(new System.Windows.RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
             model.ReadBackFixValues()[TestStrategies.QtyFixTag].Should().Be("1.25");
             up.RaiseEvent(new System.Windows.RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
@@ -214,10 +197,7 @@ public partial class AtdlPanelTests
             };
             control.SetValue(new DateTime(year, month, day, hour, 30, 45, DateTimeKind.Utc));
             strategy.Parameters.Add(
-                new FixPortal.FixAtdl.Model.Elements.Parameter_t<FixPortal.FixAtdl.Model.Types.UTCTimestamp_t>("Clock")
-                {
-                    FixTag = 9003,
-                }
+                new Model.Elements.Parameter_t<Model.Types.UTCTimestamp_t>("Clock") { FixTag = 9003 }
             );
             strategy.StrategyLayout.StrategyPanel.Controls.Add(control);
             using var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
@@ -252,7 +232,7 @@ public partial class AtdlPanelTests
             // The id is set at construction: since FixPortal.FixAtdl 1.1.3, Control_t.Id cannot be
             // changed once the control is parented, because the strategy index keys on it at
             // insertion time. The renderer guard under test is reached the same way either route.
-            FixPortal.FixAtdl.Model.Elements.Control_t control = kind switch
+            Model.Elements.Control_t control = kind switch
             {
                 "RadioButton" => new FixPortal.FixAtdl.Model.Controls.RadioButton_t(id),
                 "CheckBoxList" => new FixPortal.FixAtdl.Model.Controls.CheckBoxList_t(id),
@@ -260,8 +240,10 @@ public partial class AtdlPanelTests
             };
             strategy.StrategyLayout.StrategyPanel.Controls.Add(control);
             using var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
+            // ReSharper disable AccessToDisposedClosure - the lambda runs to completion inside this test, before services is disposed
             var render = () =>
                 services.GetRequiredService<Rendering.StrategyPanelRenderer>().Render(strategy, services);
+            // ReSharper restore AccessToDisposedClosure
             render.Should().Throw<ArgumentException>().WithMessage("*nonempty and unique*");
         });
     }
@@ -360,7 +342,8 @@ public partial class AtdlPanelTests
             new FixPortal.FixAtdl.Model.Controls.TextField_t("Qty"),
         };
 
-        var create = () => new FixPortal.FixAtdl.Wpf.Rendering.WpfXmlWriter(output, controls);
+        // ReSharper disable once AccessToDisposedClosure - the lambda runs to completion inside this test, before services is disposed
+        var create = () => new Rendering.WpfXmlWriter(output, controls);
 
         create.Should().Throw<ArgumentException>().WithMessage("*Qty*");
     }
@@ -405,7 +388,7 @@ public partial class AtdlPanelTests
             view.Arrange(new System.Windows.Rect(0, 0, 800, 600));
             view.UpdateLayout();
             var spinner = Descendants(view).OfType<Controls.SingleSpinner>().Single();
-            var input = (System.Windows.Controls.TextBox)spinner.FindName("value");
+            var input = (System.Windows.Controls.TextBox)spinner.FindName("value")!;
             input.SetCurrentValue(System.Windows.Controls.TextBox.TextProperty, "12.5");
             model.Controls[0].Value.Should().Be(12.5m);
             input.SetCurrentValue(System.Windows.Controls.TextBox.TextProperty, "bad");
@@ -427,16 +410,15 @@ public partial class AtdlPanelTests
         {
             var strategy = TestStrategies.MinimalOneControlStrategy();
             strategy.StrategyEdits.Add(
-                new FixPortal.FixAtdl.Model.Elements.StrategyEdit_t
+                new Model.Elements.StrategyEdit_t
                 {
                     ErrorMessage = "Must exceed 20",
-                    Edit =
-                        new FixPortal.FixAtdl.Model.Elements.Edit_t<FixPortal.FixAtdl.Model.Elements.Support.IParameter>
-                        {
-                            Field = "Qty",
-                            Operator = FixPortal.FixAtdl.Model.Enumerations.Operator_t.GreaterThan,
-                            Value = "20",
-                        },
+                    Edit = new Model.Elements.Edit_t<Model.Elements.Support.IParameter>
+                    {
+                        Field = "Qty",
+                        Operator = Model.Enumerations.Operator_t.GreaterThan,
+                        Value = "20",
+                    },
                 }
             );
             using var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
@@ -473,8 +455,8 @@ public partial class AtdlPanelTests
                 "MultiSelectList" => new FixPortal.FixAtdl.Model.Controls.MultiSelectList_t("List"),
                 _ => new FixPortal.FixAtdl.Model.Controls.Slider_t("List"),
             };
-            control.ListItems.Add(new FixPortal.FixAtdl.Model.Elements.ListItem_t { EnumId = "A", UiRep = "Alpha" });
-            control.ListItems.Add(new FixPortal.FixAtdl.Model.Elements.ListItem_t { EnumId = "B", UiRep = "Beta" });
+            control.ListItems.Add(new Model.Elements.ListItem_t { EnumId = "A", UiRep = "Alpha" });
+            control.ListItems.Add(new Model.Elements.ListItem_t { EnumId = "B", UiRep = "Beta" });
             control.InitValue = "B";
             var strategy = TestStrategies.MinimalOneControlStrategy();
             strategy.StrategyLayout.StrategyPanel.Controls.Add(control);
@@ -541,7 +523,7 @@ public partial class AtdlPanelTests
                     ? new FixPortal.FixAtdl.Model.Controls.CheckBoxList_t("List")
                     : new FixPortal.FixAtdl.Model.Controls.MultiSelectList_t("List");
             control.Label = "List";
-            control.ListItems.Add(new FixPortal.FixAtdl.Model.Elements.ListItem_t { EnumId = "A", UiRep = "Alpha" });
+            control.ListItems.Add(new Model.Elements.ListItem_t { EnumId = "A", UiRep = "Alpha" });
             strategy.StrategyLayout.StrategyPanel.Controls.Add(control);
             using var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();
             var (view, _) = AtdlPanel.Create(strategy, services);

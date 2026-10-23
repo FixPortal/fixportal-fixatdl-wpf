@@ -72,7 +72,7 @@ internal static class TestStrategies
             OuterIncrement = 0.25m,
         };
         var label = new Label_t("Info") { Label = "Info text" };
-        label.LoadInitValue(FixPortal.FixAtdl.Fix.FixFieldValueProvider.Empty);
+        label.LoadInitValue(Fix.FixFieldValueProvider.Empty);
 
         panel.Controls.Add(spinner);
         panel.Controls.Add(label);

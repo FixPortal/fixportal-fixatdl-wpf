@@ -19,7 +19,7 @@ public class EditingRegressionTests
         var strategy = TestControls.MinimalStrategyWithOneRequiredControl();
         strategy.Controls["Qty"].SetValue(12m);
         var toggle = new CheckBox_t("Toggle");
-        FixPortal.FixAtdl.Model.Controls.Support.ListControlBase list = editable
+        Model.Controls.Support.ListControlBase list = editable
             ? new EditableDropDownList_t("List")
             : new DropDownList_t("List");
         list.ListItems.Add(new ListItem_t { EnumId = "A", UiRep = "Alpha" });

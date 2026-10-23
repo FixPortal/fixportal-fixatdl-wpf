@@ -21,12 +21,12 @@ public class TimePickerInvalidNoOpTests
     {
         StaTestHarness.Run(() =>
         {
-            var picker = new FixPortal.FixAtdl.Wpf.Controls.TimePicker { Hours = "bad", Minutes = "30" };
+            var picker = new Controls.TimePicker { Hours = "bad", Minutes = "30" };
             picker.IsContentValid.Should().BeFalse();
             picker.Time.Should().BeNull();
 
-            ((TextBox)picker.FindName(focusTarget)).RaiseEvent(new RoutedEventArgs(UIElement.GotFocusEvent));
-            ((RepeatButton)picker.FindName(buttonName)).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+            ((TextBox)picker.FindName(focusTarget)!).RaiseEvent(new RoutedEventArgs(UIElement.GotFocusEvent));
+            ((RepeatButton)picker.FindName(buttonName)!).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
 
             picker.IsContentValid.Should().BeFalse();
             picker.Hours.Should().Be("bad");

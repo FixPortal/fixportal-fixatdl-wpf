@@ -1,7 +1,4 @@
 // Portions derived from Atdl4net (c) 2010-2011 Steve Wilkinson, MIT - see NOTICE.
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Xml;
 using FixPortal.FixAtdl.Model.Elements;
 

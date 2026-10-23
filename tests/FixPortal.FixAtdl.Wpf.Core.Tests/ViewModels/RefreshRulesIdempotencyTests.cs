@@ -1,6 +1,5 @@
 using System.Globalization;
 using AwesomeAssertions;
-using FixPortal.FixAtdl.Fix;
 using FixPortal.FixAtdl.Model.Controls;
 using FixPortal.FixAtdl.Model.Elements;
 using FixPortal.FixAtdl.Model.Elements.Support;
@@ -76,7 +75,7 @@ public class RefreshRulesIdempotencyTests
                     control.Visible,
                     control.Visibility,
                     control.HasErrors,
-                    string.Join(",", control.GetErrors(null).Select(error => error.ErrorMessage))
+                    string.Join(",", control.GetErrors().Select(error => error.ErrorMessage))
                 )
             )
             .ToList();
