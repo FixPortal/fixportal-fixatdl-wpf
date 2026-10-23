@@ -30,7 +30,7 @@ public sealed class StrategyPanelRenderer
             .ToDictionary(group => group.Key, group => group.Last());
     }
 
-    public FrameworkElement? Render(Strategy_t strategy, IServiceProvider services)
+    public FrameworkElement Render(Strategy_t strategy, IServiceProvider services)
     {
         _ = services;
 

@@ -100,6 +100,8 @@ public class WpfXmlWriter
     public WpfXmlWriter(XmlWriter writer, IEnumerable<Control_t> controls)
         : this(writer, controls, new HashSet<string>(StringComparer.Ordinal)) { }
 
+    /// <param name="writer">The XML writer that receives the generated XAML.</param>
+    /// <param name="controls">The strategy controls, indexed so each rendered element gets a stable position.</param>
     /// <param name="requiredParameterNames">
     /// Names of the parameters declared <c>use="required"</c>. A control bound to one of these gets a
     /// required marker on its label, so the requirement is carried by something other than colour.

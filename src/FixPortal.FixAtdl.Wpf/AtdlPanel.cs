@@ -10,7 +10,7 @@ namespace FixPortal.FixAtdl.Wpf;
 
 /// <summary>
 /// The library's public entry point: builds the renderable panel and its <see cref="EditViewModel"/> for a
-/// given <see cref="Strategy_t"/>. The host calls <see cref="Create"/> to get both, wires the returned
+/// given <see cref="Strategy_t"/>. The host calls <see cref="Create(Strategy_t, IServiceProvider)"/> to get both, wires the returned
 /// <see cref="EditViewModel"/> into its own UI as needed, and reads submit-time values and
 /// <see cref="EditViewModel.HasErrors"/> back off it.
 /// </summary>
