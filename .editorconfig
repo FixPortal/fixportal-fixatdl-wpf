@@ -71,3 +71,7 @@ resharper_inconsistent_naming_highlighting = none
 # tests), so the camelCase names are part of the control contract and are not renamed.
 [src/FixPortal.FixAtdl.Wpf/Controls/*.xaml]
 resharper_inconsistent_naming_highlighting = none
+# These view-model and renderer guards check values handed in by the FixPortal.FixAtdl model package,
+# whose nullable annotations do not bind its runtime callers; the checks stay as defence in depth.
+[{src/FixPortal.FixAtdl.Wpf.Core/ViewModels/ControlViewModel.cs,src/FixPortal.FixAtdl.Wpf.Core/ViewModels/EditViewModel.cs,src/FixPortal.FixAtdl.Wpf/Rendering/StrategyPanelRenderer.cs}]
+resharper_condition_is_always_true_or_false_according_to_nullable_api_contract_highlighting = none

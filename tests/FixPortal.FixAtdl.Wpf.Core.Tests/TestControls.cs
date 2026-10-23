@@ -15,7 +15,7 @@ internal static class TestControls
 {
     /// <summary>
     /// A standalone required numeric control (min=0), not attached to any strategy. Suitable for
-    /// <see cref="ViewModels.ControlViewModel"/> tests that only need the control + its referenced parameter.
+    /// <see cref="FixPortal.FixAtdl.Wpf.Core.ViewModels.ControlViewModel"/> tests that only need the control + its referenced parameter.
     /// </summary>
     public static (SingleSpinner_t Control, Parameter_t<Int_t> Parameter) RequiredNumericControl()
     {

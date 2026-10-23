@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace FixPortal.FixAtdl.Wpf.Tests.UI;
 
 /// <summary>
-/// <see cref="AtdlPanel.Create"/> does two things to the caller's <see cref="Strategy_t"/>: it
+/// <see cref="AtdlPanel.Create(Strategy_t, IServiceProvider)"/> does two things to the caller's <see cref="Strategy_t"/>: it
 /// renders it, which can throw, and it builds an <see cref="Core.ViewModels.EditViewModel"/>, which
 /// mutates it by loading init values and applying state rules through the controls. Rendering runs
 /// first so a failure leaves the strategy exactly as the caller handed it over.
