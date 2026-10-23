@@ -15,7 +15,7 @@ namespace FixPortal.FixAtdl.Wpf.Sample;
 /// the library and nothing else, so what appears on screen is the library's own output rather than
 /// anything this host styled.
 /// </summary>
-public partial class MainWindow : Window
+public partial class MainWindow
 {
     private readonly ServiceProvider _services;
     private readonly EditViewModel _model;
@@ -58,7 +58,7 @@ public partial class MainWindow : Window
             var problems = _model
                 .Controls.Where(control => control.HasErrors)
                 .Select(control =>
-                    $"{control.Id}: {string.Join("; ", control.GetErrors(nameof(ControlViewModel.Value)).OfType<System.ComponentModel.DataAnnotations.ValidationResult>().Select(error => error.ErrorMessage))}"
+                    $"{control.Id}: {string.Join("; ", control.GetErrors(nameof(ControlViewModel.Value)).Select(error => error.ErrorMessage))}"
                 )
                 .Concat(_model.StrategyErrors)
                 .ToList();

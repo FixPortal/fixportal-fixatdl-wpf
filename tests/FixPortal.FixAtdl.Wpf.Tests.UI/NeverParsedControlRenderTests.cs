@@ -21,7 +21,7 @@ public class NeverParsedControlRenderTests
             var (view, _) = AtdlPanel.Create(TestStrategies.DoubleSpinnerAndLabelStrategy(), services);
             Layout(view);
 
-            var spinner = (Controls.DoubleSpinner)view.FindName(Rendering.WpfControlRenderer.CleanName("Step"));
+            var spinner = (Controls.DoubleSpinner)view.FindName(Rendering.WpfControlRenderer.CleanName("Step"))!;
 
             spinner.InnerIncrement.Should().Be(5m);
             spinner.OuterIncrement.Should().Be(0.25m);

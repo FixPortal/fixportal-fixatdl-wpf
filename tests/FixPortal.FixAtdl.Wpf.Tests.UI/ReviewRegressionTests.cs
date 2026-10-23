@@ -32,7 +32,7 @@ public partial class AtdlPanelTests
                 _ => new Controls.TimePicker(),
             };
             var field = kind is "hours" or "minutes" ? kind : "value";
-            var input = (TextBox)spinner.FindName(field);
+            var input = (TextBox)spinner.FindName(field)!;
             using var source = new System.Windows.Interop.HwndSource(0, 0, 0, 0, 0, "test", IntPtr.Zero);
             var args = new KeyEventArgs(Keyboard.PrimaryDevice, source, 0, Key.Up)
             {
@@ -67,7 +67,7 @@ public partial class AtdlPanelTests
             var (view, model) = AtdlPanel.Create(TestStrategies.MinimalOneControlStrategy(), services);
             Layout(view);
             var spinner = Descendants(view).OfType<Controls.SingleSpinner>().Single();
-            var input = (TextBox)spinner.FindName("value");
+            var input = (TextBox)spinner.FindName("value")!;
             input.SetCurrentValue(TextBox.TextProperty, "1,5");
 
             model.HasErrors.Should().BeTrue();
@@ -97,12 +97,12 @@ public partial class AtdlPanelTests
                 : new Controls.DoubleSpinner { InnerIncrement = 1m, OuterIncrement = 1m };
             var limit = up ? decimal.MaxValue : decimal.MinValue;
             spinner.Value = limit;
-            var button = (RepeatButton)spinner.FindName(buttonName);
+            var button = (RepeatButton)spinner.FindName(buttonName)!;
             var click = () => button.RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
 
             click.Should().NotThrow();
             spinner.Value.Should().Be(limit);
-            ((RepeatButton)spinner.FindName(reverseName)).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+            ((RepeatButton)spinner.FindName(reverseName)!).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
             spinner.Value.Should().Be(up ? limit - 1 : limit + 1);
         });
     }
@@ -113,7 +113,7 @@ public partial class AtdlPanelTests
         StaTestHarness.Run(() =>
         {
             var spinner = new Controls.DoubleSpinner { InnerIncrement = 1m, OuterIncrement = 1m };
-            var input = (TextBox)spinner.FindName("value");
+            var input = (TextBox)spinner.FindName("value")!;
             input.SetCurrentValue(TextBox.TextProperty, "bad");
 
             spinner.IsContentValid.Should().BeFalse();
@@ -121,7 +121,7 @@ public partial class AtdlPanelTests
 
             foreach (var buttonName in new[] { "innerUpButton", "innerDownButton", "outerUpButton", "outerDownButton" })
             {
-                ((RepeatButton)spinner.FindName(buttonName)).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+                ((RepeatButton)spinner.FindName(buttonName)!).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
 
                 spinner.Value.Should().BeNull($"{buttonName} must not commit a value over invalid content");
                 input.Text.Should().Be("bad", $"{buttonName} must not rewrite visibly invalid content");
@@ -179,7 +179,7 @@ public partial class AtdlPanelTests
             try
             {
                 window.Show();
-                var input = (TextBox)picker.FindName(field);
+                var input = (TextBox)picker.FindName(field)!;
                 input.Focus();
                 input.SelectAll();
                 foreach (var digit in text)
@@ -224,7 +224,7 @@ public partial class AtdlPanelTests
         StaTestHarness.Run(() =>
         {
             var slider = new Controls.NumericSlider { Minimum = 10, Maximum = 20 };
-            var native = Descendants(slider).OfType<System.Windows.Controls.Slider>().Single();
+            var native = Descendants(slider).OfType<Slider>().Single();
             slider.Value.Should().BeNull();
             if (mouse)
             {
@@ -259,7 +259,7 @@ public partial class AtdlPanelTests
         StaTestHarness.Run(() =>
         {
             var slider = new Controls.NumericSlider { Minimum = 10, Maximum = 20 };
-            var native = Descendants(slider).OfType<System.Windows.Controls.Slider>().Single();
+            var native = Descendants(slider).OfType<Slider>().Single();
             slider.Value.Should().BeNull();
             if (mouse)
             {
@@ -290,7 +290,7 @@ public partial class AtdlPanelTests
         StaTestHarness.Run(() =>
         {
             var slider = new Controls.NumericSlider { Minimum = 10, Maximum = 20 };
-            var native = Descendants(slider).OfType<System.Windows.Controls.Slider>().Single();
+            var native = Descendants(slider).OfType<Slider>().Single();
             using var source = new System.Windows.Interop.HwndSource(0, 0, 0, 0, 0, "test", IntPtr.Zero);
             native.RaiseEvent(
                 new KeyEventArgs(new HeldModifierKeyboard(modifiers), source, 0, Key.Home)
@@ -313,7 +313,7 @@ public partial class AtdlPanelTests
         {
             var minimum = decimal.Parse(minimumText, CultureInfo.InvariantCulture);
             var slider = new Controls.NumericSlider { Minimum = minimum, Maximum = minimum };
-            var native = Descendants(slider).OfType<System.Windows.Controls.Slider>().Single();
+            var native = Descendants(slider).OfType<Slider>().Single();
             var commit = () =>
                 native.RaiseEvent(
                     new MouseButtonEventArgs(Mouse.PrimaryDevice, 0, MouseButton.Left)
@@ -356,10 +356,10 @@ public partial class AtdlPanelTests
             var (view, model) = AtdlPanel.Create(strategy, services);
             Layout(view);
             var slider = Descendants(view).OfType<Controls.Slider>().Single();
-            var native = (System.Windows.Controls.Slider)slider.FindName("sliderControl");
+            var native = (Slider)slider.FindName("sliderControl")!;
             native.Value.Should().Be(-1);
             model.ReadBackFixValues().Should().NotContainKey(9001);
-            System.Windows.Controls.Slider.IncreaseSmall.Execute(null, native);
+            Slider.IncreaseSmall.Execute(null, native);
             model.ReadBackFixValues()[9001].Should().Be("alpha");
             native.Value = 1;
             model.Controls[0].Value = 21m;
@@ -389,7 +389,7 @@ public partial class AtdlPanelTests
                 window.Show();
                 Layout(view);
                 var frame = (Controls.StrategyPanelFrame)view;
-                var toggle = (ToggleButton)frame.Template.FindName("HeaderToggle", frame);
+                var toggle = (ToggleButton)frame.Template.FindName("HeaderToggle", frame)!;
                 toggle.IsVisible.Should().BeTrue();
                 new ToggleButtonAutomationPeer(toggle).GetName().Should().NotBeNullOrWhiteSpace();
                 frame.Header = string.Empty;
@@ -462,6 +462,7 @@ public partial class AtdlPanelTests
         StaTestHarness.Run(() =>
         {
             using var services = new ServiceCollection().AddFixAtdlWpf().AddFixAtdlWpf().BuildServiceProvider();
+            // ReSharper disable once AccessToDisposedClosure - the lambda runs to completion inside this test, before services is disposed
             var render = () => AtdlPanel.Create(TestStrategies.MinimalOneControlStrategy(), services);
             render.Should().NotThrow();
         });
@@ -512,7 +513,7 @@ public partial class AtdlPanelTests
                 window.Show();
                 Layout(view);
                 var combo = Descendants(view).OfType<ComboBox>().Single();
-                var input = (TextBox)combo.Template.FindName("PART_EditableTextBox", combo);
+                var input = (TextBox)combo.Template.FindName("PART_EditableTextBox", combo)!;
                 input.Focus();
                 input.RaiseEvent(
                     new TextCompositionEventArgs(

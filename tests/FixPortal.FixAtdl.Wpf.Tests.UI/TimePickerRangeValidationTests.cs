@@ -16,7 +16,7 @@ public class TimePickerRangeValidationTests
     {
         StaTestHarness.Run(() =>
         {
-            var picker = new FixPortal.FixAtdl.Wpf.Controls.TimePicker();
+            var picker = new Controls.TimePicker();
             if (field == "Hours")
             {
                 picker.Minutes = inRangeSibling;

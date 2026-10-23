@@ -26,9 +26,9 @@ public class BadZoneClockTests
     {
         StaTestHarness.Run(() =>
         {
-            var strategy = new FixPortal.FixAtdl.Model.Elements.Strategy_t();
-            var panel = new FixPortal.FixAtdl.Model.Elements.StrategyPanel_t(strategy);
-            strategy.StrategyLayout = new FixPortal.FixAtdl.Model.Elements.StrategyLayout_t { StrategyPanel = panel };
+            var strategy = new Model.Elements.Strategy_t();
+            var panel = new Model.Elements.StrategyPanel_t(strategy);
+            strategy.StrategyLayout = new Model.Elements.StrategyLayout_t { StrategyPanel = panel };
             var control = new FixPortal.FixAtdl.Model.Controls.Clock_t("Clock")
             {
                 ParameterRef = "Clock",
@@ -36,10 +36,7 @@ public class BadZoneClockTests
             };
             control.SetValue(new DateTime(2026, 1, 1, 10, 30, 0, DateTimeKind.Utc));
             strategy.Parameters.Add(
-                new FixPortal.FixAtdl.Model.Elements.Parameter_t<FixPortal.FixAtdl.Model.Types.UTCTimestamp_t>("Clock")
-                {
-                    FixTag = 9003,
-                }
+                new Model.Elements.Parameter_t<Model.Types.UTCTimestamp_t>("Clock") { FixTag = 9003 }
             );
             panel.Controls.Add(control);
             using var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();

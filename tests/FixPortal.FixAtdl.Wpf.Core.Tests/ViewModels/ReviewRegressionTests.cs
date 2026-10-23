@@ -191,6 +191,7 @@ public class ReviewRegressionTests
         parameter
             .SetValueFromControl(Arg.Any<Control_t>())
             .Returns(_ =>
+                // ReSharper disable once AccessToModifiedClosure - the lambda deliberately reads the flag after the test flips it
                 failing
                     ? throw new InternalErrorException("Broken parameter invariant")
                     : new ValidationResult(ValidationResult.ResultType.Invalid, "already invalid")
@@ -226,6 +227,7 @@ public class ReviewRegressionTests
         parameter
             .SetValueFromControl(Arg.Any<Control_t>())
             .Returns(_ =>
+                // ReSharper disable once AccessToModifiedClosure - the lambda deliberately reads the flag after the test flips it
                 mode switch
                 {
                     0 => new ValidationResult(ValidationResult.ResultType.Invalid, "already invalid"),
@@ -265,6 +267,7 @@ public class ReviewRegressionTests
         parameter
             .SetValueFromControl(Arg.Any<Control_t>())
             .Returns(_ =>
+                // ReSharper disable once AccessToModifiedClosure - the lambda deliberately reads the flag after the test flips it
                 failing ? throw new InternalErrorException("Broken parameter invariant") : ValidationResult.ValidResult
             );
         strategy.Parameters.Add(parameter);
@@ -298,7 +301,9 @@ public class ReviewRegressionTests
         Exception? thrown = null;
         var orphan = Substitute.For<IParameter>();
         orphan.Name.Returns("Orphan");
+        // ReSharper disable AccessToModifiedClosure - the lambda deliberately reads the flag after the test flips it
         orphan.WireValue.Returns(_ => thrown is null ? "ok" : throw thrown);
+        // ReSharper restore AccessToModifiedClosure
         strategy.Parameters.Add(orphan);
         var model = new EditViewModel(strategy);
         var qty = model.Controls.Single(control => control.UnderlyingControl.Id == "Qty");
@@ -364,7 +369,9 @@ public class ReviewRegressionTests
         Exception? thrown = null;
         var orphan = Substitute.For<IParameter>();
         orphan.Name.Returns("Orphan");
+        // ReSharper disable AccessToModifiedClosure - the lambda deliberately reads the flag after the test flips it
         orphan.WireValue.Returns(_ => thrown is null ? "ok" : throw thrown);
+        // ReSharper restore AccessToModifiedClosure
         strategy.Parameters.Add(orphan);
 
         var model = new EditViewModel(strategy);

@@ -1,5 +1,4 @@
 // Portions derived from Atdl4net (c) 2010-2011 Steve Wilkinson, MIT - see NOTICE.
-using System;
 using FixPortal.FixAtdl.Model.Controls;
 
 namespace FixPortal.FixAtdl.Wpf.Rendering.DefaultRendering;
@@ -10,7 +9,7 @@ internal class SingleSelectListRenderer : IControlRenderer<SingleSelectList_t>
 
     public void Render(WpfXmlWriter writer, SingleSelectList_t control)
     {
-        WpfControlRenderer.RenderLabelledControl<SingleSelectList_t>(
+        WpfControlRenderer.RenderLabelledControl(
             writer,
             control,
             (c, gridCoordinate) =>

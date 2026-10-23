@@ -44,6 +44,7 @@ public class CreateFailureLeavesStrategyUntouchedTests
                 .AddTransient<IControlRenderer, MalformedSpinnerRenderer>()
                 .BuildServiceProvider();
 
+            // ReSharper disable once AccessToDisposedClosure - the lambda runs to completion inside this test, before services is disposed
             var create = () => AtdlPanel.Create(strategy, services);
 
             create.Should().Throw<XamlParseException>("the sample carries a SingleSpinner this renderer breaks");

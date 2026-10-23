@@ -310,7 +310,7 @@ public class HostThemeInheritanceTests
 
     private static List<ClickSelectTextBox> BoxesOf(
         DependencyObject view,
-        FixPortal.FixAtdl.Wpf.Core.ViewModels.EditViewModel model,
+        Core.ViewModels.EditViewModel model,
         string controlId
     )
     {
@@ -339,11 +339,11 @@ public class HostThemeInheritanceTests
         });
     }
 
-    private static (FrameworkElement View, FixPortal.FixAtdl.Wpf.Core.ViewModels.EditViewModel Model) RenderSample()
+    private static (FrameworkElement View, Core.ViewModels.EditViewModel Model) RenderSample()
     {
         using var stream = File.OpenRead(Path.Combine(AppContext.BaseDirectory, "Strategies", "sample-strategy.xml"));
         Strategy_t strategy = new StrategiesReader().Load(stream).Strategies[0];
-        strategy.LoadInitialControlValues(FixPortal.FixAtdl.Fix.FixFieldValueProvider.Empty);
+        strategy.LoadInitialControlValues(Fix.FixFieldValueProvider.Empty);
         // Rendering is synchronous and the returned view holds no reference to the provider, so it
         // is disposed here rather than leaked to five call sites.
         using var services = new ServiceCollection().AddFixAtdlWpf().BuildServiceProvider();

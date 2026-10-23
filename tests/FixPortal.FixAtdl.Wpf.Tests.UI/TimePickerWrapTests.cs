@@ -18,12 +18,9 @@ public class TimePickerWrapTests
     {
         StaTestHarness.Run(() =>
         {
-            var picker = new FixPortal.FixAtdl.Wpf.Controls.TimePicker
-            {
-                Time = new DateTime(1, 1, 1, 23, 59, 0, DateTimeKind.Unspecified),
-            };
+            var picker = new Controls.TimePicker { Time = new DateTime(1, 1, 1, 23, 59, 0, DateTimeKind.Unspecified) };
 
-            ((RepeatButton)picker.FindName("upButton")).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+            ((RepeatButton)picker.FindName("upButton")!).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
 
             picker.Time.Should().Be(new DateTime(1, 1, 1, 0, 59, 0, DateTimeKind.Unspecified));
             picker.Hours.Should().Be("00");
@@ -36,12 +33,9 @@ public class TimePickerWrapTests
     {
         StaTestHarness.Run(() =>
         {
-            var picker = new FixPortal.FixAtdl.Wpf.Controls.TimePicker
-            {
-                Time = new DateTime(1, 1, 1, 0, 30, 0, DateTimeKind.Unspecified),
-            };
+            var picker = new Controls.TimePicker { Time = new DateTime(1, 1, 1, 0, 30, 0, DateTimeKind.Unspecified) };
 
-            ((RepeatButton)picker.FindName("downButton")).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+            ((RepeatButton)picker.FindName("downButton")!).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
 
             picker.Time.Should().Be(new DateTime(1, 1, 1, 23, 30, 0, DateTimeKind.Unspecified));
             picker.Hours.Should().Be("23");
@@ -54,13 +48,10 @@ public class TimePickerWrapTests
     {
         StaTestHarness.Run(() =>
         {
-            var picker = new FixPortal.FixAtdl.Wpf.Controls.TimePicker
-            {
-                Time = new DateTime(1, 1, 1, 10, 59, 0, DateTimeKind.Unspecified),
-            };
-            ((TextBox)picker.FindName("minutes")).RaiseEvent(new RoutedEventArgs(UIElement.GotFocusEvent));
+            var picker = new Controls.TimePicker { Time = new DateTime(1, 1, 1, 10, 59, 0, DateTimeKind.Unspecified) };
+            ((TextBox)picker.FindName("minutes")!).RaiseEvent(new RoutedEventArgs(UIElement.GotFocusEvent));
 
-            ((RepeatButton)picker.FindName("upButton")).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+            ((RepeatButton)picker.FindName("upButton")!).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
 
             picker.Time.Should().Be(new DateTime(1, 1, 1, 10, 0, 0, DateTimeKind.Unspecified));
             picker.Minutes.Should().Be("00");
@@ -72,13 +63,10 @@ public class TimePickerWrapTests
     {
         StaTestHarness.Run(() =>
         {
-            var picker = new FixPortal.FixAtdl.Wpf.Controls.TimePicker
-            {
-                Time = new DateTime(1, 1, 1, 10, 0, 0, DateTimeKind.Unspecified),
-            };
-            ((TextBox)picker.FindName("minutes")).RaiseEvent(new RoutedEventArgs(UIElement.GotFocusEvent));
+            var picker = new Controls.TimePicker { Time = new DateTime(1, 1, 1, 10, 0, 0, DateTimeKind.Unspecified) };
+            ((TextBox)picker.FindName("minutes")!).RaiseEvent(new RoutedEventArgs(UIElement.GotFocusEvent));
 
-            ((RepeatButton)picker.FindName("downButton")).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+            ((RepeatButton)picker.FindName("downButton")!).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
 
             picker.Time.Should().Be(new DateTime(1, 1, 1, 10, 59, 0, DateTimeKind.Unspecified));
             picker.Minutes.Should().Be("59");
@@ -90,8 +78,8 @@ public class TimePickerWrapTests
     {
         StaTestHarness.Run(() =>
         {
-            var picker = new FixPortal.FixAtdl.Wpf.Controls.TimePicker { Width = 75 };
-            var grid = (Grid)picker.FindName("rootGrid");
+            var picker = new Controls.TimePicker { Width = 75 };
+            var grid = (Grid)picker.FindName("rootGrid")!;
 
             picker.Measure(new Size(75, 30));
             picker.Arrange(new Rect(0, 0, 75, 30));
@@ -104,8 +92,8 @@ public class TimePickerWrapTests
     {
         StaTestHarness.Run(() =>
         {
-            var picker = new FixPortal.FixAtdl.Wpf.Controls.TimePicker();
-            var button = (RepeatButton)picker.FindName("upButton");
+            var picker = new Controls.TimePicker();
+            var button = (RepeatButton)picker.FindName("upButton")!;
             button.ApplyTemplate();
 
             Descendants(button).OfType<Border>().Single().BorderBrush.Should().NotBeNull();

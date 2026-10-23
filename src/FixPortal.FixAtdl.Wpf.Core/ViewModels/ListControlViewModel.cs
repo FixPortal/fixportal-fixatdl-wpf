@@ -4,7 +4,6 @@ using FixPortal.FixAtdl.Model.Controls;
 using FixPortal.FixAtdl.Model.Controls.Support;
 using FixPortal.FixAtdl.Model.Elements.Support;
 using FixPortal.FixAtdl.Model.Enumerations;
-using FixPortal.FixAtdl.Model.Types.Support;
 
 namespace FixPortal.FixAtdl.Wpf.Core.ViewModels;
 

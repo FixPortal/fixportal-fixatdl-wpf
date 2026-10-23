@@ -22,8 +22,9 @@ public class RenderFailureContractTests
         {
             using var services = new ServiceCollection().BuildServiceProvider();
             var renderer = new Rendering.StrategyPanelRenderer([]);
-            var strategy = new FixPortal.FixAtdl.Model.Elements.Strategy_t();
+            var strategy = new Model.Elements.Strategy_t();
 
+            // ReSharper disable once AccessToDisposedClosure - the lambda runs to completion inside this test, before services is disposed
             var render = () => renderer.Render(strategy, services);
 
             render.Should().Throw<RenderingException>().WithMessage("No strategy layout was supplied.");
@@ -37,11 +38,12 @@ public class RenderFailureContractTests
         {
             using var services = new ServiceCollection().BuildServiceProvider();
             var renderer = new Rendering.StrategyPanelRenderer([]);
-            var strategy = new FixPortal.FixAtdl.Model.Elements.Strategy_t
+            var strategy = new Model.Elements.Strategy_t
             {
-                StrategyLayout = new FixPortal.FixAtdl.Model.Elements.StrategyLayout_t { StrategyPanel = null! },
+                StrategyLayout = new Model.Elements.StrategyLayout_t { StrategyPanel = null! },
             };
 
+            // ReSharper disable once AccessToDisposedClosure - the lambda runs to completion inside this test, before services is disposed
             var render = () => renderer.Render(strategy, services);
 
             render.Should().Throw<RenderingException>().WithMessage("No strategy panels were found in this strategy.");
@@ -59,6 +61,7 @@ public class RenderFailureContractTests
                 .BuildServiceProvider();
             var renderer = services.GetRequiredService<Rendering.StrategyPanelRenderer>();
 
+            // ReSharper disable once AccessToDisposedClosure - the lambda runs to completion inside this test, before services is disposed
             var render = () => renderer.Render(TestStrategies.MinimalOneControlStrategy(), services);
 
             render.Should().Throw<System.Windows.Markup.XamlParseException>();
@@ -81,7 +84,7 @@ public class RenderFailureContractTests
                 [],
                 new Rendering.DefaultRendering.DefaultNamespaceProvider()
             );
-            FixPortal.FixAtdl.Model.Elements.Control_t control = new SingleSpinner_t("theSpinner");
+            Model.Elements.Control_t control = new SingleSpinner_t("theSpinner");
 
             var visit = () => renderer.Visit(control);
 
@@ -123,6 +126,7 @@ public class RenderFailureContractTests
             var strategy = TestStrategies.NestedPanelsStrategy(65);
 
             var renderer = services.GetRequiredService<Rendering.StrategyPanelRenderer>();
+            // ReSharper disable once AccessToDisposedClosure - the lambda runs to completion inside this test, before services is disposed
             var render = () => renderer.Render(strategy, services);
 
             render.Should().Throw<RenderingException>().WithMessage("*nesting*");
