@@ -10,8 +10,7 @@ A WPF control library that renders FIXatdl strategy UIs from the model
 objects produced by the headless `FixPortal.FixAtdl` package
 (`FixPortal/fixportal-fixatdl`). Two-project split: `FixPortal.FixAtdl.Wpf`
 (`net10.0-windows`, WPF controls/XAML) and `FixPortal.FixAtdl.Wpf.Core`
-(`net10.0`, ViewModels and non-WPF logic — layout coordinate math,
-validation).
+(`net10.0`, ViewModels and non-WPF logic — validation).
 
 ## Build, format, test
 
