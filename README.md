@@ -23,6 +23,15 @@ it. Run it yourself with
 dotnet run --project samples/FixPortal.FixAtdl.Wpf.Sample
 ```
 
+The sample loads `Strategies/sample-strategy.xml` from its output directory
+(`samples/FixPortal.FixAtdl.Wpf.Sample/Strategies/sample-strategy.xml`, copied
+by the sample `.csproj`). That file is a synthetic FIXatdl 1.1 document written
+for the sample, not a real broker's specification. In your own host, strategy
+XML is the FIXatdl 1.1 document your broker or venue publishes; load it with
+`new StrategiesReader().Load(stream)` from `FixPortal.FixAtdl` (see
+[Core usage](https://github.com/FixPortal/fixportal-fixatdl/blob/main/docs/usage.md)).
+`MainWindow.xaml.cs` in the sample is the whole load, render and read-back flow.
+
 ![Creating and reading back a panel: AtdlPanel.Create asks the renderer for XAML, WPF parses it into a FrameworkElement, an EditViewModel is built, and the host then edits, checks HasErrors and reads the 957-960 tags back](https://raw.githubusercontent.com/FixPortal/fixportal-fixatdl-wpf/main/docs/images/panel-sequence.png)
 
 ## Read these first
@@ -37,7 +46,9 @@ for the current release.
 
 ## Use in a WPF application
 
-Target `net10.0-windows` with `UseWPF` enabled. Install
+Requires the .NET 10 SDK (CI builds with `10.0.x`; `global.json` pins no SDK
+version, only the test runner `Microsoft.Testing.Platform`). Target
+`net10.0-windows` with `UseWPF` enabled. Install
 [`FixPortal.FixAtdl.Wpf`](https://www.nuget.org/packages/FixPortal.FixAtdl.Wpf/)
 from NuGet.org:
 
@@ -162,6 +173,31 @@ naming the control type and id.
 Windows and the .NET 10 SDK are required for the WPF project and UI tests.
 The core project and its tests run without WPF. CI checks formatting, builds,
 tests both projects on Windows and packs both libraries.
+
+Local build and test, in CI's order (from `CONTRIBUTING.md` and
+`.github/workflows/ci.yml`):
+
+```powershell
+dotnet tool restore
+dotnet csharpier check .
+dotnet restore FixPortal.FixAtdl.Wpf.slnx
+dotnet build FixPortal.FixAtdl.Wpf.slnx --configuration Release --no-restore
+dotnet test --solution FixPortal.FixAtdl.Wpf.slnx --configuration Release --no-build
+```
+
+`csharpier check` is read-only, as in CI; fix formatting with
+`dotnet csharpier format .`. CI also passes `-p:Version=...` to build and pack,
+which a local build does not need.
+
+### Which core version this source builds against
+
+`Directory.Packages.props` references `FixPortal.FixAtdl` 1.4.0, so source on
+`main` builds against core 1.4.0 (CHANGELOG, Unreleased: "Depends on
+`FixPortal.FixAtdl` 1.4.0 (was 1.2.0)"). That is not yet released. The
+published `FixPortal.FixAtdl.Wpf` 1.0.7 still pins core 1.2.0, as the Status
+table in the [core README](https://github.com/FixPortal/fixportal-fixatdl#status)
+records. A NuGet consumer gets core 1.2.0 until the next release of this
+package.
 
 Tags `vMAJOR.MINOR.PATCH` on commits reachable from `main` publish both packages
 to NuGet.org (and GitHub Packages) after CI succeeds. Creating a tag is a
