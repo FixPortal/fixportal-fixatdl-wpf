@@ -164,7 +164,7 @@ naming the control type and id.
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| `NotSupportedException`: no renderer for control type `X` (id `Y`) | Broker XML uses a control type outside the 15 registered renderers | Guard or remap upstream, or add a custom `IControlRenderer` (above) |
+| `NotSupportedException`: "No renderer is registered for control type 'X' (control id 'Y')." | Broker XML uses a control type outside the 15 registered renderers | Guard or remap upstream, or add a custom `IControlRenderer` (above) |
 | Two editors interfere with each other | An editor owns mutable strategy state | Use a separate strategy instance per open editor |
 | Immutable values stay disabled on amendment | `isAmendment: true` enforces `mutableOnCxlRpl="false"` | Expected: load the existing order first, then create the panel with `isAmendment: true` |
 

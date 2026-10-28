@@ -159,7 +159,7 @@ A strategy with no layout or no root panel throws
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| `NotSupportedException`: no renderer for control type `X` (id `Y`) | Broker XML uses a type outside the 15 registered renderers | Guard or remap upstream, or add a custom `IControlRenderer` |
+| `NotSupportedException`: "No renderer is registered for control type 'X' (control id 'Y')." | Broker XML uses a type outside the 15 registered renderers | Guard or remap upstream, or add a custom `IControlRenderer` |
 | `RenderingException`: no strategy layout / no panels | Strategy XML has no `StrategyLayout`/`StrategyPanel` | Reject the document before `Create` |
 | Two editors interfere | An editor owns mutable strategy state | Separate `Strategy_t` instance per open editor |
 | `ReadBackFixValues` throws | `HasErrors` is true | Bind `INotifyDataErrorInfo` / show `StrategyErrors` first |
