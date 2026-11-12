@@ -27,9 +27,8 @@ jobs:
       # Workflow linting runs in the Linux gate-coverage job below, not here: actionlint's
       # shellcheck pass stalled on windows-latest (2026-09-24, 589 s against a usual ~25 s,
       # tripping this job's 10-minute timeout) on the canonical review-tier.yml.
+      # No dotnet-version: setup-dotnet installs from global.json, the single SDK pin.
       - uses: actions/setup-dotnet@v6
-        with:
-          dotnet-version: '10.0.x'
       - run: dotnet tool restore
       - run: dotnet csharpier check .
       - name: Lint PowerShell test safety (parse only)
@@ -237,9 +236,8 @@ jobs:
           shellcheck: true
       - name: Require a tag reachable from main
         run: git merge-base --is-ancestor "${GITHUB_SHA}^{commit}" origin/main
+      # No dotnet-version: setup-dotnet installs from global.json, the single SDK pin.
       - uses: actions/setup-dotnet@v6
-        with:
-          dotnet-version: '10.0.x'
       - uses: actions/download-artifact@v8
         with:
           name: packages
