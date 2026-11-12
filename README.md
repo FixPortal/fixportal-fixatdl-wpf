@@ -46,8 +46,8 @@ for the current release.
 
 ## Use in a WPF application
 
-Requires the .NET 10 SDK (CI builds with `10.0.x`; `global.json` pins no SDK
-version, only the test runner `Microsoft.Testing.Platform`). Target
+Requires the .NET 10 SDK (`global.json` pins SDK `10.0.404` with `rollForward:
+latestFeature`, and CI installs from that pin). Target
 `net10.0-windows` with `UseWPF` enabled. Install
 [`FixPortal.FixAtdl.Wpf`](https://www.nuget.org/packages/FixPortal.FixAtdl.Wpf/)
 from NuGet.org:
