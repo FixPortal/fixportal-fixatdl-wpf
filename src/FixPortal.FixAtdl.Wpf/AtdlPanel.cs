@@ -44,8 +44,7 @@ public static class AtdlPanel
         // expression resolved later against the view model, so nothing here depends on the values
         // the view model would have established.
         var renderer = services.GetRequiredService<StrategyPanelRenderer>();
-        var view =
-            renderer.Render(strategy, services)
+        var view = renderer.Render(strategy, services)
             ?? throw ThrowHelper.New<RenderingException>(
                 ExceptionContext,
                 "Strategy panel rendering produced no view."

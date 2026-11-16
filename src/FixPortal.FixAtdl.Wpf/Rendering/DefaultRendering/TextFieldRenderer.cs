@@ -10,22 +10,18 @@ internal class TextFieldRenderer : IControlRenderer<TextField_t>
 
     public void Render(WpfXmlWriter writer, TextField_t control)
     {
-        WpfControlRenderer.RenderLabelledControl(
-            writer,
-            control,
-            (c, gridCoordinate) =>
+        WpfControlRenderer.RenderLabelledControl(writer, control, (c, gridCoordinate) =>
+        {
+            using (writer.New(DefaultNamespaceProvider.ControlsNamespaceUri, typeof(ClickSelectTextBox).Name))
             {
-                using (writer.New(DefaultNamespaceProvider.ControlsNamespaceUri, typeof(ClickSelectTextBox).Name))
-                {
-                    WpfControlRenderer.WriteStandardControlAttributes(writer, c, gridCoordinate, includeErrorCue: true);
-                    writer.WriteAttribute(WpfXmlWriterAttribute.Width, "120");
-                    writer.WriteAttribute(WpfXmlWriterAttribute.HorizontalAlignment, "Left");
-                    writer.WriteAttribute(
-                        WpfXmlWriterAttribute.Text,
-                        "{Binding Path=Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                    );
-                }
+                WpfControlRenderer.WriteStandardControlAttributes(writer, c, gridCoordinate, includeErrorCue: true);
+                writer.WriteAttribute(WpfXmlWriterAttribute.Width, "120");
+                writer.WriteAttribute(WpfXmlWriterAttribute.HorizontalAlignment, "Left");
+                writer.WriteAttribute(
+                    WpfXmlWriterAttribute.Text,
+                    "{Binding Path=Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                );
             }
-        );
+        });
     }
 }

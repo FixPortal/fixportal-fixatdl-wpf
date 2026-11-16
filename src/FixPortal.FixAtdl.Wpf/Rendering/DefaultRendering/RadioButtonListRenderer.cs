@@ -10,18 +10,14 @@ internal class RadioButtonListRenderer : IControlRenderer<RadioButtonList_t>
 
     public void Render(WpfXmlWriter writer, RadioButtonList_t control)
     {
-        WpfControlRenderer.RenderLabelledControl(
-            writer,
-            control,
-            (c, gridCoordinate) =>
+        WpfControlRenderer.RenderLabelledControl(writer, control, (c, gridCoordinate) =>
+        {
+            using (writer.New(DefaultNamespaceProvider.ControlsNamespaceUri, typeof(RadioButtonList).Name))
             {
-                using (writer.New(DefaultNamespaceProvider.ControlsNamespaceUri, typeof(RadioButtonList).Name))
-                {
-                    WpfControlRenderer.WriteStandardControlAttributes(writer, c, gridCoordinate);
-                    writer.WriteAttribute(WpfXmlWriterAttribute.Orientation, "{Binding Path=Orientation, Mode=OneWay}");
-                    writer.WriteAttribute(WpfXmlWriterAttribute.ItemsSource, "{Binding Path=Items}");
-                }
+                WpfControlRenderer.WriteStandardControlAttributes(writer, c, gridCoordinate);
+                writer.WriteAttribute(WpfXmlWriterAttribute.Orientation, "{Binding Path=Orientation, Mode=OneWay}");
+                writer.WriteAttribute(WpfXmlWriterAttribute.ItemsSource, "{Binding Path=Items}");
             }
-        );
+        });
     }
 }
