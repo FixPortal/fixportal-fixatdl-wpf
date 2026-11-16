@@ -39,8 +39,7 @@ public sealed class StrategyPanelRenderer
             throw ThrowHelper.New<RenderingException>(ExceptionContext, "No strategy layout was supplied.");
         }
 
-        StrategyPanel_t rootPanel =
-            strategy.StrategyLayout.StrategyPanel
+        StrategyPanel_t rootPanel = strategy.StrategyLayout.StrategyPanel
             ?? throw ThrowHelper.New<RenderingException>(
                 ExceptionContext,
                 "No strategy panels were found in this strategy."

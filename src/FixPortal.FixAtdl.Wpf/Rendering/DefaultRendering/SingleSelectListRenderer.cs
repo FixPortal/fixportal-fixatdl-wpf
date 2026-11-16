@@ -9,23 +9,19 @@ internal class SingleSelectListRenderer : IControlRenderer<SingleSelectList_t>
 
     public void Render(WpfXmlWriter writer, SingleSelectList_t control)
     {
-        WpfControlRenderer.RenderLabelledControl(
-            writer,
-            control,
-            (c, gridCoordinate) =>
+        WpfControlRenderer.RenderLabelledControl(writer, control, (c, gridCoordinate) =>
+        {
+            using (writer.New(WpfXmlWriterTag.ListBox))
             {
-                using (writer.New(WpfXmlWriterTag.ListBox))
-                {
-                    WpfControlRenderer.WriteStandardControlAttributes(writer, c, gridCoordinate, includeErrorCue: true);
-                    // The invalid-state cue is a local value on the control, not an implicit style:
-                    // ComboBox and ListBox belong to the host, and a style for them in this panel's
-                    // dictionary would shadow the host's own. See ErrorCue.
-                    writer.WriteAttribute(WpfXmlWriterAttribute.ItemsSource, "{Binding Path=Items}");
-                    writer.WriteAttribute(WpfXmlWriterAttribute.SelectedValue, "{Binding Path=SelectedValue}");
-                    writer.WriteAttribute(WpfXmlWriterAttribute.SelectedValuePath, "EnumId");
-                    writer.WriteAttribute(WpfXmlWriterAttribute.DisplayMemberPath, "UiRep");
-                }
+                WpfControlRenderer.WriteStandardControlAttributes(writer, c, gridCoordinate, includeErrorCue: true);
+                // The invalid-state cue is a local value on the control, not an implicit style:
+                // ComboBox and ListBox belong to the host, and a style for them in this panel's
+                // dictionary would shadow the host's own. See ErrorCue.
+                writer.WriteAttribute(WpfXmlWriterAttribute.ItemsSource, "{Binding Path=Items}");
+                writer.WriteAttribute(WpfXmlWriterAttribute.SelectedValue, "{Binding Path=SelectedValue}");
+                writer.WriteAttribute(WpfXmlWriterAttribute.SelectedValuePath, "EnumId");
+                writer.WriteAttribute(WpfXmlWriterAttribute.DisplayMemberPath, "UiRep");
             }
-        );
+        });
     }
 }

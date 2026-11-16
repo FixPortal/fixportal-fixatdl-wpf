@@ -10,18 +10,14 @@ public class CheckBoxListRenderer : IControlRenderer<CheckBoxList_t>
 
     public void Render(WpfXmlWriter writer, CheckBoxList_t control)
     {
-        WpfControlRenderer.RenderLabelledControl(
-            writer,
-            control,
-            (c, gridCoordinate) =>
+        WpfControlRenderer.RenderLabelledControl(writer, control, (c, gridCoordinate) =>
+        {
+            using (writer.New(DefaultNamespaceProvider.ControlsNamespaceUri, typeof(CheckBoxList).Name))
             {
-                using (writer.New(DefaultNamespaceProvider.ControlsNamespaceUri, typeof(CheckBoxList).Name))
-                {
-                    WpfControlRenderer.WriteStandardControlAttributes(writer, c, gridCoordinate);
-                    writer.WriteAttribute(WpfXmlWriterAttribute.Orientation, "{Binding Path=Orientation, Mode=OneWay}");
-                    writer.WriteAttribute(WpfXmlWriterAttribute.ItemsSource, "{Binding Path=Items}");
-                }
+                WpfControlRenderer.WriteStandardControlAttributes(writer, c, gridCoordinate);
+                writer.WriteAttribute(WpfXmlWriterAttribute.Orientation, "{Binding Path=Orientation, Mode=OneWay}");
+                writer.WriteAttribute(WpfXmlWriterAttribute.ItemsSource, "{Binding Path=Items}");
             }
-        );
+        });
     }
 }
