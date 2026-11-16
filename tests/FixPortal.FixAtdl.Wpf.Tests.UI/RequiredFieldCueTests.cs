@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Windows;
 using System.Windows.Automation.Peers;
 using System.Windows.Controls;
@@ -164,8 +165,14 @@ public class RequiredFieldCueTests
             Layout(requiredView);
             Layout(optionalView);
 
-            var required = Descendants(requiredView).OfType<Control>().Select(c => c.Background?.ToString()).ToList();
-            var optional = Descendants(optionalView).OfType<Control>().Select(c => c.Background?.ToString()).ToList();
+            var required = Descendants(requiredView)
+                .OfType<Control>()
+                .Select(c => c.Background?.ToString(CultureInfo.InvariantCulture))
+                .ToList();
+            var optional = Descendants(optionalView)
+                .OfType<Control>()
+                .Select(c => c.Background?.ToString(CultureInfo.InvariantCulture))
+                .ToList();
 
             required.Should().BeEquivalentTo(optional);
         });
