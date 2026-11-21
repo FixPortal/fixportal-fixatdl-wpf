@@ -24,6 +24,12 @@ history.
 - Moving a `NumericSlider` to a declared bound preserves that decimal exactly,
   including `decimal.MinValue` and `decimal.MaxValue`, without overflowing.
   Home and End can select either endpoint when both bounds round to one native value.
+- When several state rules with the same effect target one control, an active
+  rule now decides it. An inactive rule's inverse applies only while no other
+  rule with that effect is active, so a later inactive rule no longer re-enables
+  or re-shows a control that an earlier active rule disabled or hid. This
+  matches `@fix-portal/fixatdl-react` and the shared `state-transitions.json`
+  scenario `same-effect-rules-active-rule-wins`.
 
 ## [1.0.7] - 2026-10-07
 

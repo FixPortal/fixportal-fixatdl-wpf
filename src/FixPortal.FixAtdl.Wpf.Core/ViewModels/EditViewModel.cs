@@ -202,6 +202,7 @@ public class EditViewModel : ObservableObject
                     break;
                 }
             } while (_refreshPending);
+            ApplyAttributeRules();
 
             _strategy.StrategyEdits.EvaluateAll(FixFieldValueProvider.Empty, false);
             errors.AddRange(
@@ -267,27 +268,66 @@ public class EditViewModel : ObservableObject
             ? strategy.Parameters[parameterRef]
             : null;
 
+    // An active rule decides its attribute; a false condition applies the inverse (FIXatdl 1.1
+    // conventions i–ii, including at construction) only while no rule with the same attribute on
+    // that control is active. Pinned by same-effect-rules-active-rule-wins in the shared corpus.
+    private void ApplyAttributeRules()
+    {
+        foreach (var rules in _rules.Where(rule => rule.Active is not null).GroupBy(rule => rule.Control))
+        {
+            if (ResolveAttribute(rules, rule => rule.Rule.Enabled) is { } enabled)
+            {
+                rules.Key.Enabled = enabled;
+            }
+            if (ResolveAttribute(rules, rule => rule.Rule.Visible) is { } visible)
+            {
+                rules.Key.Visible = visible;
+            }
+        }
+    }
+
+    private static bool? ResolveAttribute(IEnumerable<RuleState> rules, Func<RuleState, bool?> target)
+    {
+        bool? state = null;
+        var decided = false;
+        foreach (var rule in rules)
+        {
+            if (target(rule) is not { } value)
+            {
+                continue;
+            }
+            if (rule.Active == true)
+            {
+                state = value;
+                decided = true;
+            }
+            else if (!decided)
+            {
+                state = !value;
+            }
+        }
+        return state;
+    }
+
     private sealed class RuleState(ControlViewModel control, StateRule_t rule)
     {
         private bool? _active;
         private object? _previousValue;
 
+        public ControlViewModel Control => control;
+
+        public StateRule_t Rule => rule;
+
+        /// <summary>The rule's last evaluated condition; null until it has evaluated once.</summary>
+        public bool? Active => _active;
+
         public void Apply()
         {
             rule.Evaluate();
             var active = rule.CurrentState;
-            // Initial false conditions also invert enabled/visible (FIXatdl 1.1 conventions i–ii).
             if (active == _active)
             {
                 return;
-            }
-            if (rule.Enabled is { } enabled)
-            {
-                control.Enabled = active ? enabled : !enabled;
-            }
-            if (rule.Visible is { } visible)
-            {
-                control.Visible = active ? visible : !visible;
             }
             if (rule.Value is null)
             {
