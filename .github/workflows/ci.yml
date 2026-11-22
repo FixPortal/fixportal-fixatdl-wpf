@@ -164,6 +164,7 @@ jobs:
           path: artifacts/*.nupkg
           if-no-files-found: error
       - name: Upload test results
+        id: upload-test-results
         if: always() && steps.test.outcome != 'skipped'
         uses: actions/upload-artifact@v7
         with:
@@ -195,6 +196,9 @@ jobs:
       - name: Assert every quality job is gated
         env:
           GATE_EXEMPT: publish
+          # The test-results upload skips only when the test step itself was skipped, which
+          # happens only after an earlier step has already failed the job.
+          GATE_STEP_IF_EXEMPT: build-and-test/upload-test-results
         run: python3 .github/scripts/assert_gate_coverage.py .github/workflows/ci.yml
 
       - name: Assert canonical asset copies match the committed manifest
